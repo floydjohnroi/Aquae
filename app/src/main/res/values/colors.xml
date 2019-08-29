@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#4364F7</color>
+    <color name="colorPrimaryDark">#4364F7</color>
+    <color name="colorAccent">#4364F7</color>
+    <color name="colorWhite">#ffffff</color>
+    <color name="colorText">#000000</color>
+    <color name="colorTextHint">#a7a7a7</color>
+    <color name="colorButton">#f0f0f0</color>
+    <color name="colorButtonText">#d3d3d3</color>
+    <color name="colorError">#f32d4e</color>
+    <color name="colorDrawerItem">#5e6367</color>
+    <color name="colorLight">#ECE9E6</color>
+    <color name="colorBadge">#fa3e3e</color>
+    <color name="colorDivider">#1f000000</color>
+    <color name="colorDisabled">#dadada</color>
+    <color name="colorSnackBarAction">#6FB1FC</color>
+    <color name="colorEmptyCart">#80868b</color>
+    <color name="colorBottomWrapper">#f0f0f0</color>
+    <color name="colorTransparent">#43000000</color>
+    <color name="colorStatus">#24bd64</color>
+</resources>

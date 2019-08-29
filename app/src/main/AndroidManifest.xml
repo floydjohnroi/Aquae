@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    package="com.example.aquae">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+
+    <application
+        android:allowBackup="true"
+        android:fullBackupContent="true"
+        android:icon="@drawable/icon_aquae_dark"
+        android:label="Aquae"
+        android:supportsRtl="true"
+        android:theme="@style/AppTheme"
+        tools:ignore="GoogleAppIndexingWarning">
+
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="AIzaSyAOXgR4A2k-IdDRI4uV8KbrjI3V6DCWsXE"/>
+
+        <activity android:name="com.theartofdev.edmodo.cropper.CropImageActivity"
+            android:theme="@style/CropTheme"/>
+
+        <service
+            android:name=".Notification">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
+
+
+        <activity
+            android:name=".SplashScreenActivity"
+            android:theme="@style/SplashScreenTheme">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity android:name=".LoginActivity" />
+        <activity
+            android:name=".RegistrationActivity"
+            android:theme="@style/DarkTheme"
+            android:label="Create Account"/>
+        <activity android:name=".HomeActivity" />
+        <activity android:name=".ClientActivity" />
+        <activity android:name=".OrderActivity" />
+        <activity android:name=".CartActivity" />
+        <activity android:name=".DeliveryPaymentsActivity" />
+        <activity android:name=".PlaceOrderActivity" />
+        <activity android:name=".RequestCashInActivity" />
+        <activity android:name=".WalletActivity" />
+
+    </application>
+
+</manifest>
