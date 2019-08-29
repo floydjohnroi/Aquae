@@ -61,7 +61,7 @@ public class CartProductAdapter extends RecyclerView.Adapter<CartProductAdapter.
 
         holder.waterType.setText(cartProductModel.getWaterType());
 
-        if (Integer.parseInt(cartProductModel.getRefillQuantity()) == 0) {
+        if (Integer.parseInt(cartProductModel.getRefillPrice()) == 0) {
             holder.refillLayout.setVisibility(View.GONE);
             holder.divider.setVisibility(View.GONE);
         }
@@ -71,7 +71,7 @@ public class CartProductAdapter extends RecyclerView.Adapter<CartProductAdapter.
             }
         }
 
-        if (Integer.parseInt(cartProductModel.getPurchaseQuantity()) == 0) {
+        if (Integer.parseInt(cartProductModel.getPurchasePrice()) == 0) {
             holder.purchaseLayout.setVisibility(View.GONE);
             holder.divider.setVisibility(View.GONE);
         }

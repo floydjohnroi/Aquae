@@ -64,9 +64,10 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
         linearLayoutManager.setStackFromEnd(true);
         cartViewHolder.recyclerView.setLayoutManager(linearLayoutManager);
 
-
         List<CartProductModel> productList = new ArrayList<>();
         Map<String, Object> data = new HashMap<>();
+
+        Log.d("TEST", ""+cartProductModelList.size());
 
         for (int i = 0; i < cartProductModelList.size(); i++) {
             if (String.valueOf(cartProductModelList.get(i).getClient_id()).equals(cartModel.getClient_id())) {

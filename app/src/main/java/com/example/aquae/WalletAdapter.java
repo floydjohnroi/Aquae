@@ -116,7 +116,7 @@ public class WalletAdapter extends RecyclerView.Adapter<WalletAdapter.WalletView
                         File dir = new File(filePath.getAbsolutePath()+"/AQUAE/");
                         dir.mkdir();
 
-                        File file = new File(dir, System.currentTimeMillis()+".jpg");
+                        File file = new File(dir, textView.getText()+".jpg");
                         try {
                             outputStream = new FileOutputStream(file);
                         } catch (FileNotFoundException e) {

@@ -151,6 +151,9 @@ public class CartActivity extends AppCompatActivity {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
+                        cartModelList.clear();
+                        cartProductModelList.clear();
+
                         if (!dataSnapshot.exists()) {
                             emptyCart.setVisibility(View.VISIBLE);
                             selectAllLayout.setVisibility(View.GONE);
@@ -182,6 +185,7 @@ public class CartActivity extends AppCompatActivity {
                                                     .addValueEventListener(new ValueEventListener() {
                                                         @Override
                                                         public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
                                                             for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                                                                 for (DataSnapshot snap : snapshot.child("types").getChildren()) {
                                                                     if (Objects.equals(snap.getKey(), d.getKey())) {
@@ -227,16 +231,14 @@ public class CartActivity extends AppCompatActivity {
                                                                                 String.valueOf(purchasePrice),
                                                                                 String.valueOf(snap.child("product_image").getValue()),
                                                                                 String.valueOf(d.child("subtotal").getValue())
-
                                                                         ));
 
                                                                         dialogFragment.dismiss();
+                                                                        cartAdapter.notifyDataSetChanged();
 
                                                                     }
                                                                 }
                                                             }
-
-                                                            cartAdapter.notifyDataSetChanged();
 
                                                         }
 
@@ -269,10 +271,9 @@ public class CartActivity extends AppCompatActivity {
                                                     ));
 
                                                     dialogFragment.dismiss();
+                                                    cartAdapter.notifyDataSetChanged();
 
                                                 }
-
-                                                cartAdapter.notifyDataSetChanged();
 
                                             }
 

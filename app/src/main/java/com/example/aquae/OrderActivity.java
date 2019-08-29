@@ -335,11 +335,11 @@ public class OrderActivity extends AppCompatActivity {
             final String id = Objects.requireNonNull(databaseReference.push().getKey());
 
             Map<String, String> refill = new HashMap<>();
-            refill.put("price", getIntent().getStringExtra("refillPrice"));
+//            refill.put("price", getIntent().getStringExtra("refillPrice"));
             refill.put("quantity", String.valueOf(qtyRefill));
 
             Map<String, String> purchase = new HashMap<>();
-            purchase.put("price", getIntent().getStringExtra("purchasePrice"));
+//            purchase.put("price", getIntent().getStringExtra("purchasePrice"));
             purchase.put("quantity", String.valueOf(qtyPurchase));
 
             String s1 = String.valueOf(subtotal.getText()).substring(1);
@@ -348,10 +348,9 @@ public class OrderActivity extends AppCompatActivity {
             Map<String, Object> details = new HashMap<>();
             details.put("subtotal", sub);
             details.put("water_type", getIntent().getStringExtra("water_type"));
-            details.put("image", getIntent().getStringExtra("productImage"));
-            if (refillCheckBox.isChecked())
+            if (refillCheckBox.isChecked() && refillLayout.getVisibility() == View.VISIBLE)
                 details.put("refill", refill);
-            if (purchaseCheckBox.isChecked())
+            if (purchaseCheckBox.isChecked() && purchaseLayout.getVisibility() == View.VISIBLE)
                 details.put("purchase", purchase);
 
             final Map<String, Object> products = new HashMap<>();
