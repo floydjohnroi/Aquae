@@ -23,6 +23,11 @@ import java.util.Objects;
 
 import android.widget.TextView;
 
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+
 public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder> {
 
     private Context context;
@@ -69,21 +74,40 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
 
         Log.d("TEST", ""+cartProductModelList.size());
 
-        for (int i = 0; i < cartProductModelList.size(); i++) {
-            if (String.valueOf(cartProductModelList.get(i).getClient_id()).equals(cartModel.getClient_id())) {
-                productList.add(cartProductModelList.get(i));
+        if (cartProductModelList.size() == 0) {
+            FirebaseDatabase.getInstance().getReference()
+                    .child("carts")
+                    .orderByChild("client_id").equalTo(cartModel.getClient_id())
+                    .addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                            dataSnapshot.getRef().removeValue();
+                        }
 
-                data.put("min_order", cartModel.getMin_order());
-                data.put("max_order", cartModel.getMax_order());
-                data.put("ship_fee", cartModel.getShip_fee());
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError databaseError) {
 
-                total += Integer.parseInt(cartProductModelList.get(i).getSubtotal());
+                        }
+                    });
+        }
+        else {
 
+            for (int i = 0; i < cartProductModelList.size(); i++) {
+                if (String.valueOf(cartProductModelList.get(i).getClient_id()).equals(cartModel.getClient_id())) {
+                    productList.add(cartProductModelList.get(i));
+
+                    data.put("min_order", cartModel.getMin_order());
+                    data.put("max_order", cartModel.getMax_order());
+                    data.put("ship_fee", cartModel.getShip_fee());
+
+                    total += Integer.parseInt(cartProductModelList.get(i).getSubtotal());
+
+                }
             }
+
         }
 
         mOnDataChangeListener.onChanged(total);
-
 
 
         cartViewHolder.recyclerView.setAdapter(new CartProductAdapter(context, productList, data));
