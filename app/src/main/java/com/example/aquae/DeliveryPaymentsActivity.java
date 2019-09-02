@@ -5,41 +5,29 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
+import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.PersistableBundle;
-import android.provider.ContactsContract;
-import android.util.Log;
+import android.os.Handler;
+import android.os.Message;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
-import android.widget.ArrayAdapter;
 import android.widget.EditText;
-import android.widget.ListView;
-import android.widget.RadioButton;
-import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
-import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
 public class DeliveryPaymentsActivity extends AppCompatActivity {
@@ -111,7 +99,9 @@ public class DeliveryPaymentsActivity extends AppCompatActivity {
 
             Intent intent = new Intent(DeliveryPaymentsActivity.this, PlaceOrderActivity.class);
             intent.putExtra("delivery_address", address);
-            intent.putExtra("note", String.valueOf(note.getText()).trim());
+            intent.putExtra("notes", String.valueOf(note.getText()).trim());
+            intent.putExtra("client_id", getIntent().getStringExtra("client_id"));
+            intent.putExtra("client_address", getIntent().getStringExtra("client_address"));
             startActivity(intent);
 
         });
@@ -174,4 +164,5 @@ public class DeliveryPaymentsActivity extends AppCompatActivity {
         onBackPressed();
         return true;
     }
+
 }

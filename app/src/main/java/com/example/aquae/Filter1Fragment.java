@@ -49,9 +49,11 @@ public class Filter1Fragment extends Fragment {
 
 
         FirebaseDatabase.getInstance().getReference().child("clients").orderByChild("status").equalTo("activate")
-                .addListenerForSingleValueEvent(new ValueEventListener() {
+                .addValueEventListener(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+                        clientModelList.clear();
 
                         for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
 
@@ -69,8 +71,6 @@ public class Filter1Fragment extends Fragment {
                                             String.valueOf(snapshot.child("contact").getValue()),
                                             String.valueOf(data.child("store").getValue()),
                                             String.valueOf(snapshot.child("water_type").getValue()),
-                                            String.valueOf(snapshot.child("minimum_order").getValue()),
-                                            String.valueOf(snapshot.child("maximum_order").getValue()),
                                             String.valueOf(snapshot.child("no_of_filter").getValue()),
                                             String.valueOf(snapshot.child("shipping_fee").getValue())
                                     ));

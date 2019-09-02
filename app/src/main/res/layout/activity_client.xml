@@ -38,7 +38,7 @@
         <ImageView
             android:id="@+id/storeImage"
             android:layout_width="match_parent"
-            android:layout_height="224dp"
+            android:layout_height="272dp"
             android:adjustViewBounds="true"
             android:foreground="@drawable/transparent_card"
             android:scaleType="centerCrop" />
@@ -46,7 +46,7 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_marginBottom="24dp"
+            android:layout_marginBottom="16dp"
             android:gravity="bottom"
             android:orientation="vertical">
 
@@ -60,6 +60,16 @@
                 android:textStyle="bold" />
 
             <TextView
+                android:id="@+id/type"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:textColor="@color/colorWhite"
+                android:textSize="14sp"
+                android:textAllCaps="true"
+                android:textStyle="bold" />
+
+            <TextView
                 android:id="@+id/address"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -67,7 +77,6 @@
                 android:layout_marginTop="16dp"
                 android:layout_marginEnd="24dp"
                 android:drawableStart="@drawable/icon_location_light"
-                android:drawableLeft="@drawable/icon_location_light"
                 android:drawablePadding="8dp"
                 android:gravity="center"
                 android:textColor="@color/colorWhite"
@@ -81,7 +90,6 @@
                 android:layout_marginTop="4dp"
                 android:layout_marginEnd="24dp"
                 android:drawableStart="@drawable/icon_email"
-                android:drawableLeft="@drawable/icon_email"
                 android:drawablePadding="8dp"
                 android:gravity="center"
                 android:textColor="@color/colorWhite"
@@ -95,11 +103,41 @@
                 android:layout_marginTop="4dp"
                 android:layout_marginEnd="24dp"
                 android:drawableStart="@drawable/icon_phone"
-                android:drawableLeft="@drawable/icon_phone"
                 android:drawablePadding="8dp"
                 android:gravity="center"
                 android:textColor="@color/colorWhite"
                 android:textSize="14sp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="24dp"
+                android:layout_marginTop="4dp"
+                android:layout_marginEnd="24dp"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/nofilter"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center|start"
+                    android:drawableStart="@drawable/icon_filter"
+                    android:drawablePadding="8dp"
+                    android:textColor="@color/colorWhite"
+                    android:textSize="14sp" />
+
+                <TextView
+                    android:id="@+id/shipfee"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:drawableStart="@drawable/icon_delivery"
+                    android:drawablePadding="8dp"
+                    android:textColor="@color/colorWhite"
+                    android:textSize="14sp" />
+
+            </LinearLayout>
 
         </LinearLayout>
 
@@ -160,5 +198,34 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/materialCardView4" />
+
+    <LinearLayout
+        android:id="@+id/noProductAvailable"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/recyclerView"
+        app:layout_constraintVertical_bias="0.4">
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:src="@drawable/icon_no_product" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="No Products Available"
+            android:textColor="@color/colorEmptyCart"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+    </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

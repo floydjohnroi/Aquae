@@ -17,6 +17,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.provider.ContactsContract;
+import android.text.Html;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -27,6 +28,7 @@ import android.view.animation.AccelerateDecelerateInterpolator;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -56,13 +58,14 @@ public class ClientActivity extends AppCompatActivity {
 
     Toolbar toolbar;
     MaterialCardView toolbarCard;
-    TextView company, address, email, contact, toolbarTitle, waterTypes;
+    TextView company, address, email, contact, toolbarTitle, waterTypes, type, nofilter, shipfee;
     RecyclerView recyclerView;
     ProductAdapter productAdapter;
     List<ProductModel> productModelList = new ArrayList<>();
     List<String> quantityList = new ArrayList<>();
     DatabaseReference databaseReference;
     ImageView storeImage;
+    LinearLayout noProductAvailable;
 
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     @Override
@@ -85,6 +88,10 @@ public class ClientActivity extends AppCompatActivity {
         databaseReference = FirebaseDatabase.getInstance().getReference();
         storeImage = findViewById(R.id.storeImage);
         waterTypes = findViewById(R.id.waterTypes);
+        type = findViewById(R.id.type);
+        nofilter = findViewById(R.id.nofilter);
+        shipfee = findViewById(R.id.shipfee);
+        noProductAvailable = findViewById(R.id.noProductAvailable);
 
         setSupportActionBar(toolbar);
         Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
@@ -106,13 +113,24 @@ public class ClientActivity extends AppCompatActivity {
                 .into(storeImage);
 
         company.setText(getIntent().getStringExtra("company"));
+
+        String finalStr = getIntent().getStringExtra("water_type").substring(0, getIntent().getStringExtra("water_type").length()-2);
+        finalStr = finalStr.substring(0, finalStr.lastIndexOf(","))+" &"+finalStr.substring(finalStr.lastIndexOf(",")+1);
+        type.setText(finalStr);
+
         address.setText(getIntent().getStringExtra("address"));
         email.setText(getIntent().getStringExtra("email"));
         contact.setText(getIntent().getStringExtra("contact"));
 
+        String n = getIntent().getStringExtra("no_of_filter")+" stages";
+        nofilter.setText(n);
+
+        String f = "₱"+getIntent().getStringExtra("ship_fee")+" / <i>(km)</i>";
+
+        shipfee.setText(Html.fromHtml(f));
 
 
-        String[] wt = getIntent().getStringExtra("water_type").split(",");
+        String[] wt = getIntent().getStringExtra("water_type").split(", ");
 
         waterTypes.setText(wt[0]);
 
@@ -120,8 +138,6 @@ public class ClientActivity extends AppCompatActivity {
         data.put("company", getIntent().getStringExtra("company"));
         data.put("client_id", getIntent().getStringExtra("client_id"));
         data.put("water_type", String.valueOf(waterTypes.getText()));
-        data.put("min_order", getIntent().getStringExtra("min_order"));
-        data.put("max_order", getIntent().getStringExtra("max_order"));
         data.put("ship_fee", getIntent().getStringExtra("ship_fee"));
 
         waterTypes.setOnClickListener(v -> {
@@ -172,38 +188,46 @@ public class ClientActivity extends AppCompatActivity {
                 .addValueEventListener(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+                        productModelList.clear();
+
                         for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
 
                             for (DataSnapshot snap : snapshot.getChildren()) {
 
                                 for (DataSnapshot s : snap.getChildren()) {
 
-                                    for (DataSnapshot d: s.getChildren()) {
+                                    if (Objects.equals(s.child("status").getValue(), "available")) {
 
-                                        Object refillPrice = 0;
-                                        Object salePrice = 0;
+                                        for (DataSnapshot d : s.getChildren()) {
 
-                                        for (DataSnapshot e : d.getChildren()) {
+                                            Object refillPrice = 0;
+                                            Object salePrice = 0;
 
-                                            if (Objects.equals(e.getKey(), "refill")) {
-                                                refillPrice = e.child("price").getValue();
+                                            for (DataSnapshot e : d.getChildren()) {
+
+                                                if (Objects.equals(e.getKey(), "refill")) {
+                                                    refillPrice = e.child("price").getValue();
+                                                }
+
+                                                if (Objects.equals(e.getKey(), "sale")) {
+                                                    salePrice = e.child("price").getValue();
+                                                }
+
+                                                productModelList.add(new ProductModel(
+                                                        String.valueOf(s.getKey()),
+                                                        String.valueOf(s.child("product_image").getValue()),
+                                                        String.valueOf(refillPrice),
+                                                        String.valueOf(salePrice),
+                                                        String.valueOf(s.child("minimum_order").getValue()),
+                                                        String.valueOf(s.child("maximum_order").getValue())
+                                                ));
+
+                                                dialogFragment.dismiss();
+
                                             }
-
-                                            if (Objects.equals(e.getKey(), "sale")) {
-                                                salePrice = e.child("price").getValue();
-                                            }
-
-                                            productModelList.add(new ProductModel(
-                                                    String.valueOf(s.getKey()),
-                                                    String.valueOf(s.child("product_image").getValue()),
-                                                    String.valueOf(refillPrice),
-                                                    String.valueOf(salePrice)
-                                            ));
-
-                                            dialogFragment.dismiss();
 
                                         }
-
                                     }
 
                                 }
@@ -212,6 +236,17 @@ public class ClientActivity extends AppCompatActivity {
 
                         }
 
+
+                        if (productModelList.size() == 0) {
+                            noProductAvailable.setVisibility(View.VISIBLE);
+                            dialogFragment.dismiss();
+                        }
+                        else {
+                            noProductAvailable.setVisibility(View.GONE);
+                        }
+
+                        recyclerView.setAdapter(new ProductAdapter(ClientActivity.this, productModelList, data));
+
                     }
 
                     @Override
@@ -219,8 +254,6 @@ public class ClientActivity extends AppCompatActivity {
 
                     }
                 });
-
-        recyclerView.setAdapter(new ProductAdapter(ClientActivity.this, productModelList, data));
 
     }
 
@@ -235,7 +268,17 @@ public class ClientActivity extends AppCompatActivity {
         ImageView cartIcon = cart.findViewById(R.id.cartIcon);
         final TextView badge = cart.findViewById(R.id.badge);
         cartIcon.setImageDrawable(getResources().getDrawable(R.drawable.icon_cart_light));
-        cartIcon.setOnClickListener(v -> startActivity(new Intent(ClientActivity.this, CartActivity.class)));
+        cartIcon.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(ClientActivity.this, CartActivity.class);
+                intent.putExtra("client", getIntent().getStringExtra("company"));
+                intent.putExtra("client_id", getIntent().getStringExtra("client_id"));
+                intent.putExtra("client_address", getIntent().getStringExtra("address"));
+                startActivity(intent);
+
+            }
+        });
 
         databaseReference.child("carts").orderByChild("customer_id").equalTo(new Session(getApplicationContext()).getId())
                 .addValueEventListener(new ValueEventListener() {
@@ -246,14 +289,16 @@ public class ClientActivity extends AppCompatActivity {
                         int c = 0;
 
                         for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                            for (DataSnapshot data : snapshot.getChildren()) {
-                                for (DataSnapshot d : data.getChildren()) {
-                                    for (DataSnapshot e : d.getChildren()) {
-                                        for (DataSnapshot f : e.getChildren()) {
-                                            try {
-                                                c += Integer.parseInt(String.valueOf(f.child("quantity").getValue()));
-                                            } catch (NumberFormatException nfe) {
-                                                nfe.printStackTrace();
+                            if (Objects.equals(snapshot.child("client_id").getValue(), getIntent().getStringExtra("client_id"))) {
+                                for (DataSnapshot data : snapshot.getChildren()) {
+                                    for (DataSnapshot d : data.getChildren()) {
+                                        for (DataSnapshot e : d.getChildren()) {
+                                            for (DataSnapshot f : e.getChildren()) {
+                                                try {
+                                                    c += Integer.parseInt(String.valueOf(f.child("quantity").getValue()));
+                                                } catch (NumberFormatException nfe) {
+                                                    nfe.printStackTrace();
+                                                }
                                             }
                                         }
                                     }

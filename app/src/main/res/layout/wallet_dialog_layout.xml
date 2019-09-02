@@ -29,7 +29,6 @@
             android:id="@+id/totalPayment"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="851"
             android:textColor="@color/colorText"
             android:textSize="32sp" />
 
@@ -59,7 +58,6 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
         android:layout_marginBottom="16dp"
-        android:text="20 items"
         android:textColor="@color/colorText"
         android:textSize="16sp"
         app:layout_constraintBottom_toTopOf="@+id/view2"

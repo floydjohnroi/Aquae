@@ -42,7 +42,7 @@ public class OrderActivity extends AppCompatActivity {
 
     Toolbar toolbar;
     MaterialCardView toolbarCard;
-    TextView toolbarTitle, productName, quantityRefill, quantityPurchase, subtotal, refillPrice, purchasePrice;
+    TextView toolbarTitle, productName, quantityRefill, quantityPurchase, subtotal, refillPrice, purchasePrice, minOrder, maxOrder;
     ImageView minusRefill, addRefill, minusPurchase, addPurchase, productImage;
     MaterialButton addToCart, waterType;
     DatabaseReference databaseReference;
@@ -82,6 +82,8 @@ public class OrderActivity extends AppCompatActivity {
         refillLayout = findViewById(R.id.refillLayout);
         purchaseLayout = findViewById(R.id.purchaseLayout);
         divider = findViewById(R.id.divider1);
+        minOrder = findViewById(R.id.minOrder);
+        maxOrder = findViewById(R.id.maxOrder);
 
         setSupportActionBar(toolbar);
         Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
@@ -130,7 +132,10 @@ public class OrderActivity extends AppCompatActivity {
                                                         builder.setTitle(stq);
                                                         builder.setMessage("This product is already in your cart.");
                                                         builder.setPositiveButton("VIEW CART", (dialog, which) -> {
-                                                            startActivity(new Intent(OrderActivity.this, CartActivity.class));
+                                                            Intent intent = new Intent(OrderActivity.this, CartActivity.class);
+                                                            intent.putExtra("client", getIntent().getStringExtra("company"));
+                                                            intent.putExtra("client_id", getIntent().getStringExtra("client_id"));
+                                                            startActivity(intent);
                                                             finish();
                                                         });
 
@@ -184,13 +189,18 @@ public class OrderActivity extends AppCompatActivity {
 
         productName.setText(capitalize(getIntent().getStringExtra("product")));
 
+        waterType.setText(getIntent().getStringExtra("water_type"));
+
+        String min = getIntent().getStringExtra("min_order")+" <i>(qty)</i>";
+        minOrder.setText(Html.fromHtml(min));
+
+        String max = getIntent().getStringExtra("max_order")+" <i>(qty)</i>";
+        maxOrder.setText(Html.fromHtml(max));
+
+
         refillPrice.setText(getIntent().getStringExtra("refillPrice"));
 
         purchasePrice.setText(getIntent().getStringExtra("purchasePrice"));
-
-
-        waterType.setText(getIntent().getStringExtra("water_type"));
-
 
         minusRefill.setEnabled(false);
         minusPurchase.setEnabled(false);
@@ -335,19 +345,23 @@ public class OrderActivity extends AppCompatActivity {
             final String id = Objects.requireNonNull(databaseReference.push().getKey());
 
             Map<String, String> refill = new HashMap<>();
-//            refill.put("price", getIntent().getStringExtra("refillPrice"));
+            refill.put("price", getIntent().getStringExtra("refillPrice"));
             refill.put("quantity", String.valueOf(qtyRefill));
 
             Map<String, String> purchase = new HashMap<>();
-//            purchase.put("price", getIntent().getStringExtra("purchasePrice"));
+            purchase.put("price", getIntent().getStringExtra("purchasePrice"));
             purchase.put("quantity", String.valueOf(qtyPurchase));
 
             String s1 = String.valueOf(subtotal.getText()).substring(1);
             String sub = s1.replace(".00", "");
 
             Map<String, Object> details = new HashMap<>();
+            details.put("image", getIntent().getStringExtra("productImage"));
+            details.put("min_order", getIntent().getStringExtra("min_order"));
+            details.put("max_order", getIntent().getStringExtra("max_order"));
             details.put("subtotal", sub);
             details.put("water_type", getIntent().getStringExtra("water_type"));
+            details.put("status", "check");
             if (refillCheckBox.isChecked() && refillLayout.getVisibility() == View.VISIBLE)
                 details.put("refill", refill);
             if (purchaseCheckBox.isChecked() && purchaseLayout.getVisibility() == View.VISIBLE)
@@ -433,7 +447,16 @@ public class OrderActivity extends AppCompatActivity {
         ImageView cartIcon = cart.findViewById(R.id.cartIcon);
         final TextView badge = cart.findViewById(R.id.badge);
         cartIcon.setImageDrawable(getResources().getDrawable(R.drawable.icon_cart_dark));
-        cartIcon.setOnClickListener(v -> startActivity(new Intent(OrderActivity.this, CartActivity.class)));
+        cartIcon.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(OrderActivity.this, CartActivity.class);
+                intent.putExtra("client", getIntent().getStringExtra("company"));
+                intent.putExtra("client_id", getIntent().getStringExtra("client_id"));
+                startActivity(intent);
+
+            }
+        });
 
         databaseReference.child("carts").orderByChild("customer_id").equalTo(new Session(getApplicationContext()).getId())
                 .addValueEventListener(new ValueEventListener() {
@@ -444,20 +467,23 @@ public class OrderActivity extends AppCompatActivity {
                         int c = 0;
 
                         for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                            for (DataSnapshot data : snapshot.getChildren()) {
-                                for (DataSnapshot d : data.getChildren()) {
-                                    for (DataSnapshot e : d.getChildren()) {
-                                        for (DataSnapshot f : e.getChildren()) {
-                                            try {
-                                                c += Integer.parseInt(String.valueOf(f.child("quantity").getValue()));
-                                            } catch (NumberFormatException nfe) {
-                                                nfe.printStackTrace();
+                            if (Objects.equals(snapshot.child("client_id").getValue(), getIntent().getStringExtra("client_id"))) {
+                                for (DataSnapshot data : snapshot.getChildren()) {
+                                    for (DataSnapshot d : data.getChildren()) {
+                                        for (DataSnapshot e : d.getChildren()) {
+                                            for (DataSnapshot f : e.getChildren()) {
+                                                try {
+                                                    c += Integer.parseInt(String.valueOf(f.child("quantity").getValue()));
+                                                } catch (NumberFormatException nfe) {
+                                                    nfe.printStackTrace();
+                                                }
                                             }
                                         }
                                     }
                                 }
                             }
                         }
+
 
                         if (c < 1) {
                             badge.setVisibility(View.GONE);

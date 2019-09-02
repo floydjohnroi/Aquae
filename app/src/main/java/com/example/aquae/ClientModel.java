@@ -2,12 +2,9 @@ package com.example.aquae;
 
 public class ClientModel {
 
-    private String client_id, company, email, password, address, contact, storeImage, water_type, min_order, max_order, no_of_filter, ship_fee;
+    private String client_id, company, email, password, address, contact, storeImage, water_type, no_of_filter, ship_fee;
 
-    public ClientModel() {
-    }
-
-    public ClientModel(String client_id, String company, String email, String password, String address, String contact, String storeImage, String water_type, String min_order, String max_order, String no_of_filter, String ship_fee) {
+    public ClientModel(String client_id, String company, String email, String password, String address, String contact, String storeImage, String water_type, String no_of_filter, String ship_fee) {
         this.client_id = client_id;
         this.company = company;
         this.email = email;
@@ -16,8 +13,6 @@ public class ClientModel {
         this.contact = contact;
         this.storeImage = storeImage;
         this.water_type = water_type;
-        this.min_order = min_order;
-        this.max_order = max_order;
         this.no_of_filter = no_of_filter;
         this.ship_fee = ship_fee;
     }
@@ -84,22 +79,6 @@ public class ClientModel {
 
     public void setWater_type(String water_type) {
         this.water_type = water_type;
-    }
-
-    public String getMin_order() {
-        return min_order;
-    }
-
-    public void setMin_order(String min_order) {
-        this.min_order = min_order;
-    }
-
-    public String getMax_order() {
-        return max_order;
-    }
-
-    public void setMax_order(String max_order) {
-        this.max_order = max_order;
     }
 
     public String getNo_of_filter() {

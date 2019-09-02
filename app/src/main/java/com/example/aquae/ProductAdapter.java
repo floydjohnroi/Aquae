@@ -70,8 +70,8 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
             intent.putExtra("refillPrice", productModel.getRefillPrice());
             intent.putExtra("purchasePrice", productModel.getPurchasePrice());
             intent.putExtra("water_type", datas.get("water_type"));
-            intent.putExtra("min_order", datas.get("min_order"));
-            intent.putExtra("max_order", datas.get("max_order"));
+            intent.putExtra("min_order", productModel.getMinOrder());
+            intent.putExtra("max_order", productModel.getMaxOrder());
             context.startActivity(intent);
 
         });

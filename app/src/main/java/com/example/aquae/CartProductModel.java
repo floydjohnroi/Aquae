@@ -2,12 +2,9 @@ package com.example.aquae;
 
 public class CartProductModel {
 
-    private String client_id, product_id, product, refillQuantity, purchaseQuantity, waterType, refillPrice, purchasePrice, image, subtotal;
+    private String client_id, product_id, product, refillQuantity, purchaseQuantity, waterType, refillPrice, purchasePrice, image, subtotal, minOrder, maxOrder, status;
 
-    public CartProductModel() {
-    }
-
-    public CartProductModel(String client_id, String product_id, String product, String refillQuantity, String purchaseQuantity, String waterType, String refillPrice, String purchasePrice, String image, String subtotal) {
+    public CartProductModel(String client_id, String product_id, String product, String refillQuantity, String purchaseQuantity, String waterType, String refillPrice, String purchasePrice, String image, String subtotal, String minOrder, String maxOrder, String status) {
         this.client_id = client_id;
         this.product_id = product_id;
         this.product = product;
@@ -18,6 +15,9 @@ public class CartProductModel {
         this.purchasePrice = purchasePrice;
         this.image = image;
         this.subtotal = subtotal;
+        this.minOrder = minOrder;
+        this.maxOrder = maxOrder;
+        this.status = status;
     }
 
     public String getClient_id() {
@@ -98,5 +98,29 @@ public class CartProductModel {
 
     public void setSubtotal(String subtotal) {
         this.subtotal = subtotal;
+    }
+
+    public String getMinOrder() {
+        return minOrder;
+    }
+
+    public void setMinOrder(String minOrder) {
+        this.minOrder = minOrder;
+    }
+
+    public String getMaxOrder() {
+        return maxOrder;
+    }
+
+    public void setMaxOrder(String maxOrder) {
+        this.maxOrder = maxOrder;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 }

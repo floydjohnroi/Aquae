@@ -2,6 +2,7 @@ package com.example.aquae;
 
 import android.content.Context;
 import android.content.Intent;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,6 +18,8 @@ public class ClientAdapter extends RecyclerView.Adapter<ClientAdapter.ClientView
 
     private Context context;
     private List<ClientModel> clientModelList;
+
+    String finalStr;
 
     public ClientAdapter(Context context, List<ClientModel> clientModelList) {
         this.context = context;
@@ -38,6 +41,13 @@ public class ClientAdapter extends RecyclerView.Adapter<ClientAdapter.ClientView
 
         holder.company.setText(clientModel.getCompany());
         holder.address.setText(clientModel.getAddress());
+
+        finalStr = clientModel.getWater_type().substring(0, clientModel.getWater_type().length()-2);
+
+        finalStr = finalStr.substring(0, finalStr.lastIndexOf(","))+" &"+finalStr.substring(finalStr.lastIndexOf(",")+1);
+
+        holder.waterType.setText(finalStr);
+
         holder.station.setOnClickListener(v -> {
 
             Intent intent = new Intent(context, ClientActivity.class);
@@ -48,8 +58,6 @@ public class ClientAdapter extends RecyclerView.Adapter<ClientAdapter.ClientView
             intent.putExtra("contact", clientModel.getContact());
             intent.putExtra("storeImage", clientModel.getStoreImage());
             intent.putExtra("water_type", clientModel.getWater_type());
-            intent.putExtra("min_order", clientModel.getMin_order());
-            intent.putExtra("max_order", clientModel.getMax_order());
             intent.putExtra("no_of_filter", clientModel.getNo_of_filter());
             intent.putExtra("ship_fee", clientModel.getShip_fee());
 
@@ -74,7 +82,7 @@ public class ClientAdapter extends RecyclerView.Adapter<ClientAdapter.ClientView
     class ClientViewHolder extends RecyclerView.ViewHolder {
 
         MaterialCardView station;
-        TextView company, address;
+        TextView company, address, waterType;
         ImageView storeImage;
 
         public ClientViewHolder(@NonNull View itemView) {
@@ -84,6 +92,7 @@ public class ClientAdapter extends RecyclerView.Adapter<ClientAdapter.ClientView
             company = itemView.findViewById(R.id.company);
             address = itemView.findViewById(R.id.address);
             storeImage = itemView.findViewById(R.id.storeImage);
+            waterType = itemView.findViewById(R.id.water_type);
         }
     }
 }

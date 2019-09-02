@@ -180,65 +180,65 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
 
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.main, menu);
-
-        MenuItem item = menu.findItem(R.id.cart);
-        item.setIcon(R.drawable.icon_cart_dark);
-        MenuItemCompat.setActionView(item, R.layout.cart_badge);
-        RelativeLayout cart = (RelativeLayout) MenuItemCompat.getActionView(item);
-        ImageView cartIcon = cart.findViewById(R.id.cartIcon);
-        final TextView badge = cart.findViewById(R.id.badge);
-        cartIcon.setImageDrawable(getResources().getDrawable(R.drawable.icon_cart_dark));
-
-        cartIcon.setOnClickListener(v -> startActivity(new Intent(HomeActivity.this, CartActivity.class)));
-
-        databaseReference.child("carts").orderByChild("customer_id").equalTo(new Session(getApplicationContext()).getId())
-                .addValueEventListener(new ValueEventListener() {
-                    @TargetApi(Build.VERSION_CODES.KITKAT)
-                    @Override
-                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-
-                        int c = 0;
-
-                        for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                            for (DataSnapshot data : snapshot.getChildren()) {
-                                for (DataSnapshot d : data.getChildren()) {
-                                    for (DataSnapshot e : d.getChildren()) {
-                                        for (DataSnapshot f : e.getChildren()) {
-                                            try {
-                                                c += Integer.parseInt(String.valueOf(f.child("quantity").getValue()));
-                                            } catch (NumberFormatException nfe) {
-                                                nfe.printStackTrace();
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-
-                        if (c < 1) {
-                            badge.setVisibility(View.GONE);
-                        }
-                        else if (c > 9) {
-                            badge.setVisibility(View.VISIBLE);
-                            badge.setText("9+");
-                        }
-                        else {
-                            badge.setVisibility(View.VISIBLE);
-                            badge.setText(String.valueOf(c));
-                        }
-                    }
-
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError databaseError) {
-
-                    }
-                });
-
-        return super.onCreateOptionsMenu(menu);
-    }
+//    @Override
+//    public boolean onCreateOptionsMenu(Menu menu) {
+//        getMenuInflater().inflate(R.menu.main, menu);
+//
+//        MenuItem item = menu.findItem(R.id.cart);
+//        item.setIcon(R.drawable.icon_cart_dark);
+//        MenuItemCompat.setActionView(item, R.layout.cart_badge);
+//        RelativeLayout cart = (RelativeLayout) MenuItemCompat.getActionView(item);
+//        ImageView cartIcon = cart.findViewById(R.id.cartIcon);
+//        final TextView badge = cart.findViewById(R.id.badge);
+//        cartIcon.setImageDrawable(getResources().getDrawable(R.drawable.icon_cart_dark));
+//
+//        cartIcon.setOnClickListener(v -> startActivity(new Intent(HomeActivity.this, CartActivity.class)));
+//
+//        databaseReference.child("carts").orderByChild("customer_id").equalTo(new Session(getApplicationContext()).getId())
+//                .addValueEventListener(new ValueEventListener() {
+//                    @TargetApi(Build.VERSION_CODES.KITKAT)
+//                    @Override
+//                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+//
+//                        int c = 0;
+//
+//                        for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+//                            for (DataSnapshot data : snapshot.getChildren()) {
+//                                for (DataSnapshot d : data.getChildren()) {
+//                                    for (DataSnapshot e : d.getChildren()) {
+//                                        for (DataSnapshot f : e.getChildren()) {
+//                                            try {
+//                                                c += Integer.parseInt(String.valueOf(f.child("quantity").getValue()));
+//                                            } catch (NumberFormatException nfe) {
+//                                                nfe.printStackTrace();
+//                                            }
+//                                        }
+//                                    }
+//                                }
+//                            }
+//                        }
+//
+//                        if (c < 1) {
+//                            badge.setVisibility(View.GONE);
+//                        }
+//                        else if (c > 9) {
+//                            badge.setVisibility(View.VISIBLE);
+//                            badge.setText("9+");
+//                        }
+//                        else {
+//                            badge.setVisibility(View.VISIBLE);
+//                            badge.setText(String.valueOf(c));
+//                        }
+//                    }
+//
+//                    @Override
+//                    public void onCancelled(@NonNull DatabaseError databaseError) {
+//
+//                    }
+//                });
+//
+//        return super.onCreateOptionsMenu(menu);
+//    }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -283,9 +283,9 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
         switch (menuItem.getItemId()){
-            case R.id.cart:
-                startActivity(new Intent(HomeActivity.this, CartActivity.class));
-                break;
+//            case R.id.cart:
+//                startActivity(new Intent(HomeActivity.this, CartActivity.class));
+//                break;
             case R.id.wallet:
                 startActivity(new Intent(HomeActivity.this, WalletActivity.class));
                 break;

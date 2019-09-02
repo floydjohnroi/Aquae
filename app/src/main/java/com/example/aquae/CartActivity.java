@@ -12,6 +12,8 @@ import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
+
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -36,7 +38,7 @@ public class CartActivity extends AppCompatActivity {
 
     Toolbar toolbar;
     MaterialCardView toolbarCard;
-    ImageView removeAll;
+    MaterialButton removeAll;
     TextView toolbarTitle, total;
     RecyclerView recyclerView;
     List<CartModel> cartModelList = new ArrayList<>();
@@ -46,8 +48,6 @@ public class CartActivity extends AppCompatActivity {
     LinearLayout emptyCart, selectAllLayout;
     CartAdapter cartAdapter;
     List<CartProductModel> cartProductModelList = new ArrayList<>();
-
-    double t;
 
 
     @TargetApi(Build.VERSION_CODES.KITKAT)
@@ -74,7 +74,8 @@ public class CartActivity extends AppCompatActivity {
         (Objects.requireNonNull(getSupportActionBar())).setDisplayHomeAsUpEnabled(true);
         Objects.requireNonNull(getSupportActionBar()).setHomeAsUpIndicator(R.drawable.icon_back_dark);
         toolbarCard.setCardBackgroundColor(getResources().getColor(R.color.colorWhite));
-        toolbarTitle.setText(R.string.cart);
+        String title = getIntent().getStringExtra("client")+" Cart";
+        toolbarTitle.setText(title);
 
         recyclerView.setHasFixedSize(true);
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
@@ -103,7 +104,15 @@ public class CartActivity extends AppCompatActivity {
                         .addListenerForSingleValueEvent(new ValueEventListener() {
                             @Override
                             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                                dataSnapshot.getRef().removeValue();
+                                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                                    if (snapshot.child("client_id").getValue().equals(getIntent().getStringExtra("client_id"))) {
+                                        snapshot.getRef().removeValue();
+                                    }
+                                }
+
+                                Toast.makeText(getApplicationContext(), "All item has been removed", Toast.LENGTH_SHORT).show();
+                                cartAdapter.notifyDataSetChanged();
+
                             }
 
                             @Override
@@ -111,24 +120,25 @@ public class CartActivity extends AppCompatActivity {
 
                             }
                         });
-                cartModelList.clear();
-                cartAdapter.notifyDataSetChanged();
-                Snackbar.make(cartLayout, "All item has been removed", 5000).show();
+
             });
             builder.setNegativeButton("CANCEL", (dialog, which) -> dialog.cancel());
             builder.create().show();
         });
 
         startShopping.setOnClickListener(v -> {
-            Intent intent = new Intent(CartActivity.this, HomeActivity.class);
-            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            startActivity(intent);
+//            Intent intent = new Intent(CartActivity.this, HomeActivity.class);
+//            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+//            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+//            startActivity(intent);
             finish();
         });
 
         checkout.setOnClickListener(v -> {
-            startActivity(new Intent(this, DeliveryPaymentsActivity.class));
+            Intent intent = new Intent(this, DeliveryPaymentsActivity.class);
+            intent.putExtra("client_id", getIntent().getStringExtra("client_id"));
+            intent.putExtra("client_address", getIntent().getStringExtra("client_address"));
+            startActivity(intent);
 
 //            android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(this, R.style.full_screen_dialog1);
 //
@@ -145,13 +155,188 @@ public class CartActivity extends AppCompatActivity {
         dialogFragment.show(getSupportFragmentManager(), "cart_activity");
         dialogFragment.setCancelable(false);
 
+//        FirebaseDatabase.getInstance().getReference().child("carts")
+//                .orderByChild("customer_id").equalTo(new Session(getApplicationContext()).getId())
+//                .addValueEventListener(new ValueEventListener() {
+//                    @Override
+//                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+//
+//                        cartModelList.clear();
+//                        cartProductModelList.clear();
+//
+//                        if (!dataSnapshot.exists()) {
+//                            emptyCart.setVisibility(View.VISIBLE);
+//                            selectAllLayout.setVisibility(View.GONE);
+//                            recyclerView.setVisibility(View.GONE);
+//                            checkout.setEnabled(false);
+//                            dialogFragment.dismiss();
+//
+//                            String s = "₱<b>0.00</b>";
+//                            total.setText(Html.fromHtml(s));
+//                        } else {
+//                            emptyCart.setVisibility(View.GONE);
+//                            selectAllLayout.setVisibility(View.VISIBLE);
+//                            recyclerView.setVisibility(View.VISIBLE);
+//                            checkout.setEnabled(true);
+//
+//                            for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+//
+//                                for (DataSnapshot snap : snapshot.getChildren()) {
+//
+//                                    for (DataSnapshot s : snap.getChildren()) {
+//
+//                                        for (DataSnapshot d : s.getChildren()) {
+//
+//                                            FirebaseDatabase.getInstance().getReference().child("products")
+//                                                    .orderByChild("client_id").equalTo(String.valueOf(snapshot.child("client_id").getValue()))
+//                                                    .addValueEventListener(new ValueEventListener() {
+//                                                        @Override
+//                                                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+//
+//                                                            for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+//                                                                for (DataSnapshot snap : snapshot.child("types").getChildren()) {
+//                                                                    if (Objects.equals(snap.getKey(), d.getKey())) {
+//
+//                                                                        Object refillQuantity = 0;
+//                                                                        Object refillPrice = 0;
+//                                                                        Object purchaseQuantity = 0;
+//                                                                        Object purchasePrice = 0;
+//
+//
+//                                                                        for (DataSnapshot e : d.getChildren()) {
+//
+//                                                                            if (Objects.requireNonNull(e.getKey()).equals("refill")) {
+//                                                                                refillQuantity = e.child("quantity").getValue();
+//                                                                               // refillPrice = e.child("price").getValue();
+//                                                                            }
+//
+//                                                                            if (Objects.requireNonNull(e.getKey()).equals("purchase")) {
+//                                                                                purchaseQuantity = e.child("quantity").getValue();
+//                                                                                //purchasePrice = e.child("price").getValue();
+//                                                                            }
+//
+//                                                                        }
+//
+//                                                                        for (DataSnapshot j : snap.child("service_types").getChildren()) {
+//                                                                            if (Objects.equals(j.getKey(), "refill")) {
+//                                                                                refillPrice = j.child("price").getValue();
+//                                                                            }
+//
+//                                                                            if (Objects.equals(j.getKey(), "sale")) {
+//                                                                                purchasePrice = j.child("price").getValue();
+//                                                                            }
+//                                                                        }
+//
+//                                                                        cartProductModelList.add(new CartProductModel(
+//                                                                                String.valueOf(snapshot.child("client_id").getValue()),
+//                                                                                String.valueOf(s.getKey()),
+//                                                                                String.valueOf(d.getKey()),
+//                                                                                String.valueOf(refillQuantity),
+//                                                                                String.valueOf(purchaseQuantity),
+//                                                                                String.valueOf(d.child("water_type").getValue()),
+//                                                                                String.valueOf(refillPrice),
+//                                                                                String.valueOf(purchasePrice),
+//                                                                                String.valueOf(snap.child("product_image").getValue()),
+//                                                                                String.valueOf(d.child("subtotal").getValue())
+//                                                                        ));
+//
+//                                                                        dialogFragment.dismiss();
+//
+//                                                                    }
+//                                                                }
+//                                                            }
+//
+//                                                            cartAdapter.notifyDataSetChanged();
+//
+//                                                        }
+//
+//                                                        @Override
+//                                                        public void onCancelled(@NonNull DatabaseError databaseError) {
+//
+//                                                        }
+//                                                    });
+//
+//                                        }
+//
+//                                    }
+//                                }
+//
+//                                FirebaseDatabase.getInstance().getReference().child("clients")
+//                                        .orderByChild("client_id").equalTo(String.valueOf(snapshot.child("client_id").getValue()))
+//                                        .addValueEventListener(new ValueEventListener() {
+//                                            @Override
+//                                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+//
+//                                                for (DataSnapshot data : dataSnapshot.getChildren()) {
+//
+//                                                    cartModelList.add(new CartModel(
+//                                                            String.valueOf(snapshot.child("client_id").getValue()),
+//                                                            String.valueOf(data.child("company").getValue()),
+//                                                            String.valueOf(data.child("minimum_order").getValue()),
+//                                                            String.valueOf(data.child("maximum_order").getValue()),
+//                                                            String.valueOf(data.child("shipping_fee").getValue())
+//
+//                                                    ));
+//
+//                                                    dialogFragment.dismiss();
+//
+//                                                }
+//
+//                                                cartAdapter.notifyDataSetChanged();
+//
+//                                            }
+//
+//                                            @Override
+//                                            public void onCancelled(@NonNull DatabaseError databaseError) {
+//
+//                                            }
+//                                        });
+//                            }
+//                        }
+//
+//                        cartAdapter.notifyDataSetChanged();
+//
+//                    }
+//
+//                    @Override
+//                    public void onCancelled(@NonNull DatabaseError databaseError) {
+//
+//                    }
+//
+//
+//                });
+//
+//        cartAdapter = new CartAdapter(CartActivity.this, cartModelList, cartProductModelList, total, new CartAdapter.OnDataChangeListener() {
+//            @Override
+//            public void onChanged(double totalAmount) {
+//                String s = "₱<b>" + String.format(Locale.getDefault(), "%.2f", totalAmount) + "</b>";
+//                total.setText(Html.fromHtml(s));
+//            }
+//
+//            @Override
+//            public void isSelectedAll(boolean isChecked) {
+//                for (int i = 0; i < cartModelList.size(); i++) {
+//                    CartAdapter.CartViewHolder viewHolder = (CartAdapter.CartViewHolder) recyclerView.findViewHolderForAdapterPosition(i);
+//                    if (viewHolder != null) {
+//                        if (isChecked)
+//                            viewHolder.checkBox.setChecked(true);
+//                        else
+//                            viewHolder.checkBox.setChecked(false);
+//                    }
+//                }
+//
+//            }
+//        });
+
+
         FirebaseDatabase.getInstance().getReference().child("carts")
                 .orderByChild("customer_id").equalTo(new Session(getApplicationContext()).getId())
                 .addValueEventListener(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
-                        cartModelList.clear();
+                        int t = 0;
+
                         cartProductModelList.clear();
 
                         if (!dataSnapshot.exists()) {
@@ -161,130 +346,102 @@ public class CartActivity extends AppCompatActivity {
                             checkout.setEnabled(false);
                             dialogFragment.dismiss();
 
-                            String s = "₱<b>0.00</b>";
-                            total.setText(Html.fromHtml(s));
                         } else {
-                            emptyCart.setVisibility(View.GONE);
-                            selectAllLayout.setVisibility(View.VISIBLE);
-                            recyclerView.setVisibility(View.VISIBLE);
-                            checkout.setEnabled(true);
-
-
 
                             for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
 
+                                if (Objects.equals(snapshot.child("client_id").getValue(), getIntent().getStringExtra("client_id"))) {
 
-                                for (DataSnapshot snap : snapshot.getChildren()) {
+                                    emptyCart.setVisibility(View.GONE);
+                                    selectAllLayout.setVisibility(View.VISIBLE);
+                                    recyclerView.setVisibility(View.VISIBLE);
+                                    checkout.setEnabled(true);
 
-                                    for (DataSnapshot s : snap.getChildren()) {
+                                    for (DataSnapshot snap : snapshot.getChildren()) {
 
-                                        for (DataSnapshot d : s.getChildren()) {
-
-                                            FirebaseDatabase.getInstance().getReference().child("products")
-                                                    .orderByChild("client_id").equalTo(String.valueOf(snapshot.child("client_id").getValue()))
-                                                    .addValueEventListener(new ValueEventListener() {
-                                                        @Override
-                                                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-
-                                                            for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                                                                for (DataSnapshot snap : snapshot.child("types").getChildren()) {
-                                                                    if (Objects.equals(snap.getKey(), d.getKey())) {
-
-                                                                        Object refillQuantity = 0;
-                                                                        Object refillPrice = 0;
-                                                                        Object purchaseQuantity = 0;
-                                                                        Object purchasePrice = 0;
-
-
-                                                                        for (DataSnapshot e : d.getChildren()) {
-
-                                                                            if (Objects.requireNonNull(e.getKey()).equals("refill")) {
-                                                                                refillQuantity = e.child("quantity").getValue();
-                                                                               // refillPrice = e.child("price").getValue();
-                                                                            }
-
-                                                                            if (Objects.requireNonNull(e.getKey()).equals("purchase")) {
-                                                                                purchaseQuantity = e.child("quantity").getValue();
-                                                                                //purchasePrice = e.child("price").getValue();
-                                                                            }
-
-                                                                        }
-
-                                                                        for (DataSnapshot j : snap.child("service_types").getChildren()) {
-                                                                            if (Objects.equals(j.getKey(), "refill")) {
-                                                                                refillPrice = j.child("price").getValue();
-                                                                            }
-
-                                                                            if (Objects.equals(j.getKey(), "sale")) {
-                                                                                purchasePrice = j.child("price").getValue();
-                                                                            }
-                                                                        }
-
-                                                                        cartProductModelList.add(new CartProductModel(
-                                                                                String.valueOf(snapshot.child("client_id").getValue()),
-                                                                                String.valueOf(s.getKey()),
-                                                                                String.valueOf(d.getKey()),
-                                                                                String.valueOf(refillQuantity),
-                                                                                String.valueOf(purchaseQuantity),
-                                                                                String.valueOf(d.child("water_type").getValue()),
-                                                                                String.valueOf(refillPrice),
-                                                                                String.valueOf(purchasePrice),
-                                                                                String.valueOf(snap.child("product_image").getValue()),
-                                                                                String.valueOf(d.child("subtotal").getValue())
-                                                                        ));
-
-                                                                        dialogFragment.dismiss();
-                                                                        cartAdapter.notifyDataSetChanged();
-
-                                                                    }
-                                                                }
-                                                            }
-
-                                                        }
-
-                                                        @Override
-                                                        public void onCancelled(@NonNull DatabaseError databaseError) {
-
-                                                        }
-                                                    });
-
+                                        if(snap.getChildrenCount() == 0) {
+                                            emptyCart.setVisibility(View.VISIBLE);
+                                            selectAllLayout.setVisibility(View.GONE);
+                                            recyclerView.setVisibility(View.GONE);
+                                            checkout.setEnabled(false);
+                                            dialogFragment.dismiss();
                                         }
+                                        else {
 
-                                    }
-                                }
+                                            emptyCart.setVisibility(View.GONE);
+                                            selectAllLayout.setVisibility(View.VISIBLE);
+                                            recyclerView.setVisibility(View.VISIBLE);
+                                            checkout.setEnabled(true);
 
-                                FirebaseDatabase.getInstance().getReference().child("clients")
-                                        .orderByChild("client_id").equalTo(String.valueOf(snapshot.child("client_id").getValue()))
-                                        .addValueEventListener(new ValueEventListener() {
-                                            @Override
-                                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                            for (DataSnapshot s : snap.getChildren()) {
 
-                                                for (DataSnapshot data : dataSnapshot.getChildren()) {
+                                                for (DataSnapshot d : s.getChildren()) {
 
-                                                    cartModelList.add(new CartModel(
+                                                    Object refillQuantity = 0;
+                                                    Object refillPrice = 0;
+                                                    Object purchaseQuantity = 0;
+                                                    Object purchasePrice = 0;
+                                                    Object subtotal = 0;
+
+
+                                                    if (Objects.equals(d.child("status").getValue(), "check")) {
+                                                        t += Integer.parseInt(String.valueOf(d.child("subtotal").getValue()));
+                                                        subtotal = Integer.parseInt(String.valueOf(d.child("subtotal").getValue()));
+                                                    }
+
+
+                                                    for (DataSnapshot e : d.getChildren()) {
+
+                                                        if (Objects.requireNonNull(e.getKey()).equals("refill")) {
+                                                            refillQuantity = e.child("quantity").getValue();
+                                                            refillPrice = e.child("price").getValue();
+                                                        }
+
+                                                        if (Objects.requireNonNull(e.getKey()).equals("purchase")) {
+                                                            purchaseQuantity = e.child("quantity").getValue();
+                                                            purchasePrice = e.child("price").getValue();
+                                                        }
+
+                                                    }
+
+                                                    cartProductModelList.add(new CartProductModel(
                                                             String.valueOf(snapshot.child("client_id").getValue()),
-                                                            String.valueOf(data.child("company").getValue()),
-                                                            String.valueOf(data.child("minimum_order").getValue()),
-                                                            String.valueOf(data.child("maximum_order").getValue()),
-                                                            String.valueOf(data.child("shipping_fee").getValue())
+                                                            String.valueOf(s.getKey()),
+                                                            String.valueOf(d.getKey()),
+                                                            String.valueOf(refillQuantity),
+                                                            String.valueOf(purchaseQuantity),
+                                                            String.valueOf(d.child("water_type").getValue()),
+                                                            String.valueOf(refillPrice),
+                                                            String.valueOf(purchasePrice),
+                                                            String.valueOf(d.child("image").getValue()),
+                                                            String.valueOf(subtotal),
+                                                            String.valueOf(d.child("min_order").getValue()),
+                                                            String.valueOf(d.child("max_order").getValue()),
+                                                            String.valueOf(d.child("status").getValue())
 
                                                     ));
 
                                                     dialogFragment.dismiss();
-                                                    cartAdapter.notifyDataSetChanged();
 
                                                 }
-
                                             }
 
-                                            @Override
-                                            public void onCancelled(@NonNull DatabaseError databaseError) {
+                                        }
+                                    }
 
-                                            }
-                                        });
+                                }
+                                else {
+                                    emptyCart.setVisibility(View.VISIBLE);
+                                    selectAllLayout.setVisibility(View.GONE);
+                                    recyclerView.setVisibility(View.GONE);
+                                    checkout.setEnabled(false);
+                                    dialogFragment.dismiss();
+                                }
                             }
                         }
 
+                        String st = "₱<b>"+t+ ".00</b>";
+                        total.setText(Html.fromHtml(st));
 
                     }
 
@@ -297,7 +454,7 @@ public class CartActivity extends AppCompatActivity {
                 });
 
 
-        cartAdapter = new CartAdapter(CartActivity.this, cartModelList, cartProductModelList, new CartAdapter.OnDataChangeListener() {
+        cartAdapter = new CartAdapter(CartActivity.this, cartProductModelList, new CartAdapter.OnDataChangeListener() {
             @Override
             public void onChanged(double totalAmount) {
                 String s = "₱<b>" + String.format(Locale.getDefault(), "%.2f", totalAmount) + "</b>";
@@ -306,15 +463,18 @@ public class CartActivity extends AppCompatActivity {
 
             @Override
             public void isSelectedAll(boolean isChecked) {
-                for (int i = 0; i < cartModelList.size(); i++) {
+                for (int i = 0; i < cartProductModelList.size(); i++) {
                     CartAdapter.CartViewHolder viewHolder = (CartAdapter.CartViewHolder) recyclerView.findViewHolderForAdapterPosition(i);
                     if (viewHolder != null) {
-                        if (isChecked)
-                            viewHolder.checkBox.setChecked(true);
-                        else
-                            viewHolder.checkBox.setChecked(false);
+                        if (isChecked) {
+                            viewHolder.checkBoxes.setChecked(true);
+                        }
+                        else {
+                            viewHolder.checkBoxes.setChecked(false);
+                        }
                     }
                 }
+
             }
         });
 
@@ -323,7 +483,6 @@ public class CartActivity extends AppCompatActivity {
         checkBoxAll.setChecked(true);
 
     }
-
 
     @Override
     public void onSaveInstanceState(Bundle outState, PersistableBundle outPersistentState) {

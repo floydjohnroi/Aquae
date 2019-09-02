@@ -29,11 +29,21 @@ public class CartProductAdapter extends RecyclerView.Adapter<CartProductAdapter.
     private Context context;
     private List<CartProductModel> cartProductModelList;
     private Map<String, Object> datas;
+    private TextView total;
 
-    public CartProductAdapter(Context context, List<CartProductModel> cartProductModelList, Map<String, Object> datas) {
+    private OnDataChangeListener mOnDataChangeListener;
+
+    public interface OnDataChangeListener {
+        void onChanged(double totalAmount);
+        void isSelectedAll(boolean isChecked);
+    }
+
+    public CartProductAdapter(Context context, List<CartProductModel> cartProductModelList, Map<String, Object> datas, TextView total, OnDataChangeListener onDataChangeListener) {
         this.context = context;
         this.cartProductModelList = cartProductModelList;
         this.datas = datas;
+        this.total = total;
+        mOnDataChangeListener = onDataChangeListener;
     }
 
 
@@ -49,6 +59,13 @@ public class CartProductAdapter extends RecyclerView.Adapter<CartProductAdapter.
     @Override
     public void onBindViewHolder(@NonNull CartProductHolder holder, int position) {
         final CartProductModel cartProductModel = cartProductModelList.get(position);
+
+        String s = String.valueOf(total.getText()).substring(1);
+        String finalTotal = s.replace(".00", "");
+        final int[] t = {Integer.parseInt(finalTotal)};
+
+
+        Log.d("TEST", ""+t[0]);
 
         holder.product.setText(capitalize(cartProductModel.getProduct()));
 
@@ -97,11 +114,13 @@ public class CartProductAdapter extends RecyclerView.Adapter<CartProductAdapter.
 
             i--;
 
-            //sub = sub - Integer.parseInt(refillPrice.getText().toString());
             holder.quantityRefill.setText(String.valueOf(i));
-            //String s12 = "\u20B1<b>"+sub+".00</b>";
-            //subtotal.setText(Html.fromHtml(s12));
-           // mOnDataChangeListener.onChanged(i);
+
+            t[0] = t[0] - Integer.parseInt(String.valueOf(holder.refillPrice.getText()).replace("₱", ""));
+
+            mOnDataChangeListener.onChanged(t[0]);
+
+
 
             if (i == Integer.parseInt(String.valueOf(datas.get("min_order")))) {
                 holder.minusRefill.setEnabled(false);
@@ -112,19 +131,19 @@ public class CartProductAdapter extends RecyclerView.Adapter<CartProductAdapter.
 
         });
 
+
+
         holder.addRefill.setOnClickListener(v -> {
 
             int i = Integer.parseInt((String) holder.quantityRefill.getText());
 
             i++;
 
-            //subtotal = refillPrice * i;
-
-            //total = total + refillPrice;
-
-            // mOnDataChangeListener.onChanged(total);
-
             holder.quantityRefill.setText(String.valueOf(i));
+
+            t[0] = t[0] + Integer.parseInt(String.valueOf(holder.refillPrice.getText()).replace("₱", ""));
+
+            mOnDataChangeListener.onChanged(t[0]);
 
             holder.minusRefill.setEnabled(true);
 
@@ -169,9 +188,6 @@ public class CartProductAdapter extends RecyclerView.Adapter<CartProductAdapter.
 
             i++;
 
-            //subtotal = purchasePrice * i;
-
-            //total = total + purchasePrice;
 
             holder.quantityPurchase.setText(String.valueOf(i));
 
@@ -180,19 +196,6 @@ public class CartProductAdapter extends RecyclerView.Adapter<CartProductAdapter.
             if (i == Integer.parseInt(String.valueOf(datas.get("max_order")))) {
                 holder.addPurchase.setEnabled(false);
             }
-            //mOnDataChangeListener.onChanged(total);
-
-        });
-
-        //holder.checkBoxes.setChecked(true);
-
-        holder.checkBoxes.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            if (!isChecked) {
-                //total = total - Integer.parseInt(cartProductModel.getSubtotal());
-
-            }
-
-            //mOnDataChangeListener.onChanged(total);
 
         });
 
@@ -209,9 +212,16 @@ public class CartProductAdapter extends RecyclerView.Adapter<CartProductAdapter.
                                         public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                                             for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                                                 for (DataSnapshot snap : snapshot.child("products").getChildren()) {
-                                                    if (Objects.equals(snap.getKey(), cartProductModel.getProduct_id())) {
-                                                        snap.getRef().removeValue();
+
+                                                    if (snapshot.child("products").getChildrenCount() == 1) {
+                                                        snapshot.getRef().removeValue();
                                                     }
+                                                    else {
+                                                        if (Objects.equals(snap.getKey(), cartProductModel.getProduct_id())) {
+                                                            snap.getRef().removeValue();
+                                                        }
+                                                    }
+
                                                 }
                                             }
                                         }
@@ -231,6 +241,9 @@ public class CartProductAdapter extends RecyclerView.Adapter<CartProductAdapter.
                     }
                 }));
 
+        holder.checkBoxes.setChecked(true);
+
+
 
     }
 
@@ -238,6 +251,10 @@ public class CartProductAdapter extends RecyclerView.Adapter<CartProductAdapter.
     public int getItemCount() {
         return cartProductModelList.size();
     }
+
+    public void selectAll(){ mOnDataChangeListener.isSelectedAll(true); }
+
+    public void unselectAll(){ mOnDataChangeListener.isSelectedAll(false); }
 
     class CartProductHolder extends RecyclerView.ViewHolder {
 

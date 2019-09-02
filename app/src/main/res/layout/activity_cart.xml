@@ -33,16 +33,16 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="8dp"
-            app:cardElevation="2dp"
             app:cardBackgroundColor="@color/colorWhite"
+            app:cardCornerRadius="4dp"
             app:cardPreventCornerOverlap="false">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
+                android:layout_marginTop="0dp"
                 android:layout_marginRight="12dp"
-                android:layout_marginBottom="8dp"
+                android:layout_marginBottom="0dp"
                 android:layout_marginLeft="12dp"
                 android:orientation="horizontal">
 
@@ -51,20 +51,29 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="@string/select_all"
+                    android:text="SELECT ALL"
                     android:paddingHorizontal="8dp"
+                    android:textSize="14sp"
                     android:textColor="@color/colorText" />
 
-                <ImageView
+<!--                <ImageView-->
+<!--                    android:id="@+id/removeAll"-->
+<!--                    android:layout_width="wrap_content"-->
+<!--                    android:layout_height="wrap_content"-->
+<!--                    android:layout_gravity="center"-->
+<!--                    android:layout_marginStart="16dp"-->
+<!--                    android:layout_marginEnd="8dp"-->
+<!--                    android:src="@drawable/icon_delete_sweep" />-->
+
+                <com.google.android.material.button.MaterialButton
+                    style="@style/Widget.MaterialComponents.Button.TextButton"
                     android:id="@+id/removeAll"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:layout_marginLeft="16dp"
-                    android:layout_marginStart="16dp"
-                    android:layout_marginRight="8dp"
-                    android:layout_marginEnd="8dp"
-                    android:src="@drawable/icon_delete_sweep" />
+                    android:text="REMOVE"
+                    android:textColor="@color/colorError"/>
+
+
 
             <!--<TextView-->
                     <!--android:id="@+id/removeAll"-->
@@ -90,8 +99,7 @@
         android:layout_height="0dp"
         android:background="@drawable/backdrop_light"
         android:clipToPadding="false"
-        android:paddingLeft="4dp"
-        android:paddingRight="4dp"
+        android:padding="4dp"
         app:layout_constraintBottom_toTopOf="@+id/checkoutLayout"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

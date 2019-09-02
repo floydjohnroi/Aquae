@@ -6,14 +6,15 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_margin="4dp"
-    app:cardElevation="2dp"
+    app:cardElevation="4dp"
     app:cardBackgroundColor="@color/colorWhite"
+    app:cardCornerRadius="4dp"
     app:cardPreventCornerOverlap="false">
 
     <ImageView
         android:id="@+id/storeImage"
         android:layout_width="match_parent"
-        android:layout_height="200dp"
+        android:layout_height="224dp"
         android:scaleType="centerCrop"
         android:adjustViewBounds="true" />
 
@@ -32,6 +33,16 @@
             android:gravity="center"
             android:textSize="16sp"
             android:textStyle="bold"
+            android:textColor="@color/colorWhite" />
+
+        <TextView
+            android:id="@+id/water_type"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:textAllCaps="true"
             android:textColor="@color/colorWhite" />
 
         <TextView
