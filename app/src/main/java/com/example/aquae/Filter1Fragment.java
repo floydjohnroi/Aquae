@@ -91,8 +91,6 @@ public class Filter1Fragment extends Fragment {
                     }
                 });
 
-
-
         return view;
     }
 }

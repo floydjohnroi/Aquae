@@ -30,6 +30,13 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.snackbar.Snackbar;
@@ -38,6 +45,9 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -45,10 +55,12 @@ import org.xml.sax.SAXException;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -57,6 +69,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.StringTokenizer;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -87,6 +100,8 @@ public class PlaceOrderActivity extends AppCompatActivity {
     Map<String, Object> map = new HashMap<>();
 
     public Double toLatitude, toLongitude, fromLatitude, fromLongitude;
+
+    int newT = 0;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -128,16 +143,18 @@ public class PlaceOrderActivity extends AppCompatActivity {
         linearLayoutManager.setStackFromEnd(true);
         recyclerView.setLayoutManager(linearLayoutManager);
 
-        ToGeoLocation.getAddress(getIntent().getStringExtra("delivery_address"), getApplicationContext(), new ToGeoHandler());
-
-        FromGeoLocation.getAddress(getIntent().getStringExtra("client_address"), getApplicationContext(), new FromGeoHandler());
+//        ToGeoLocation.getAddress(getIntent().getStringExtra("delivery_address"), getApplicationContext());
+//
+//        FromGeoLocation.getAddress(getIntent().getStringExtra("client_address"), getApplicationContext());
 
         //new GetDistanceAsyncTask(17.4511252, 78.3748113, 17.4200841, 78.4442193);
 
+//         fromLongitude = FromGeoLocation.getFromGeoLocationBundle().getDouble("longitude");
+//        toLongitude = ToGeoLocation.getToGeoLocationBundle().getDouble("longitude");
+//        fromLatitude = FromGeoLocation.getFromGeoLocationBundle().getDouble("latitude");
+//        toLatitude = ToGeoLocation.getToGeoLocationBundle().getDouble("latitude");
 
-//        String dd = getDistance(10.2893094, 123.8674849, 10.2992269, 124.0005968);
-//
-//        Toast.makeText(this, ""+dd, Toast.LENGTH_LONG).show();
+
 
 
         orderTime.setText(new SimpleDateFormat("MMM dd, yyyy | hh:mm a", Locale.getDefault()).format(new Date()));
@@ -180,6 +197,7 @@ public class PlaceOrderActivity extends AppCompatActivity {
             payment = method.getText().toString();
 
         });
+
 
         placeOrder.setOnClickListener(v -> {
 
@@ -264,25 +282,25 @@ public class PlaceOrderActivity extends AppCompatActivity {
                                         public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                                             dataSnapshot.getRef().child(id).setValue(order);
 
-                                            FirebaseDatabase.getInstance().getReference().child("customers")
-                                                    .orderByChild("customer_id").equalTo(new Session(getApplicationContext()).getId())
-                                                    .addListenerForSingleValueEvent(new ValueEventListener() {
-                                                        @Override
-                                                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                                                            for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+//                                            FirebaseDatabase.getInstance().getReference().child("customers")
+//                                                    .orderByChild("customer_id").equalTo(new Session(getApplicationContext()).getId())
+//                                                    .addListenerForSingleValueEvent(new ValueEventListener() {
+//                                                        @Override
+//                                                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+//                                                            for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
 
-                                                                int w = Integer.parseInt(String.valueOf(snapshot.child("wallet").getValue())) - Integer.parseInt(tps);
-                                                                snapshot.getRef().child("wallet").setValue(String.valueOf(w));
+//                                                                int w = Integer.parseInt(String.valueOf(snapshot.child("wallet").getValue())) - Integer.parseInt(tps);
+//                                                                snapshot.getRef().child("wallet").setValue(String.valueOf(w));
 
-                                                                FirebaseDatabase.getInstance().getReference().child("clients")
-                                                                        .orderByChild("client_id").equalTo(getIntent().getStringExtra("client_id"))
-                                                                        .addListenerForSingleValueEvent(new ValueEventListener() {
-                                                                            @Override
-                                                                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                                                                                for (DataSnapshot snapshot1 : dataSnapshot.getChildren()) {
-
-                                                                                    int w1 = Integer.parseInt(String.valueOf(snapshot1.child("wallet").getValue())) + Integer.parseInt(tps);
-                                                                                    snapshot1.getRef().child("wallet").setValue(String.valueOf(w1));
+//                                                                FirebaseDatabase.getInstance().getReference().child("clients")
+//                                                                        .orderByChild("client_id").equalTo(getIntent().getStringExtra("client_id"))
+//                                                                        .addListenerForSingleValueEvent(new ValueEventListener() {
+//                                                                            @Override
+//                                                                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+//                                                                                for (DataSnapshot snapshot1 : dataSnapshot.getChildren()) {
+//
+//                                                                                    int w1 = Integer.parseInt(String.valueOf(snapshot1.child("wallet").getValue())) + Integer.parseInt(tps);
+//                                                                                    snapshot1.getRef().child("wallet").setValue(String.valueOf(w1));
 
                                                                                     FirebaseDatabase.getInstance().getReference().child("carts")
                                                                                             .orderByChild("customer_id").equalTo(new Session(getApplicationContext()).getId())
@@ -310,29 +328,29 @@ public class PlaceOrderActivity extends AppCompatActivity {
                                                                                                 }
                                                                                             });
 
-                                                                                }
-                                                                            }
-
-                                                                            @Override
-                                                                            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-                                                                            }
-                                                                        });
+//                                                                                }
+//                                                                            }
+//
+//                                                                            @Override
+//                                                                            public void onCancelled(@NonNull DatabaseError databaseError) {
+//
+//                                                                            }
+//                                                                        });
 
                                                                 Toast.makeText(PlaceOrderActivity.this, "ORDER PLACED", Toast.LENGTH_SHORT).show();
                                                                 startActivity(new Intent(PlaceOrderActivity.this, HomeActivity.class));
                                                                 finish();
-                                                                Toast.makeText(PlaceOrderActivity.this, "NEW BALANCE : "+w, Toast.LENGTH_LONG).show();
-
-                                                            }
-
-                                                        }
-
-                                                        @Override
-                                                        public void onCancelled(@NonNull DatabaseError databaseError) {
-
-                                                        }
-                                                    });
+                                                                //Toast.makeText(PlaceOrderActivity.this, "NEW BALANCE : "+w, Toast.LENGTH_LONG).show();
+//
+//                                                            }
+//
+//                                                        }
+//
+//                                                        @Override
+//                                                        public void onCancelled(@NonNull DatabaseError databaseError) {
+//
+//                                                        }
+//                                                    });
 
                                         }
 
@@ -512,9 +530,42 @@ public class PlaceOrderActivity extends AppCompatActivity {
         recyclerView.setAdapter(new CheckOutProductAdapter(PlaceOrderActivity.this, checkOutProductModelList));
 
 
+        RequestQueue queue = Volley.newRequestQueue(this);
+        String origin =  getIntent().getStringExtra("client_address");
+        String destination =  getIntent().getStringExtra("delivery_address");
+        String url = "https://maps.googleapis.com/maps/api/directions/json?origin="+origin+"&destination="+destination+"&avoid=tolls|highways&key=AIzaSyAuXUoYwfNp7P41GYhP3OShn3MAFd0s_CY";
+        url = url.replaceAll(" ", "%20");
+
+        String finalUrl = url;
+        StringRequest stringRequest = new StringRequest(Request.Method.GET, url, response -> {
+            try {
+                Log.d("jsonObject", finalUrl);
+
+                JSONObject jsonObject = new JSONObject(response);
+                JSONArray legs = jsonObject.getJSONArray("routes").getJSONObject(0).getJSONArray("legs");
+                for (int i = 0; i < legs.length(); i++) {
+                    JSONObject leg = legs.getJSONObject(i);
+                    distance.setText(leg.getJSONObject("distance").getString("text"));
+
+                    String[] dst = String.valueOf(distance.getText()).split("\\.");
+                    String tp = String.valueOf(total.getText()).replace("₱", "");
+                    String tps = tp.replace(".00", "");
+
+                    newT = (Integer.parseInt(String.valueOf(shipfee.getText()).replace("₱", "")) * Integer.parseInt(dst[0])) + Integer.parseInt(tps);
+                    String ft = "₱<b>" + newT + ".00</b>";
+                    total.setText(Html.fromHtml(ft));
+                }
+
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }, error -> {
+            Log.d("error", error.toString());
+        });
+
+        queue.add(stringRequest);
 
 
-        //Toast.makeText(getApplicationContext(), ""+lat.getText(), Toast.LENGTH_SHORT).show();
 
     }
 
@@ -523,54 +574,6 @@ public class PlaceOrderActivity extends AppCompatActivity {
         onBackPressed();
         return true;
     }
-
-    @SuppressLint("HandlerLeak")
-    private class ToGeoHandler extends Handler {
-
-        @Override
-        public void handleMessage(Message msg) {
-
-
-            switch (msg.what) {
-                case 1:
-                    Bundle bundle = msg.getData();
-                    toLatitude = bundle.getDouble("latitude");
-                    toLongitude = bundle.getDouble("longitude");
-                    break;
-                default:
-                    toLatitude = null;
-                    toLongitude = null;
-            }
-
-
-//            Toast.makeText(getApplicationContext(), toLatitude+" "+toLongitude, Toast.LENGTH_SHORT).show();
-
-            Log.d("TEST", toLatitude+" "+toLongitude);
-        }
-    }
-
-    @SuppressLint("HandlerLeak")
-    private class FromGeoHandler extends Handler {
-
-        @Override
-        public void handleMessage(Message msg) {
-
-            switch (msg.what) {
-                case 1:
-                    Bundle bundle = msg.getData();
-                    fromLatitude = bundle.getDouble("latitude");
-                    fromLongitude = bundle.getDouble("longitude");
-                    break;
-                default:
-                    fromLatitude = null;
-                    fromLongitude = null;
-            }
-
-            Log.d("TEST1", fromLatitude+" "+fromLongitude);
-            //Toast.makeText(getApplicationContext(), fromLatitude+" "+fromLongitude, Toast.LENGTH_SHORT).show();
-        }
-    }
-
 
     @SuppressLint("DefaultLocale")
     public static String getDistance(double lat_a, double lng_a, double lat_b, double lng_b) {

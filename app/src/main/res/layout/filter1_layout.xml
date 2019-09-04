@@ -8,7 +8,7 @@
     android:layout_margin="4dp"
     app:cardElevation="4dp"
     app:cardBackgroundColor="@color/colorWhite"
-    app:cardCornerRadius="4dp"
+    app:cardCornerRadius="8dp"
     app:cardPreventCornerOverlap="false">
 
     <ImageView

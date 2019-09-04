@@ -59,6 +59,9 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
     boolean flag;
     boolean doubleBackToExitPressedOnce = false;
 
+
+    FCMNotification fcmNotification;
+
     Toast toast;
 
     public static final String CHANNEL_ID = "AQUAE";
@@ -72,6 +75,11 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
 
         databaseReference = FirebaseDatabase.getInstance().getReference();
         session = new Session(getApplicationContext());
+
+        fcmNotification = new FCMNotification(this);
+
+        startService(new Intent(this, PusherService.class));
+//        fcmNotification.getToken();
 
         FirebaseInstanceId.getInstance().getInstanceId()
                 .addOnCompleteListener(new OnCompleteListener<InstanceIdResult>() {
@@ -87,7 +95,7 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
 
                         // Log and toast
                         Log.d("TEST", token);
-                        Toast.makeText(HomeActivity.this, token, Toast.LENGTH_SHORT).show();
+                        //Toast.makeText(HomeActivity.this, token, Toast.LENGTH_SHORT).show();
                     }
                 });
 
@@ -315,5 +323,6 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
 
         return stringBuilder.toString();
     }
+
 
 }
