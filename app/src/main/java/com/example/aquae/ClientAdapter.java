@@ -1,5 +1,6 @@
 package com.example.aquae;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
@@ -18,12 +19,15 @@ public class ClientAdapter extends RecyclerView.Adapter<ClientAdapter.ClientView
 
     private Context context;
     private List<ClientModel> clientModelList;
+    String isForDelivery;
 
     String finalStr;
+    String[] str;
 
-    public ClientAdapter(Context context, List<ClientModel> clientModelList) {
+    public ClientAdapter(Context context, List<ClientModel> clientModelList, String isForDelivery) {
         this.context = context;
         this.clientModelList = clientModelList;
+        this.isForDelivery = isForDelivery;
     }
 
     @NonNull
@@ -44,9 +48,16 @@ public class ClientAdapter extends RecyclerView.Adapter<ClientAdapter.ClientView
 
         finalStr = clientModel.getWater_type().substring(0, clientModel.getWater_type().length()-2);
 
-        finalStr = finalStr.substring(0, finalStr.lastIndexOf(","))+" &"+finalStr.substring(finalStr.lastIndexOf(",")+1);
+        str = clientModel.getWater_type().split(", ");
 
-        holder.waterType.setText(finalStr);
+        if (str.length > 1) {
+            finalStr = finalStr.substring(0, finalStr.lastIndexOf(","))+" &"+finalStr.substring(finalStr.lastIndexOf(",")+1);
+            holder.waterType.setText(finalStr);
+        }
+        else {
+            holder.waterType.setText(finalStr);
+        }
+
 
         holder.station.setOnClickListener(v -> {
 
@@ -57,10 +68,10 @@ public class ClientAdapter extends RecyclerView.Adapter<ClientAdapter.ClientView
             intent.putExtra("email", clientModel.getEmail());
             intent.putExtra("contact", clientModel.getContact());
             intent.putExtra("storeImage", clientModel.getStoreImage());
-            intent.putExtra("water_type", clientModel.getWater_type());
+            intent.putExtra("water_type", finalStr);
             intent.putExtra("no_of_filter", clientModel.getNo_of_filter());
             intent.putExtra("ship_fee", clientModel.getShip_fee());
-
+            intent.putExtra("isForDelivery", isForDelivery);
             context.startActivity(intent);
         });
 

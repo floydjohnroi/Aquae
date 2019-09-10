@@ -4,19 +4,14 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.MenuItemCompat;
 import androidx.fragment.app.DialogFragment;
-import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.LinearSnapHelper;
 import androidx.recyclerview.widget.RecyclerView;
 import android.annotation.TargetApi;
 import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
-import android.provider.ContactsContract;
 import android.text.Html;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -24,19 +19,14 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
-import android.view.animation.AccelerateDecelerateInterpolator;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.appcompat.widget.Toolbar;
-import androidx.recyclerview.widget.SnapHelper;
-import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
 import com.google.android.material.card.MaterialCardView;
 import com.google.firebase.database.DataSnapshot;
@@ -47,8 +37,6 @@ import com.google.firebase.database.ValueEventListener;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -66,6 +54,7 @@ public class ClientActivity extends AppCompatActivity {
     DatabaseReference databaseReference;
     ImageView storeImage;
     LinearLayout noProductAvailable;
+    String isForDelivery;
 
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     @Override
@@ -73,10 +62,9 @@ public class ClientActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
         setContentView(R.layout.activity_client);
-
+        isForDelivery = getIntent().getStringExtra("isForDelivery");
         MaterialCardView cardView = findViewById(R.id.materialCardView4);
         cardView.setBackgroundResource(R.drawable.card_background);
-
         toolbarCard = findViewById(R.id.toolbarCard);
         toolbar = findViewById(R.id.toolbar);
         toolbarTitle = findViewById(R.id.title);
@@ -114,9 +102,7 @@ public class ClientActivity extends AppCompatActivity {
 
         company.setText(getIntent().getStringExtra("company"));
 
-        String finalStr = getIntent().getStringExtra("water_type").substring(0, getIntent().getStringExtra("water_type").length()-2);
-        finalStr = finalStr.substring(0, finalStr.lastIndexOf(","))+" &"+finalStr.substring(finalStr.lastIndexOf(",")+1);
-        type.setText(finalStr);
+        type.setText(getIntent().getStringExtra("water_type"));
 
         address.setText(getIntent().getStringExtra("address"));
         email.setText(getIntent().getStringExtra("email"));
@@ -129,8 +115,8 @@ public class ClientActivity extends AppCompatActivity {
 
         shipfee.setText(Html.fromHtml(f));
 
-
-        String[] wt = getIntent().getStringExtra("water_type").split(", ");
+        String wts = getIntent().getStringExtra("water_type").replace(" & ", ", ");
+        String[] wt = wts.split(", ");
 
         waterTypes.setText(wt[0]);
 
@@ -139,6 +125,7 @@ public class ClientActivity extends AppCompatActivity {
         data.put("client_id", getIntent().getStringExtra("client_id"));
         data.put("water_type", String.valueOf(waterTypes.getText()));
         data.put("ship_fee", getIntent().getStringExtra("ship_fee"));
+        data.put("client_address", getIntent().getStringExtra("address"));
 
         waterTypes.setOnClickListener(v -> {
             View view = LayoutInflater.from(this).inflate(R.layout.custom_dialog_view, null);
@@ -245,7 +232,7 @@ public class ClientActivity extends AppCompatActivity {
                             noProductAvailable.setVisibility(View.GONE);
                         }
 
-                        recyclerView.setAdapter(new ProductAdapter(ClientActivity.this, productModelList, data));
+                        recyclerView.setAdapter(new ProductAdapter(ClientActivity.this, productModelList, data, isForDelivery));
 
                     }
 
@@ -267,7 +254,18 @@ public class ClientActivity extends AppCompatActivity {
         RelativeLayout cart = (RelativeLayout) MenuItemCompat.getActionView(item);
         ImageView cartIcon = cart.findViewById(R.id.cartIcon);
         final TextView badge = cart.findViewById(R.id.badge);
-        cartIcon.setImageDrawable(getResources().getDrawable(R.drawable.icon_cart_light));
+
+        String ref;
+
+        if ("isForDelivery".equals(isForDelivery)) {
+            cartIcon.setImageDrawable(getResources().getDrawable(R.drawable.icon_view_list_light));
+            ref = "deliveries";
+        }
+        else {
+            cartIcon.setImageDrawable(getResources().getDrawable(R.drawable.icon_cart_light));
+            ref = "carts";
+        }
+
         cartIcon.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -275,48 +273,30 @@ public class ClientActivity extends AppCompatActivity {
                 intent.putExtra("client", getIntent().getStringExtra("company"));
                 intent.putExtra("client_id", getIntent().getStringExtra("client_id"));
                 intent.putExtra("client_address", getIntent().getStringExtra("address"));
+                intent.putExtra("ship_fee", getIntent().getStringExtra("ship_fee"));
+                intent.putExtra("isForDelivery", isForDelivery);
                 startActivity(intent);
-
             }
         });
 
-        databaseReference.child("carts").orderByChild("customer_id").equalTo(new Session(getApplicationContext()).getId())
+        databaseReference.child(ref).orderByChild("customer_id").equalTo(new Session(getApplicationContext()).getId())
                 .addValueEventListener(new ValueEventListener() {
                     @TargetApi(Build.VERSION_CODES.KITKAT)
                     @Override
                     public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
-                        int c = 0;
-
                         for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                             if (Objects.equals(snapshot.child("client_id").getValue(), getIntent().getStringExtra("client_id"))) {
-                                for (DataSnapshot data : snapshot.getChildren()) {
-                                    for (DataSnapshot d : data.getChildren()) {
-                                        for (DataSnapshot e : d.getChildren()) {
-                                            for (DataSnapshot f : e.getChildren()) {
-                                                try {
-                                                    c += Integer.parseInt(String.valueOf(f.child("quantity").getValue()));
-                                                } catch (NumberFormatException nfe) {
-                                                    nfe.printStackTrace();
-                                                }
-                                            }
-                                        }
-                                    }
+                                if (Integer.parseInt(String.valueOf(snapshot.child("products").getChildrenCount())) < 1) {
+                                    badge.setVisibility(View.GONE);
+                                }
+                                else {
+                                    badge.setVisibility(View.VISIBLE);
+                                    badge.setText(String.valueOf(snapshot.child("products").getChildrenCount()));
                                 }
                             }
                         }
 
-                        if (c < 1) {
-                            badge.setVisibility(View.GONE);
-                        }
-                        else if (c > 9) {
-                            badge.setVisibility(View.VISIBLE);
-                            badge.setText("9+");
-                        }
-                        else {
-                            badge.setVisibility(View.VISIBLE);
-                            badge.setText(String.valueOf(c));
-                        }
                     }
 
                     @Override

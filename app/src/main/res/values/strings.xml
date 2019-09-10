@@ -20,6 +20,7 @@
     <string name="cart">Cart</string>
     <string name="search">Search</string>
     <string name="add_to_cart">ADD TO CART</string>
+    <string name="scheduled_delivery">Deliver</string>
     <string name="water_type">Water Type</string>
     <string name="refill">Refill</string>
     <string name="purchase">Purchase</string>
@@ -68,4 +69,5 @@
     <string name="wallet">Wallet</string>
     <string name="balance_php">Balance (PHP)</string>
     <string name="title_activity_maps">Map</string>
+    <string name="delivery_schedule">Delivery Schedule</string>
 </resources>

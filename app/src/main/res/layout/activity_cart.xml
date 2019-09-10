@@ -34,7 +34,7 @@
             android:layout_height="wrap_content"
             android:layout_margin="8dp"
             app:cardBackgroundColor="@color/colorWhite"
-            app:cardCornerRadius="4dp"
+            app:cardCornerRadius="8dp"
             app:cardPreventCornerOverlap="false">
 
             <LinearLayout
@@ -169,7 +169,6 @@
             android:paddingTop="14dp"
             android:paddingEnd="16dp"
             android:paddingBottom="14dp"
-            android:text="@string/checkout"
             android:textStyle="bold"
             app:cornerRadius="32dp"
             app:strokeColor="@drawable/stroke_color"

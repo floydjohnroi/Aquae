@@ -32,13 +32,15 @@ public class Filter1Fragment extends Fragment {
 //    FirebaseRecyclerOptions<ClientModel> options;
 //    FirebaseRecyclerAdapter<ClientModel, ClientAdapter> adapter;
     List<ClientModel> clientModelList = new ArrayList<>();
+    String isForDelivery;
+
 
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable final ViewGroup container, @Nullable final Bundle savedInstanceState) {
         final View view =  inflater.inflate(R.layout.fragment_filter1, container, false);
-
+        isForDelivery = null != getArguments() ? getArguments().getString("isForDelivery") : "" ;
         recyclerView = view.findViewById(R.id.recyclerView);
 
         recyclerView.setHasFixedSize(true);
@@ -81,7 +83,7 @@ public class Filter1Fragment extends Fragment {
 
                         }
 
-                        recyclerView.setAdapter(new ClientAdapter(getContext(), clientModelList));
+                        recyclerView.setAdapter(new ClientAdapter(getContext(), clientModelList, isForDelivery));
 
                     }
 

@@ -37,6 +37,7 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.snackbar.Snackbar;
@@ -79,7 +80,7 @@ public class PlaceOrderActivity extends AppCompatActivity {
 
     Toolbar toolbar;
     MaterialCardView toolbarCard;
-    TextView toolbarTitle, orderTime, location, notes, client, km, distance, shipfee, total;
+    TextView toolbarTitle, orderTime, location, notes, client, km, distance, shipfee, total, subtotal, delivery_fee;
     RadioGroup paymentMethod;
     RadioButton method;
     String payment;
@@ -98,10 +99,7 @@ public class PlaceOrderActivity extends AppCompatActivity {
     Map<String, Object> maps = new HashMap<>();
 
     Map<String, Object> map = new HashMap<>();
-
-    public Double toLatitude, toLongitude, fromLatitude, fromLongitude;
-
-    int newT = 0;
+    
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -124,6 +122,8 @@ public class PlaceOrderActivity extends AppCompatActivity {
         distance = findViewById(R.id.distance);
         shipfee = findViewById(R.id.shipfee);
         total = findViewById(R.id.total);
+        subtotal = findViewById(R.id.subtotal);
+        delivery_fee = findViewById(R.id.delivery_fee);
 
         setSupportActionBar(toolbar);
         (Objects.requireNonNull(getSupportActionBar())).setDisplayHomeAsUpEnabled(true);
@@ -142,19 +142,6 @@ public class PlaceOrderActivity extends AppCompatActivity {
         linearLayoutManager.setReverseLayout(true);
         linearLayoutManager.setStackFromEnd(true);
         recyclerView.setLayoutManager(linearLayoutManager);
-
-//        ToGeoLocation.getAddress(getIntent().getStringExtra("delivery_address"), getApplicationContext());
-//
-//        FromGeoLocation.getAddress(getIntent().getStringExtra("client_address"), getApplicationContext());
-
-        //new GetDistanceAsyncTask(17.4511252, 78.3748113, 17.4200841, 78.4442193);
-
-//         fromLongitude = FromGeoLocation.getFromGeoLocationBundle().getDouble("longitude");
-//        toLongitude = ToGeoLocation.getToGeoLocationBundle().getDouble("longitude");
-//        fromLatitude = FromGeoLocation.getFromGeoLocationBundle().getDouble("latitude");
-//        toLatitude = ToGeoLocation.getToGeoLocationBundle().getDouble("latitude");
-
-
 
 
         orderTime.setText(new SimpleDateFormat("MMM dd, yyyy | hh:mm a", Locale.getDefault()).format(new Date()));
@@ -203,6 +190,7 @@ public class PlaceOrderActivity extends AppCompatActivity {
 
             String tp = String.valueOf(total.getText()).replace("₱", "");
             String tps = tp.replace(".00", "");
+            String dfe = String.valueOf(delivery_fee.getText()).replace(".00", "");
 
             String id = FirebaseDatabase.getInstance().getReference().push().getKey();
 
@@ -216,7 +204,9 @@ public class PlaceOrderActivity extends AppCompatActivity {
             order.put("delivery_address", location.getText());
             order.put("items", items);
             order.put("status", "pending");
-
+            order.put("click", "1");
+            order.put("delivery_fee", dfe);
+            order.put("notes", getIntent().getStringExtra("notes"));
 
             if (payment.equals("Aquae Wallet")) {
                 View view = LayoutInflater.from(PlaceOrderActivity.this).inflate(R.layout.wallet_dialog_layout, null);
@@ -277,96 +267,83 @@ public class PlaceOrderActivity extends AppCompatActivity {
                         else {
 
                             FirebaseDatabase.getInstance().getReference().child("orders")
-                                    .addListenerForSingleValueEvent(new ValueEventListener() {
+                                    .child(id)
+                                    .setValue(order)
+                                    .addOnSuccessListener(new OnSuccessListener<Void>() {
                                         @Override
-                                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                                            dataSnapshot.getRef().child(id).setValue(order);
-
-//                                            FirebaseDatabase.getInstance().getReference().child("customers")
-//                                                    .orderByChild("customer_id").equalTo(new Session(getApplicationContext()).getId())
-//                                                    .addListenerForSingleValueEvent(new ValueEventListener() {
-//                                                        @Override
-//                                                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-//                                                            for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-
-//                                                                int w = Integer.parseInt(String.valueOf(snapshot.child("wallet").getValue())) - Integer.parseInt(tps);
-//                                                                snapshot.getRef().child("wallet").setValue(String.valueOf(w));
-
-//                                                                FirebaseDatabase.getInstance().getReference().child("clients")
-//                                                                        .orderByChild("client_id").equalTo(getIntent().getStringExtra("client_id"))
-//                                                                        .addListenerForSingleValueEvent(new ValueEventListener() {
-//                                                                            @Override
-//                                                                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-//                                                                                for (DataSnapshot snapshot1 : dataSnapshot.getChildren()) {
-//
-//                                                                                    int w1 = Integer.parseInt(String.valueOf(snapshot1.child("wallet").getValue())) + Integer.parseInt(tps);
-//                                                                                    snapshot1.getRef().child("wallet").setValue(String.valueOf(w1));
-
-                                                                                    FirebaseDatabase.getInstance().getReference().child("carts")
-                                                                                            .orderByChild("customer_id").equalTo(new Session(getApplicationContext()).getId())
-                                                                                            .addListenerForSingleValueEvent(new ValueEventListener() {
-                                                                                                @RequiresApi(api = Build.VERSION_CODES.KITKAT)
-                                                                                                @Override
-                                                                                                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                                                                                                    for (DataSnapshot snapshot2 : dataSnapshot.getChildren()) {
-                                                                                                        if (Objects.equals(snapshot2.child("client_id").getValue(), getIntent().getStringExtra("client_id"))) {
-                                                                                                            for (DataSnapshot snap : snapshot2.child("products").getChildren()) {
-                                                                                                                for (DataSnapshot sn : snap.getChildren()) {
-                                                                                                                    if (Objects.equals(sn.child("status").getValue(), "check")) {
-                                                                                                                        snap.getRef().removeValue();
-                                                                                                                    }
-                                                                                                                }
-
-                                                                                                            }
-                                                                                                        }
-                                                                                                    }
+                                        public void onSuccess(Void aVoid) {
+                                            FirebaseDatabase.getInstance().getReference().child("orders")
+                                                    .orderByChild("order_id").equalTo(id)
+                                                    .addListenerForSingleValueEvent(new ValueEventListener() {
+                                                        @Override
+                                                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                                            for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                                                                FirebaseDatabase.getInstance().getReference().child("carts")
+                                                                        .orderByChild("customer_id").equalTo(String.valueOf(snapshot.child("customer_id").getValue()))
+                                                                        .addListenerForSingleValueEvent(new ValueEventListener() {
+                                                                            @RequiresApi(api = Build.VERSION_CODES.KITKAT)
+                                                                            @Override
+                                                                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                                                                for (DataSnapshot snapshot2 : dataSnapshot.getChildren()) {
+                                                                                    if (Objects.equals(snapshot2.child("client_id").getValue(), snapshot.child("client_id").getValue())) {
+                                                                                        for (DataSnapshot snap : snapshot2.child("products").getChildren()) {
+                                                                                            for (DataSnapshot sn : snap.getChildren()) {
+                                                                                                if (Objects.equals(sn.child("status").getValue(), "check")) {
+                                                                                                    snap.getRef().removeValue();
                                                                                                 }
+                                                                                            }
 
-                                                                                                @Override
-                                                                                                public void onCancelled(@NonNull DatabaseError databaseError) {
+                                                                                        }
+                                                                                    }
+                                                                                }
 
+                                                                                FirebaseDatabase.getInstance().getReference().child("customers")
+                                                                                        .orderByChild("customer_id").equalTo(String.valueOf(snapshot.child("customer_id").getValue()))
+                                                                                        .addListenerForSingleValueEvent(new ValueEventListener() {
+                                                                                            @Override
+                                                                                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                                                                                for (DataSnapshot snapshot1 : dataSnapshot.getChildren()) {
+                                                                                                    int newBal = Integer.parseInt(String.valueOf(snapshot1.child("wallet").getValue()))
+                                                                                                            - Integer.parseInt(String.valueOf(snapshot.child("total_amount").getValue()));
+
+                                                                                                    snapshot1.getRef().child("wallet").setValue(String.valueOf(newBal));
+
+                                                                                                    Toast.makeText(PlaceOrderActivity.this, "Payment Successful", Toast.LENGTH_SHORT).show();
+                                                                                                    Toast.makeText(PlaceOrderActivity.this, "NEW BALANCE : "+newBal, Toast.LENGTH_LONG).show();
+                                                                                                    Toast.makeText(PlaceOrderActivity.this, "ORDER PLACED", Toast.LENGTH_SHORT).show();
+                                                                                                    startActivity(new Intent(PlaceOrderActivity.this, HomeActivity.class));
+                                                                                                    finish();
                                                                                                 }
-                                                                                            });
+                                                                                            }
 
-//                                                                                }
-//                                                                            }
-//
-//                                                                            @Override
-//                                                                            public void onCancelled(@NonNull DatabaseError databaseError) {
-//
-//                                                                            }
-//                                                                        });
+                                                                                            @Override
+                                                                                            public void onCancelled(@NonNull DatabaseError databaseError) {
 
-                                                                Toast.makeText(PlaceOrderActivity.this, "ORDER PLACED", Toast.LENGTH_SHORT).show();
-                                                                startActivity(new Intent(PlaceOrderActivity.this, HomeActivity.class));
-                                                                finish();
-                                                                //Toast.makeText(PlaceOrderActivity.this, "NEW BALANCE : "+w, Toast.LENGTH_LONG).show();
-//
-//                                                            }
-//
-//                                                        }
-//
-//                                                        @Override
-//                                                        public void onCancelled(@NonNull DatabaseError databaseError) {
-//
-//                                                        }
-//                                                    });
+                                                                                            }
+                                                                                        });
 
-                                        }
+                                                                            }
 
-                                        @Override
-                                        public void onCancelled(@NonNull DatabaseError databaseError) {
+                                                                            @Override
+                                                                            public void onCancelled(@NonNull DatabaseError databaseError) {
 
+                                                                            }
+                                                                        });
+                                                            }
+                                                        }
+
+                                                        @Override
+                                                        public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                                                        }
+                                                    });
                                         }
                                     });
 
                         }
 
-
                     }
                 });
-
-
 
                 AlertDialog alertDialog = builder.create();
                 alertDialog.show();
@@ -374,40 +351,48 @@ public class PlaceOrderActivity extends AppCompatActivity {
             else {
 
                 FirebaseDatabase.getInstance().getReference().child("orders")
-                        .addListenerForSingleValueEvent(new ValueEventListener() {
+                        .child(id)
+                        .setValue(order)
+                        .addOnSuccessListener(new OnSuccessListener<Void>() {
                             @Override
-                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                                dataSnapshot.getRef().child(id).setValue(order);
-
-                                FirebaseDatabase.getInstance().getReference().child("carts")
-                                        .orderByChild("customer_id").equalTo(new Session(getApplicationContext()).getId())
+                            public void onSuccess(Void aVoid) {
+                                FirebaseDatabase.getInstance().getReference().child("orders")
+                                        .orderByChild("order_id").equalTo(id)
                                         .addListenerForSingleValueEvent(new ValueEventListener() {
-                                            @RequiresApi(api = Build.VERSION_CODES.KITKAT)
                                             @Override
                                             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                                                for (DataSnapshot snapshot2 : dataSnapshot.getChildren()) {
-                                                    if (Objects.equals(snapshot2.child("client_id").getValue(), getIntent().getStringExtra("client_id"))) {
+                                                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                                                    FirebaseDatabase.getInstance().getReference().child("carts")
+                                                            .orderByChild("customer_id").equalTo(String.valueOf(snapshot.child("customer_id").getValue()))
+                                                            .addListenerForSingleValueEvent(new ValueEventListener() {
+                                                                @RequiresApi(api = Build.VERSION_CODES.KITKAT)
+                                                                @Override
+                                                                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                                                    for (DataSnapshot snapshot2 : dataSnapshot.getChildren()) {
+                                                                        if (Objects.equals(snapshot2.child("client_id").getValue(), snapshot.child("client_id").getValue())) {
+                                                                            for (DataSnapshot snap : snapshot2.child("products").getChildren()) {
+                                                                                for (DataSnapshot sn : snap.getChildren()) {
+                                                                                    if (Objects.equals(sn.child("status").getValue(), "check")) {
+                                                                                        snap.getRef().removeValue();
+                                                                                    }
+                                                                                }
 
-                                                        for (DataSnapshot snap : snapshot2.child("products").getChildren()) {
-
-                                                            if (snapshot2.child("products").getChildrenCount() == 1) {
-                                                                snapshot2.getRef().removeValue();
-                                                            }
-                                                            else {
-                                                                if (Objects.equals(snap.child("status").getValue(), "check")) {
-                                                                    snap.getRef().removeValue();
+                                                                            }
+                                                                        }
+                                                                    }
                                                                 }
-                                                            }
 
-                                                        }
+                                                                @Override
+                                                                public void onCancelled(@NonNull DatabaseError databaseError) {
 
-                                                    }
+                                                                }
+                                                            });
+
                                                 }
 
                                                 Toast.makeText(PlaceOrderActivity.this, "ORDER PLACED", Toast.LENGTH_SHORT).show();
                                                 startActivity(new Intent(PlaceOrderActivity.this, HomeActivity.class));
                                                 finish();
-
                                             }
 
                                             @Override
@@ -415,14 +400,9 @@ public class PlaceOrderActivity extends AppCompatActivity {
 
                                             }
                                         });
-
-                            }
-
-                            @Override
-                            public void onCancelled(@NonNull DatabaseError databaseError) {
-
                             }
                         });
+
             }
 
 
@@ -440,24 +420,6 @@ public class PlaceOrderActivity extends AppCompatActivity {
 
                         for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                             if (Objects.equals(snapshot.child("client_id").getValue(), getIntent().getStringExtra("client_id"))) {
-                                FirebaseDatabase.getInstance().getReference().child("clients")
-                                        .orderByChild("client_id").equalTo(String.valueOf(snapshot.child("client_id").getValue()))
-                                        .addListenerForSingleValueEvent(new ValueEventListener() {
-                                            @Override
-                                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                                                for (DataSnapshot snap : dataSnapshot.getChildren()) {
-                                                    client.setText(String.valueOf(snap.child("company").getValue()));
-                                                    String sf = "₱<b>" + snap.child("shipping_fee").getValue() + "</b>";
-                                                    shipfee.setText(Html.fromHtml(sf));
-                                                }
-                                            }
-
-                                            @Override
-                                            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-                                            }
-                                        });
-
                                 for (DataSnapshot shot : snapshot.getChildren()) {
                                     for (DataSnapshot s : shot.getChildren()) {
                                         for (DataSnapshot d : s.getChildren()) {
@@ -477,6 +439,7 @@ public class PlaceOrderActivity extends AppCompatActivity {
                                                         refillPrice = e.child("price").getValue();
 
                                                         maps.put("quantity", Objects.requireNonNull(e.child("quantity").getValue()));
+                                                        maps.put("price", Objects.requireNonNull(e.child("price").getValue()));
                                                         map.put("refill", maps);
                                                     }
 
@@ -485,6 +448,7 @@ public class PlaceOrderActivity extends AppCompatActivity {
                                                         purchasePrice = e.child("price").getValue();
 
                                                         maps.put("quantity", Objects.requireNonNull(e.child("quantity").getValue()));
+                                                        maps.put("price", Objects.requireNonNull(e.child("price").getValue()));
                                                         map.put("purchase", maps);
                                                     }
 
@@ -510,8 +474,7 @@ public class PlaceOrderActivity extends AppCompatActivity {
                                                 qtyp += Integer.parseInt(String.valueOf(purchaseQuantity));
 
                                                 t += Integer.parseInt(String.valueOf(d.child("subtotal").getValue()));
-                                                String ft = "₱<b>" + t + ".00</b>";
-                                                total.setText(Html.fromHtml(ft));
+                                                subtotal.setText(t+".00");
 
                                             }
                                         }
@@ -530,42 +493,59 @@ public class PlaceOrderActivity extends AppCompatActivity {
         recyclerView.setAdapter(new CheckOutProductAdapter(PlaceOrderActivity.this, checkOutProductModelList));
 
 
+
+        client.setText(getIntent().getStringExtra("client"));
+
+        String sf = "₱<b>" + getIntent().getStringExtra("ship_fee") + "</b>";
+        shipfee.setText(Html.fromHtml(sf));
+
+        total.setText(Html.fromHtml("₱<b>0.00</b>"));
+
+
         RequestQueue queue = Volley.newRequestQueue(this);
         String origin =  getIntent().getStringExtra("client_address");
         String destination =  getIntent().getStringExtra("delivery_address");
         String url = "https://maps.googleapis.com/maps/api/directions/json?origin="+origin+"&destination="+destination+"&avoid=tolls|highways&key=AIzaSyAuXUoYwfNp7P41GYhP3OShn3MAFd0s_CY";
         url = url.replaceAll(" ", "%20");
 
-        String finalUrl = url;
         StringRequest stringRequest = new StringRequest(Request.Method.GET, url, response -> {
-            try {
-                Log.d("jsonObject", finalUrl);
 
+            String dist = null;
+            
+            try {
                 JSONObject jsonObject = new JSONObject(response);
                 JSONArray legs = jsonObject.getJSONArray("routes").getJSONObject(0).getJSONArray("legs");
+
                 for (int i = 0; i < legs.length(); i++) {
                     JSONObject leg = legs.getJSONObject(i);
-                    distance.setText(leg.getJSONObject("distance").getString("text"));
-
-                    String[] dst = String.valueOf(distance.getText()).split("\\.");
-                    String tp = String.valueOf(total.getText()).replace("₱", "");
-                    String tps = tp.replace(".00", "");
-
-                    newT = (Integer.parseInt(String.valueOf(shipfee.getText()).replace("₱", "")) * Integer.parseInt(dst[0])) + Integer.parseInt(tps);
-                    String ft = "₱<b>" + newT + ".00</b>";
-                    total.setText(Html.fromHtml(ft));
+                    dist = leg.getJSONObject("distance").getString("text");
                 }
 
             } catch (JSONException e) {
                 e.printStackTrace();
             }
-        }, error -> {
-            Log.d("error", error.toString());
-        });
+
+            if (dist != null) {
+                distance.setText(dist);
+            }
+            else {
+                distance.setText("0 km");
+            }
+
+            String dst = String.valueOf(distance.getText()).replace(" km", "");
+            String[] ds = dst.split("\\.");
+
+            int dfee = Integer.parseInt(getIntent().getStringExtra("ship_fee")) * Integer.parseInt(ds[0]);
+            delivery_fee.setText(dfee + ".00");
+
+            int newt = Integer.parseInt(String.valueOf(subtotal.getText()).replace(".00", "")) + dfee;
+            String ts = "₱<b>"+newt+".00</b>";
+            total.setText(Html.fromHtml(ts));
+
+
+        }, error -> Log.d("error", error.toString()));
 
         queue.add(stringRequest);
-
-
 
     }
 
@@ -575,25 +555,4 @@ public class PlaceOrderActivity extends AppCompatActivity {
         return true;
     }
 
-    @SuppressLint("DefaultLocale")
-    public static String getDistance(double lat_a, double lng_a, double lat_b, double lng_b) {
-        // earth radius is in mile
-        double earthRadius = 3958.75;
-        double latDiff = Math.toRadians(lat_b - lat_a);
-        double lngDiff = Math.toRadians(lng_b - lng_a);
-        double a = Math.sin(latDiff / 2) * Math.sin(latDiff / 2)
-                + Math.cos(Math.toRadians(lat_a))
-                * Math.cos(Math.toRadians(lat_b)) * Math.sin(lngDiff / 2)
-                * Math.sin(lngDiff / 2);
-        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        double distance = earthRadius * c;
-
-        int meterConversion = 1609;
-        double kmConvertion = 1.6093;
-        // return new Float(distance * meterConversion).floatValue();
-        //return String.format("%.2f", (float) (distance * kmConvertion)) + " km";
-        // return String.format("%.2f", distance)+" m";
-
-        return (int) (distance * kmConvertion) + " km";
-    }
 }

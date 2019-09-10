@@ -6,7 +6,6 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.MenuItemCompat;
 import android.annotation.TargetApi;
 import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Build;
@@ -19,7 +18,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.CheckBox;
-import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
@@ -44,7 +42,7 @@ public class OrderActivity extends AppCompatActivity {
     MaterialCardView toolbarCard;
     TextView toolbarTitle, productName, quantityRefill, quantityPurchase, subtotal, refillPrice, purchasePrice, minOrder, maxOrder;
     ImageView minusRefill, addRefill, minusPurchase, addPurchase, productImage;
-    MaterialButton addToCart, waterType;
+    MaterialButton addToCart, waterType, addScheduledToDelivery;
     DatabaseReference databaseReference;
     CheckBox refillCheckBox, purchaseCheckBox;
     LinearLayout refillLayout, purchaseLayout;
@@ -52,6 +50,8 @@ public class OrderActivity extends AppCompatActivity {
     int qtyRefill;
     int qtyPurchase;
     int sub;
+    String isForDelivery;
+    String ref;
 
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     @Override
@@ -59,7 +59,7 @@ public class OrderActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         getWindow().setStatusBarColor(getResources().getColor(R.color.colorLight));
         setContentView(R.layout.activity_order);
-
+        isForDelivery = getIntent().getStringExtra("isForDelivery");
         toolbar = findViewById(R.id.toolbar);
         toolbarCard = findViewById(R.id.toolbarCard);
         toolbarTitle = findViewById(R.id.title);
@@ -72,6 +72,7 @@ public class OrderActivity extends AppCompatActivity {
         addPurchase = findViewById(R.id.addPurchase);
         subtotal = findViewById(R.id.subtotal);
         addToCart = findViewById(R.id.addToCart);
+//        addScheduledToDelivery = findViewById(R.id.addScheduledToDelivery);
         databaseReference = FirebaseDatabase.getInstance().getReference();
         waterType = findViewById(R.id.waterType);
         productImage = findViewById(R.id.productImage);
@@ -94,11 +95,20 @@ public class OrderActivity extends AppCompatActivity {
         toolbarTitle.setText(getIntent().getStringExtra("company"));
         toolbarTitle.setGravity(Gravity.CENTER);
 
+        if ("isForDelivery".equals(isForDelivery)) {
+            addToCart.setText("ADD TO LIST");
+            addToCart.setIcon(getResources().getDrawable(R.drawable.icon_view_list_dark));
+            ref = "deliveries";
+        } else {
+            addToCart.setText("ADD TO CART");
+            addToCart.setIcon(getResources().getDrawable(R.drawable.icon_cart_dark));
+            ref = "carts";
+        }
 
         if (getIntent().getStringExtra("product") != null) {
 
             FirebaseDatabase.getInstance().getReference()
-                    .child("carts").orderByChild("customer_id").equalTo(new Session(getApplicationContext()).getId())
+                    .child(ref).orderByChild("customer_id").equalTo(new Session(getApplicationContext()).getId())
                     .addListenerForSingleValueEvent(new ValueEventListener() {
                         @Override
                         public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -113,7 +123,6 @@ public class OrderActivity extends AppCompatActivity {
                                                         int rq = 0;
                                                         int pq = 0;
 
-
                                                         if (shot.hasChild(getIntent().getStringExtra("product"))) {
                                                             if (d.child("refill").child("quantity").getValue() != null) {
                                                                 rq = Integer.parseInt(String.valueOf(d.child("refill").child("quantity").getValue()));
@@ -126,7 +135,7 @@ public class OrderActivity extends AppCompatActivity {
 
                                                         int tq = rq + pq;
 
-                                                        String stq = tq + " " + capitalize(getIntent().getStringExtra("product")) + "("+d.child("water_type").getValue()+")";
+                                                        String stq = tq + " " + capitalize(getIntent().getStringExtra("product")) + "(" + d.child("water_type").getValue() + ")";
 
                                                         AlertDialog.Builder builder = new AlertDialog.Builder(OrderActivity.this, R.style.AlertDialogTheme);
                                                         builder.setTitle(stq);
@@ -191,10 +200,10 @@ public class OrderActivity extends AppCompatActivity {
 
         waterType.setText(getIntent().getStringExtra("water_type"));
 
-        String min = getIntent().getStringExtra("min_order")+" <i>(qty)</i>";
+        String min = getIntent().getStringExtra("min_order") + " <i>(qty)</i>";
         minOrder.setText(Html.fromHtml(min));
 
-        String max = getIntent().getStringExtra("max_order")+" <i>(qty)</i>";
+        String max = getIntent().getStringExtra("max_order") + " <i>(qty)</i>";
         maxOrder.setText(Html.fromHtml(max));
 
 
@@ -212,21 +221,19 @@ public class OrderActivity extends AppCompatActivity {
             if (!purchaseCheckBox.isChecked() && !isChecked) {
                 addToCart.setEnabled(false);
                 sub = 0;
-                String s = "\u20B1<b>"+sub+".00</b>";
+                String s = "\u20B1<b>" + sub + ".00</b>";
                 subtotal.setText(Html.fromHtml(s));
-            }
-            else if (isChecked) {
+            } else if (isChecked) {
                 addToCart.setEnabled(true);
 
                 sub = sub + (Integer.parseInt(getIntent().getStringExtra("refillPrice")) * Integer.parseInt(getIntent().getStringExtra("min_order")));
 
-                String s = "\u20B1<b>"+sub+".00</b>";
+                String s = "\u20B1<b>" + sub + ".00</b>";
                 subtotal.setText(Html.fromHtml(s));
-            }
-            else {
+            } else {
                 sub = sub - (Integer.parseInt(getIntent().getStringExtra("refillPrice")) * Integer.parseInt(getIntent().getStringExtra("min_order")));
 
-                String s = "\u20B1<b>"+sub+".00</b>";
+                String s = "\u20B1<b>" + sub + ".00</b>";
                 subtotal.setText(Html.fromHtml(s));
             }
 
@@ -236,21 +243,19 @@ public class OrderActivity extends AppCompatActivity {
             if (!refillCheckBox.isChecked() && !isChecked) {
                 addToCart.setEnabled(false);
                 sub = 0;
-                String s = "\u20B1<b>"+sub+".00</b>";
+                String s = "\u20B1<b>" + sub + ".00</b>";
                 subtotal.setText(Html.fromHtml(s));
-            }
-            else if (isChecked) {
+            } else if (isChecked) {
                 addToCart.setEnabled(true);
 
                 sub = sub + (Integer.parseInt(getIntent().getStringExtra("purchasePrice")) * Integer.parseInt(getIntent().getStringExtra("min_order")));
 
-                String s = "\u20B1<b>"+sub+".00</b>";
+                String s = "\u20B1<b>" + sub + ".00</b>";
                 subtotal.setText(Html.fromHtml(s));
-            }
-            else {
+            } else {
                 sub = sub - (Integer.parseInt(getIntent().getStringExtra("purchasePrice")) * Integer.parseInt(getIntent().getStringExtra("min_order")));
 
-                String s = "\u20B1<b>"+sub+".00</b>";
+                String s = "\u20B1<b>" + sub + ".00</b>";
                 subtotal.setText(Html.fromHtml(s));
             }
 
@@ -265,7 +270,7 @@ public class OrderActivity extends AppCompatActivity {
         sub = (Integer.parseInt(getIntent().getStringExtra("refillPrice")) * Integer.parseInt(getIntent().getStringExtra("min_order"))) +
                 (Integer.parseInt(getIntent().getStringExtra("purchasePrice")) * Integer.parseInt(getIntent().getStringExtra("min_order")));
 
-        String s = "\u20B1<b>"+sub+".00</b>";
+        String s = "\u20B1<b>" + sub + ".00</b>";
         subtotal.setText(Html.fromHtml(s));
 
         minusRefill.setOnClickListener(v -> {
@@ -274,13 +279,12 @@ public class OrderActivity extends AppCompatActivity {
 
             sub = sub - Integer.parseInt(refillPrice.getText().toString());
             quantityRefill.setText(String.valueOf(qtyRefill));
-            String s12 = "\u20B1<b>"+sub+".00</b>";
+            String s12 = "\u20B1<b>" + sub + ".00</b>";
             subtotal.setText(Html.fromHtml(s12));
 
             if (qtyRefill == Integer.parseInt(getIntent().getStringExtra("min_order"))) {
                 minusRefill.setEnabled(false);
-            }
-            else {
+            } else {
                 addRefill.setEnabled(true);
             }
 
@@ -293,7 +297,7 @@ public class OrderActivity extends AppCompatActivity {
             qtyRefill++;
             sub = sub + Integer.parseInt(refillPrice.getText().toString());
             quantityRefill.setText(String.valueOf(qtyRefill));
-            String s13 = "\u20B1<b>"+sub+".00</b>";
+            String s13 = "\u20B1<b>" + sub + ".00</b>";
             subtotal.setText(Html.fromHtml(s13));
             minusRefill.setEnabled(true);
 
@@ -311,13 +315,12 @@ public class OrderActivity extends AppCompatActivity {
 
             sub = sub - Integer.parseInt(purchasePrice.getText().toString());
             quantityPurchase.setText(String.valueOf(qtyPurchase));
-            String s12 = "\u20B1<b>"+sub+".00</b>";
+            String s12 = "\u20B1<b>" + sub + ".00</b>";
             subtotal.setText(Html.fromHtml(s12));
 
             if (qtyPurchase == Integer.parseInt(getIntent().getStringExtra("min_order"))) {
                 minusPurchase.setEnabled(false);
-            }
-            else {
+            } else {
                 addPurchase.setEnabled(true);
             }
         });
@@ -328,7 +331,7 @@ public class OrderActivity extends AppCompatActivity {
             qtyPurchase++;
             sub = sub + Integer.parseInt(purchasePrice.getText().toString());
             quantityPurchase.setText(String.valueOf(qtyPurchase));
-            String s13 = "\u20B1<b>"+sub+".00</b>";
+            String s13 = "\u20B1<b>" + sub + ".00</b>";
             subtotal.setText(Html.fromHtml(s13));
             minusPurchase.setEnabled(true);
 
@@ -341,6 +344,18 @@ public class OrderActivity extends AppCompatActivity {
         });
 
         addToCart.setOnClickListener(v -> {
+
+            String ref;
+            String toast;
+
+            if ("isForDelivery".equals(isForDelivery)) {
+                ref = "deliveries";
+                toast = "ADDED TO LIST";
+            }
+            else {
+                ref = "carts";
+                toast = "ADDED TO CART";
+            }
 
             final String id = Objects.requireNonNull(databaseReference.push().getKey());
 
@@ -380,14 +395,14 @@ public class OrderActivity extends AppCompatActivity {
             data.put("client_id", getIntent().getStringExtra("client_id"));
             data.put("products", prod);
 
-            databaseReference.child("carts").orderByChild("customer_id").equalTo(new Session(getApplicationContext()).getId())
+            databaseReference.child(ref).orderByChild("customer_id").equalTo(new Session(getApplicationContext()).getId())
                     .addListenerForSingleValueEvent(new ValueEventListener() {
                         @Override
                         public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
                             if (!dataSnapshot.exists()) {
                                 dataSnapshot.getRef().child(id).setValue(data);
-                                Toast.makeText(OrderActivity.this, "ADDED TO CART", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(OrderActivity.this, toast, Toast.LENGTH_SHORT).show();
                                 finish();
                             } else {
 
@@ -398,14 +413,14 @@ public class OrderActivity extends AppCompatActivity {
 
                                                 if (!dataSnapshot.exists()) {
                                                     dataSnapshot.getRef().child(id).setValue(data);
-                                                    Toast.makeText(OrderActivity.this, "ADDED TO CART", Toast.LENGTH_SHORT).show();
+                                                    Toast.makeText(OrderActivity.this, toast, Toast.LENGTH_SHORT).show();
                                                     finish();
                                                 } else {
 
                                                     for (DataSnapshot snap : dataSnapshot.getChildren()) {
 
                                                         dataSnapshot.getRef().child(snap.child("cart_id").getValue() + "/products/").push().setValue(products);
-                                                        Toast.makeText(OrderActivity.this, "ADDED TO CART", Toast.LENGTH_SHORT).show();
+                                                        Toast.makeText(OrderActivity.this, toast, Toast.LENGTH_SHORT).show();
                                                         finish();
 
                                                     }
@@ -432,6 +447,13 @@ public class OrderActivity extends AppCompatActivity {
 
         });
 
+//        addScheduledToDelivery.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                Intent intent = new Intent(OrderActivity.this, ScheduledDelivery.class);
+//                startActivity(intent);
+//            }
+//        });
 
     }
 
@@ -446,56 +468,44 @@ public class OrderActivity extends AppCompatActivity {
         RelativeLayout cart = (RelativeLayout) MenuItemCompat.getActionView(item);
         ImageView cartIcon = cart.findViewById(R.id.cartIcon);
         final TextView badge = cart.findViewById(R.id.badge);
-        cartIcon.setImageDrawable(getResources().getDrawable(R.drawable.icon_cart_dark));
+        if ("isForDelivery".equals(isForDelivery)) {
+            cartIcon.setImageDrawable(getResources().getDrawable(R.drawable.icon_view_list_dark));
+        }
+        else {
+            cartIcon.setImageDrawable(getResources().getDrawable(R.drawable.icon_cart_dark));
+        }
         cartIcon.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(OrderActivity.this, CartActivity.class);
                 intent.putExtra("client", getIntent().getStringExtra("company"));
                 intent.putExtra("client_id", getIntent().getStringExtra("client_id"));
+                intent.putExtra("client_address", getIntent().getStringExtra("client_address"));
+                intent.putExtra("ship_fee", getIntent().getStringExtra("ship_fee"));
+                intent.putExtra("isForDelivery", isForDelivery);
                 startActivity(intent);
 
             }
         });
 
-        databaseReference.child("carts").orderByChild("customer_id").equalTo(new Session(getApplicationContext()).getId())
+        databaseReference.child(ref).orderByChild("customer_id").equalTo(new Session(getApplicationContext()).getId())
                 .addValueEventListener(new ValueEventListener() {
                     @TargetApi(Build.VERSION_CODES.KITKAT)
                     @Override
                     public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
-                        int c = 0;
-
                         for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                             if (Objects.equals(snapshot.child("client_id").getValue(), getIntent().getStringExtra("client_id"))) {
-                                for (DataSnapshot data : snapshot.getChildren()) {
-                                    for (DataSnapshot d : data.getChildren()) {
-                                        for (DataSnapshot e : d.getChildren()) {
-                                            for (DataSnapshot f : e.getChildren()) {
-                                                try {
-                                                    c += Integer.parseInt(String.valueOf(f.child("quantity").getValue()));
-                                                } catch (NumberFormatException nfe) {
-                                                    nfe.printStackTrace();
-                                                }
-                                            }
-                                        }
-                                    }
+                                if (Integer.parseInt(String.valueOf(snapshot.child("products").getChildrenCount())) < 1) {
+                                    badge.setVisibility(View.GONE);
+                                }
+                                else {
+                                    badge.setVisibility(View.VISIBLE);
+                                    badge.setText(String.valueOf(snapshot.child("products").getChildrenCount()));
                                 }
                             }
                         }
 
-
-                        if (c < 1) {
-                            badge.setVisibility(View.GONE);
-                        }
-                        else if (c > 9) {
-                            badge.setVisibility(View.VISIBLE);
-                            badge.setText("9+");
-                        }
-                        else {
-                            badge.setVisibility(View.VISIBLE);
-                            badge.setText(String.valueOf(c));
-                        }
                     }
 
                     @Override

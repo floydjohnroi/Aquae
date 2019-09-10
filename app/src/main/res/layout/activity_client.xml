@@ -132,7 +132,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:gravity="center"
-                    android:drawableStart="@drawable/icon_delivery"
+                    android:drawableStart="@drawable/icon_shipping"
                     android:drawablePadding="8dp"
                     android:textColor="@color/colorWhite"
                     android:textSize="14sp" />

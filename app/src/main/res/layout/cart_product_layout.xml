@@ -6,15 +6,14 @@
     android:layout_height="wrap_content"
     android:layout_margin="4dp"
     app:cardElevation="4dp"
-    app:cardCornerRadius="4dp"
-    app:cardBackgroundColor="@android:color/transparent">
+    app:cardCornerRadius="8dp">
 
 <com.daimajia.swipe.SwipeLayout
     android:id="@+id/swipe"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:background="@android:color/transparent"
+    android:background="@color/colorBottomWrapper"
     app:leftEdgeSwipeOffset="0dp"
     app:rightEdgeSwipeOffset="0dp">
 
@@ -24,8 +23,7 @@
         android:orientation="horizontal"
         android:layout_height="match_parent"
         android:paddingLeft="24dp"
-        android:paddingRight="24dp"
-        android:background="@color/colorBottomWrapper">
+        android:paddingRight="24dp">
 
         <ImageView
             android:id="@+id/remove"
@@ -41,7 +39,7 @@
     <com.google.android.material.card.MaterialCardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:cardCornerRadius="4dp"
+        app:cardCornerRadius="8dp"
         app:cardBackgroundColor="@color/colorWhite">
 
     <LinearLayout

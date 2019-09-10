@@ -35,4 +35,8 @@
         <item name="colorAccent">@color/colorPrimary</item>
     </style>
 
+    <style name="SwitchTheme" parent="@style/Widget.AppCompat.CompoundButton.Switch">
+        <item name="android:colorForeground">@color/colorDrawerItem</item>
+    </style>
+
 </resources>

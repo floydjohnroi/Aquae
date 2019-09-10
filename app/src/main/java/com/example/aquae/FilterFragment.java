@@ -1,6 +1,7 @@
 package com.example.aquae;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,7 +11,7 @@ import androidx.fragment.app.Fragment;
 import androidx.viewpager.widget.ViewPager;
 import com.google.android.material.tabs.TabLayout;
 
-public class FilterFragment extends Fragment {
+public class   FilterFragment extends Fragment {
 
     @Nullable
     @Override
@@ -20,8 +21,8 @@ public class FilterFragment extends Fragment {
 
         TabLayout tabLayout = view.findViewById(R.id.tabLayout);
         final ViewPager viewPager = view.findViewById(R.id.viewPager);
-
-        FilterAdapter filterAdapter = new FilterAdapter(getChildFragmentManager(), getActivity());
+        String isForDelivery = null != getArguments() ? getArguments().getString("isForDelivery"): "";
+        FilterAdapter filterAdapter = new FilterAdapter(getChildFragmentManager(), getActivity(), isForDelivery);
 
         viewPager.setAdapter(filterAdapter);
 

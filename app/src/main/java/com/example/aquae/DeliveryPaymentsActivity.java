@@ -13,6 +13,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
@@ -71,7 +72,7 @@ public class DeliveryPaymentsActivity extends AppCompatActivity {
 
         FirebaseDatabase.getInstance().getReference().child("customers")
                 .orderByChild("customer_id").equalTo(new Session(getApplicationContext()).getId())
-                .addValueEventListener(new ValueEventListener() {
+                .addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                         for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
@@ -93,8 +94,6 @@ public class DeliveryPaymentsActivity extends AppCompatActivity {
                     }
                 });
 
-
-
         proceed.setOnClickListener(v -> {
 
             Intent intent = new Intent(DeliveryPaymentsActivity.this, PlaceOrderActivity.class);
@@ -102,6 +101,8 @@ public class DeliveryPaymentsActivity extends AppCompatActivity {
             intent.putExtra("notes", String.valueOf(note.getText()).trim());
             intent.putExtra("client_id", getIntent().getStringExtra("client_id"));
             intent.putExtra("client_address", getIntent().getStringExtra("client_address"));
+            intent.putExtra("ship_fee", getIntent().getStringExtra("ship_fee"));
+            intent.putExtra("client", getIntent().getStringExtra("client"));
             startActivity(intent);
 
         });

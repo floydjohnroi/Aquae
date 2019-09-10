@@ -163,7 +163,7 @@
                     <View
                         android:id="@+id/divider"
                         android:layout_width="match_parent"
-                        android:layout_height="1dp"
+                        android:layout_height="2dp"
                         android:layout_marginTop="16dp"
                         android:layout_marginBottom="16dp"
                         android:background="@color/colorDivider" />
@@ -186,14 +186,14 @@
                                 android:layout_height="wrap_content"
                                 android:text="DELIVERY CHARGES"
                                 android:textColor="@color/colorDrawerItem"
-                                android:textSize="14dp"/>
+                                android:textSize="14sp"/>
 
                             <TextView
                                 android:id="@+id/shipfee"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:textColor="@color/colorText"
-                                android:textSize="16dp"/>
+                                android:textSize="16sp"/>
                         </LinearLayout>
 
                         <LinearLayout
@@ -207,7 +207,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:textColor="@color/colorDrawerItem"
-                                android:textSize="14dp"/>
+                                android:textSize="14sp"/>
 
                             <TextView
                                 android:id="@+id/distance"
@@ -215,11 +215,67 @@
                                 android:layout_height="wrap_content"
                                 android:textColor="@color/colorText"
                                 android:textStyle="bold"
-                                android:text="0 km"
-                                android:textSize="16dp"/>
+                                android:textSize="16sp"/>
                         </LinearLayout>
 
+                    </LinearLayout>
 
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:layout_marginTop="16dp"
+                        android:layout_marginBottom="16dp"
+                        android:background="@color/colorDivider" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="16dp"
+                        android:layout_marginEnd="16dp"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="SUBTOTAL"
+                            android:textColor="@color/colorDrawerItem"
+                            android:textSize="14sp" />
+
+                        <TextView
+                            android:id="@+id/subtotal"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textColor="@color/colorText"
+                            android:textStyle="bold"
+                            android:textSize="16sp"/>
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:layout_marginStart="16dp"
+                        android:layout_marginEnd="16dp"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="DELIVERY FEE"
+                            android:textColor="@color/colorDrawerItem"
+                            android:textSize="14sp" />
+
+                        <TextView
+                            android:id="@+id/delivery_fee"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textColor="@color/colorText"
+                            android:text="0.00"
+                            android:textStyle="bold"
+                            android:textSize="16sp"/>
 
                     </LinearLayout>
 
@@ -246,6 +302,7 @@
                             android:layout_height="wrap_content"
                             android:text="TOTAL"
                             android:textSize="14sp"
+                            android:textStyle="bold"
                             android:textColor="@color/colorDrawerItem"/>
 
                     </LinearLayout>

@@ -1,0 +1,154 @@
+package com.example.aquae;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
+import androidx.appcompat.app.ActionBarDrawerToggle;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.coordinatorlayout.widget.CoordinatorLayout;
+import androidx.core.content.ContextCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
+import android.annotation.SuppressLint;
+import android.content.Intent;
+import android.os.Build;
+import android.os.Bundle;
+import android.util.Log;
+import android.view.MenuItem;
+import android.view.View;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import com.google.android.material.card.MaterialCardView;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.navigation.NavigationView;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Locale;
+import java.util.Objects;
+
+public class DeliveryScheduleActivity extends AppCompatActivity {
+
+    Toolbar toolbar;
+    MaterialCardView toolbarCard;
+    TextView toolbarTitle, today;
+    FloatingActionButton floatingActionButton;
+    RecyclerView recyclerView;
+    List<ScheduleModel> scheduleModelList = new ArrayList<>();
+
+    @RequiresApi(api = Build.VERSION_CODES.M)
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_delivery_schedule);
+
+        toolbarCard = findViewById(R.id.toolbarCard);
+        toolbar = findViewById(R.id.toolbar);
+        toolbarTitle = findViewById(R.id.title);
+        floatingActionButton = findViewById(R.id.floatingActionButton);
+        today = findViewById(R.id.today);
+        recyclerView = findViewById(R.id.recyclerView);
+
+        setSupportActionBar(toolbar);
+        (Objects.requireNonNull(getSupportActionBar())).setDisplayHomeAsUpEnabled(true);
+        Objects.requireNonNull(getSupportActionBar()).setHomeAsUpIndicator(R.drawable.icon_back_dark);
+        toolbarCard.setCardBackgroundColor(getResources().getColor(R.color.colorWhite));
+        toolbarTitle.setText("Delivery Schedule");
+
+        recyclerView.setHasFixedSize(true);
+        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
+        linearLayoutManager.setReverseLayout(true);
+        linearLayoutManager.setStackFromEnd(true);
+        recyclerView.setLayoutManager(linearLayoutManager);
+
+        today.setText(new SimpleDateFormat("E, MMM dd", Locale.getDefault()).format(new Date()));
+
+        Thread thread = new Thread() {
+
+            @Override
+            public void run() {
+                while (!isInterrupted()) {
+                    try {
+                        Thread.sleep(1000);
+
+                        runOnUiThread(() -> today.setText(new SimpleDateFormat("E, MMM dd", Locale.getDefault()).format(new Date())));
+
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        };
+        thread.start();
+
+        floatingActionButton.setOnClickListener(v -> {
+            startActivity(new Intent(DeliveryScheduleActivity.this, SelectStationActivity.class));
+        });
+
+        FirebaseDatabase.getInstance().getReference().child("schedules")
+                .orderByChild("customer_id").equalTo(new Session(getApplicationContext()).getId())
+                .addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                        scheduleModelList.clear();
+                        for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                            if ("scheduled".equals(snapshot.child("status").getValue())) {
+                                scheduleModelList.add(new ScheduleModel(
+                                        String.valueOf(snapshot.child("schedule_id").getValue()),
+                                        String.valueOf(snapshot.child("client_id").getValue()),
+                                        String.valueOf(snapshot.child("schedule").getValue()),
+                                        String.valueOf(snapshot.child("switch").getValue())
+                                ));
+                            }
+                        }
+                        recyclerView.setAdapter(new ScheduleAdapter(DeliveryScheduleActivity.this, scheduleModelList));
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                    }
+                });
+
+        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @SuppressLint("RestrictedApi")
+            @Override
+            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+
+                if (dy > 0) {
+                    floatingActionButton.setVisibility(View.GONE);
+                } else if (dy < 0) {
+                    floatingActionButton.setVisibility(View.VISIBLE);
+                } else {
+                    floatingActionButton.setVisibility(View.VISIBLE);
+                }
+            }
+        });
+
+
+    }
+
+
+
+    @Override
+    public boolean onSupportNavigateUp() {
+        startActivity(new Intent(DeliveryScheduleActivity.this, HomeActivity.class));
+        return true;
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        startActivity(new Intent(DeliveryScheduleActivity.this, HomeActivity.class));
+    }
+}

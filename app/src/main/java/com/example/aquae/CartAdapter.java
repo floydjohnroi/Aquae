@@ -42,13 +42,9 @@ import com.squareup.picasso.Picasso;
 public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder> {
 
     private Context context;
-    private List<CartModel> cartModelList;
     private List<CartProductModel> cartProductModelList;
-    private CartProductAdapter cartProductAdapter;
-    private TextView total;
-
+    String isForDelivery, ref;
     int t;
-
 
     private OnDataChangeListener mOnDataChangeListener;
 
@@ -57,11 +53,10 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
         void isSelectedAll(boolean isChecked);
     }
 
-    CartAdapter(Context context, List<CartProductModel> cartProductModelList, OnDataChangeListener onDataChangeListener) {
+    CartAdapter(Context context, List<CartProductModel> cartProductModelList, String isForDelivery, OnDataChangeListener onDataChangeListener) {
         this.context = context;
-//        this.cartModelList = cartModelList;
         this.cartProductModelList = cartProductModelList;
-//        this.total = total;
+        this.isForDelivery = isForDelivery;
         mOnDataChangeListener = onDataChangeListener;
     }
 
@@ -78,108 +73,12 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
     public void onBindViewHolder(@NonNull final CartViewHolder holder, final int position) {
         final CartProductModel cartProductModel = cartProductModelList.get(position);
 
-        /*cartViewHolder.recyclerView.setHasFixedSize(true);
-        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(context);
-        linearLayoutManager.setReverseLayout(true);
-        linearLayoutManager.setStackFromEnd(true);
-        cartViewHolder.recyclerView.setLayoutManager(linearLayoutManager);
-
-        List<CartProductModel> productList = new ArrayList<>();
-        Map<String, Object> data = new HashMap<>();
-
-        //t = 0;
-
-        for (int i = 0; i < cartProductModelList.size(); i++) {
-            if (String.valueOf(cartProductModelList.get(i).getClient_id()).equals(cartModel.getClient_id())) {
-                productList.add(cartProductModelList.get(i));
-
-                data.put("min_order", cartModel.getMin_order());
-                data.put("max_order", cartModel.getMax_order());
-                data.put("ship_fee", cartModel.getShip_fee());
-
-                t += Integer.parseInt(cartProductModelList.get(i).getSubtotal());
-
-            }
+        if ("isForDelivery".equals(isForDelivery)) {
+            ref = "deliveries";
         }
-
-        mOnDataChangeListener.onChanged(500);
-
-        cartProductAdapter = new CartProductAdapter(context, productList, data, total, new CartProductAdapter.OnDataChangeListener() {
-            @Override
-            public void onChanged(double totalAmount) {
-                mOnDataChangeListener.onChanged(totalAmount);
-            }
-
-            @Override
-            public void isSelectedAll(boolean isChecked) {
-                for (int i = 0; i < productList.size(); i++) {
-
-                    CartProductAdapter.CartProductHolder viewHolder = (CartProductAdapter.CartProductHolder) cartViewHolder.recyclerView.findViewHolderForAdapterPosition(0);
-
-                    if (viewHolder != null) {
-                        if (isChecked)
-                            viewHolder.checkBoxes.setChecked(true);
-                        else
-                            viewHolder.checkBoxes.setChecked(false);
-                    }
-
-                }
-            }
-        });
-
-        cartViewHolder.recyclerView.setAdapter(cartProductAdapter);
-
-        cartViewHolder.client.setText(cartModel.getClient());
-
-        cartViewHolder.client.setOnClickListener(v -> {
-
-            FirebaseDatabase.getInstance().getReference().child("clients")
-                    .orderByChild("client_id").equalTo(cartModel.getClient_id())
-                    .addListenerForSingleValueEvent(new ValueEventListener() {
-                        @Override
-                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                            for (DataSnapshot snapshot : dataSnapshot.getChildren()){
-                                Intent intent = new Intent(context, ClientActivity.class);
-                                intent.putExtra("client_id", String.valueOf(snapshot.child("client_id").getValue()));
-                                intent.putExtra("company", String.valueOf(snapshot.child("company").getValue()));
-                                intent.putExtra("address", String.valueOf(snapshot.child("address").getValue()));
-                                intent.putExtra("email", String.valueOf(snapshot.child("email").getValue()));
-                                intent.putExtra("contact", String.valueOf(snapshot.child("contact").getValue()));
-                                intent.putExtra("storeImage", String.valueOf(snapshot.child("files").child("store").getValue()));
-                                intent.putExtra("water_type", String.valueOf(snapshot.child("water_type").getValue()));
-                                intent.putExtra("min_order", String.valueOf(snapshot.child("minimum_order").getValue()));
-                                intent.putExtra("max_order", String.valueOf(snapshot.child("maximum_order").getValue()));
-                                intent.putExtra("no_of_filter", String.valueOf(snapshot.child("no_of_filter").getValue()));
-                                intent.putExtra("ship_fee", String.valueOf(snapshot.child("shipping_fee").getValue()));
-                                context.startActivity(intent);
-                            }
-                        }
-
-                        @Override
-                        public void onCancelled(@NonNull DatabaseError databaseError) {
-
-                        }
-                    });
-
-        });
-
-        cartViewHolder.checkBox.setChecked(true);
-
-        cartViewHolder.checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if (isChecked) {
-                    cartProductAdapter.selectAll();
-                }
-                else {
-                    cartProductAdapter.unselectAll();
-                }
-            }
-        });*/
-
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
+        else {
+            ref = "carts";
+        }
 
         t += Integer.parseInt(cartProductModel.getSubtotal());
 
@@ -223,7 +122,6 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
         holder.quantityRefill.setText(cartProductModel.getRefillQuantity());
         holder.quantityPurchase.setText(cartProductModel.getPurchaseQuantity());
 
-
         holder.minusRefill.setOnClickListener(v -> {
 
             int i = Integer.parseInt((String) holder.quantityRefill.getText());
@@ -244,7 +142,7 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
 
             int ti = Integer.parseInt(String.valueOf(holder.refillPrice.getText()).replace("₱", "")) * i;
 
-            FirebaseDatabase.getInstance().getReference().child("carts")
+            FirebaseDatabase.getInstance().getReference().child(ref)
                     .orderByChild("customer_id").equalTo(new Session(context).getId())
                     .addListenerForSingleValueEvent(new ValueEventListener() {
                         @RequiresApi(api = Build.VERSION_CODES.KITKAT)
@@ -297,7 +195,7 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
 
             int ti = Integer.parseInt(String.valueOf(holder.refillPrice.getText()).replace("₱", "")) * i;
 
-            FirebaseDatabase.getInstance().getReference().child("carts")
+            FirebaseDatabase.getInstance().getReference().child(ref)
                     .orderByChild("customer_id").equalTo(new Session(context).getId())
                     .addListenerForSingleValueEvent(new ValueEventListener() {
                         @RequiresApi(api = Build.VERSION_CODES.KITKAT)
@@ -350,7 +248,7 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
 
             int ti = Integer.parseInt(String.valueOf(holder.purchasePrice.getText()).replace("₱", "")) * i;
 
-            FirebaseDatabase.getInstance().getReference().child("carts")
+            FirebaseDatabase.getInstance().getReference().child(ref)
                     .orderByChild("customer_id").equalTo(new Session(context).getId())
                     .addListenerForSingleValueEvent(new ValueEventListener() {
                         @RequiresApi(api = Build.VERSION_CODES.KITKAT)
@@ -400,7 +298,7 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
 
             int ti = Integer.parseInt(String.valueOf(holder.purchasePrice.getText()).replace("₱", "")) * i;
 
-            FirebaseDatabase.getInstance().getReference().child("carts")
+            FirebaseDatabase.getInstance().getReference().child(ref)
                     .orderByChild("customer_id").equalTo(new Session(context).getId())
                     .addListenerForSingleValueEvent(new ValueEventListener() {
                         @RequiresApi(api = Build.VERSION_CODES.KITKAT)
@@ -438,7 +336,7 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
                 builder.setMessage("This item will be removed. This action cannot be undone.");
                 builder.setPositiveButton("REMOVE", (dialog, which) -> {
 
-                    FirebaseDatabase.getInstance().getReference().child("carts")
+                    FirebaseDatabase.getInstance().getReference().child(ref)
                             .orderByChild("customer_id").equalTo(new Session(context).getId())
                             .addListenerForSingleValueEvent(new ValueEventListener() {
                                 @Override
@@ -514,7 +412,7 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
                     t -= Integer.parseInt(cartProductModel.getSubtotal());
                     mOnDataChangeListener.onChanged(t);
 
-                    FirebaseDatabase.getInstance().getReference().child("carts")
+                    FirebaseDatabase.getInstance().getReference().child(ref)
                         .orderByChild("customer_id").equalTo(new Session(context).getId())
                         .addListenerForSingleValueEvent(new ValueEventListener() {
                             @RequiresApi(api = Build.VERSION_CODES.KITKAT)
@@ -549,7 +447,7 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
                     t += Integer.parseInt(cartProductModel.getSubtotal());
                     mOnDataChangeListener.onChanged(t);
 
-                    FirebaseDatabase.getInstance().getReference().child("carts")
+                    FirebaseDatabase.getInstance().getReference().child(ref)
                             .orderByChild("customer_id").equalTo(new Session(context).getId())
                             .addListenerForSingleValueEvent(new ValueEventListener() {
                                 @RequiresApi(api = Build.VERSION_CODES.KITKAT)
@@ -602,7 +500,6 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
         return position;
     }
 
-
     public void selectAll(){
         mOnDataChangeListener.isSelectedAll(true);
     }
@@ -613,11 +510,6 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
 
     class CartViewHolder extends RecyclerView.ViewHolder{
 
-//        TextView client, quantityRefill, quantityPurchase;
-//        ImageView minusRefill, addRefill, minusPurchase, addPurchase;
-//        CheckBox checkBox;
-//        RecyclerView recyclerView;
-
         TextView product, quantityRefill, quantityPurchase, waterType, refillPrice, purchasePrice;
         ImageView minusRefill, minusPurchase, addRefill, addPurchase, productImage, remove;
         SwipeLayout swipeLayout;
@@ -625,19 +517,8 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
         View divider;
         CheckBox checkBoxes;
 
-
         public CartViewHolder(View view) {
             super(view);
-
-//            client = itemView.findViewById(R.id.client);
-//            quantityRefill = itemView.findViewById(R.id.quantityRefill);
-//            quantityPurchase = itemView.findViewById(R.id.quantityPurchase);
-//            minusRefill = itemView.findViewById(R.id.minusRefill);
-//            addRefill = itemView.findViewById(R.id.addRefill);
-//            minusPurchase = itemView.findViewById(R.id.minusPurchase);
-//            addPurchase = itemView.findViewById(R.id.addPurchase);
-//            checkBox = itemView.findViewById(R.id.checkBox);
-//            recyclerView = itemView.findViewById(R.id.recyclerView);
 
             product = view.findViewById(R.id.product);
             quantityRefill = view.findViewById(R.id.quantityRefill);

@@ -94,7 +94,7 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
                         String token = task.getResult().getToken();
 
                         // Log and toast
-                        Log.d("TEST", token);
+                        //Log.d("TEST", token);
                         //Toast.makeText(HomeActivity.this, token, Toast.LENGTH_SHORT).show();
                     }
                 });
@@ -294,6 +294,9 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
 //            case R.id.cart:
 //                startActivity(new Intent(HomeActivity.this, CartActivity.class));
 //                break;
+            case R.id.delivery_schedule:
+                startActivity(new Intent(HomeActivity.this, DeliveryScheduleActivity.class));
+                break;
             case R.id.wallet:
                 startActivity(new Intent(HomeActivity.this, WalletActivity.class));
                 break;

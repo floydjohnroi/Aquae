@@ -10,6 +10,10 @@
 <!--            android:title="@string/cart"-->
 <!--            android:icon="@drawable/icon_cart_light" />-->
         <item
+            android:id="@+id/delivery_schedule"
+            android:title="@string/delivery_schedule"
+            android:icon="@drawable/icon_delivery_schedule" />
+        <item
             android:id="@+id/wallet"
             android:title="@string/wallet"
             android:icon="@drawable/icon_wallet" />

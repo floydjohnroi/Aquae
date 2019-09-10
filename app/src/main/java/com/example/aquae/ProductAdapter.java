@@ -32,11 +32,13 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
     private Context context;
     private List<ProductModel> productModelList;
     private Map<String, String> datas;
+    private String isForDelivery;
 
-    public ProductAdapter(Context context, List<ProductModel> productModelList, Map<String, String> datas)  {
+    public ProductAdapter(Context context, List<ProductModel> productModelList, Map<String, String> datas, String isForDelivery)  {
         this.context = context;
         this.productModelList = productModelList;
         this.datas = datas;
+        this.isForDelivery = isForDelivery;
     }
 
     @NonNull
@@ -72,6 +74,9 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
             intent.putExtra("water_type", datas.get("water_type"));
             intent.putExtra("min_order", productModel.getMinOrder());
             intent.putExtra("max_order", productModel.getMaxOrder());
+            intent.putExtra("ship_fee", datas.get("ship_fee"));
+            intent.putExtra("client_address", datas.get("client_address"));
+            intent.putExtra("isForDelivery", isForDelivery);
             context.startActivity(intent);
 
         });
