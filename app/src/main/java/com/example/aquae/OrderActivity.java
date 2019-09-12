@@ -182,11 +182,13 @@ public class OrderActivity extends AppCompatActivity {
         if (getIntent().getStringExtra("refillPrice").equals("0")) {
             refillLayout.setVisibility(View.GONE);
             divider.setVisibility(View.GONE);
+            purchaseCheckBox.setEnabled(false);
         }
 
         if (getIntent().getStringExtra("purchasePrice").equals("0")) {
             purchaseLayout.setVisibility(View.GONE);
             divider.setVisibility(View.GONE);
+            refillCheckBox.setEnabled(false);
         }
 
         Picasso.get()
@@ -207,9 +209,9 @@ public class OrderActivity extends AppCompatActivity {
         maxOrder.setText(Html.fromHtml(max));
 
 
-        refillPrice.setText(getIntent().getStringExtra("refillPrice"));
+        refillPrice.setText(Html.fromHtml("₱<b>"+getIntent().getStringExtra("refillPrice")+"</b>"));
 
-        purchasePrice.setText(getIntent().getStringExtra("purchasePrice"));
+        purchasePrice.setText(Html.fromHtml("₱<b>"+getIntent().getStringExtra("purchasePrice")+"</b>"));
 
         minusRefill.setEnabled(false);
         minusPurchase.setEnabled(false);
@@ -277,7 +279,7 @@ public class OrderActivity extends AppCompatActivity {
 
             qtyRefill--;
 
-            sub = sub - Integer.parseInt(refillPrice.getText().toString());
+            sub = sub - Integer.parseInt(refillPrice.getText().toString().replace("₱", ""));
             quantityRefill.setText(String.valueOf(qtyRefill));
             String s12 = "\u20B1<b>" + sub + ".00</b>";
             subtotal.setText(Html.fromHtml(s12));
@@ -295,7 +297,7 @@ public class OrderActivity extends AppCompatActivity {
             qtyRefill = Integer.parseInt((String) quantityRefill.getText());
 
             qtyRefill++;
-            sub = sub + Integer.parseInt(refillPrice.getText().toString());
+            sub = sub + Integer.parseInt(refillPrice.getText().toString().replace("₱", ""));
             quantityRefill.setText(String.valueOf(qtyRefill));
             String s13 = "\u20B1<b>" + sub + ".00</b>";
             subtotal.setText(Html.fromHtml(s13));
@@ -313,7 +315,7 @@ public class OrderActivity extends AppCompatActivity {
         minusPurchase.setOnClickListener(v -> {
             qtyPurchase--;
 
-            sub = sub - Integer.parseInt(purchasePrice.getText().toString());
+            sub = sub - Integer.parseInt(purchasePrice.getText().toString().replace("₱", ""));
             quantityPurchase.setText(String.valueOf(qtyPurchase));
             String s12 = "\u20B1<b>" + sub + ".00</b>";
             subtotal.setText(Html.fromHtml(s12));
@@ -329,7 +331,7 @@ public class OrderActivity extends AppCompatActivity {
             qtyPurchase = Integer.parseInt((String) quantityPurchase.getText());
 
             qtyPurchase++;
-            sub = sub + Integer.parseInt(purchasePrice.getText().toString());
+            sub = sub + Integer.parseInt(purchasePrice.getText().toString().replace("₱", ""));
             quantityPurchase.setText(String.valueOf(qtyPurchase));
             String s13 = "\u20B1<b>" + sub + ".00</b>";
             subtotal.setText(Html.fromHtml(s13));

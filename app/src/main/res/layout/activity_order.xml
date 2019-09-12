@@ -187,12 +187,12 @@
                 <CheckBox
                     android:id="@+id/refillCheckBox"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="8dp"/>
 
                 <TextView
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
-                    android:layout_marginStart="8dp"
                     android:layout_weight="1"
                     android:gravity="center_vertical"
                     android:text="@string/refill"
@@ -215,8 +215,7 @@
                     android:layout_weight="1"
                     android:gravity="center_vertical"
                     android:textColor="@color/colorText"
-                    android:textSize="16sp"
-                    android:textStyle="bold" />
+                    android:textSize="16sp" />
 
                 <LinearLayout
                     android:layout_width="wrap_content"
@@ -284,12 +283,12 @@
                 <CheckBox
                     android:id="@+id/purchaseCheckBox"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="8dp"/>
 
                 <TextView
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
-                    android:layout_marginStart="8dp"
                     android:layout_weight="1"
                     android:gravity="center_vertical"
                     android:text="@string/purchase"
@@ -312,8 +311,7 @@
                     android:layout_weight="1"
                     android:gravity="center_vertical"
                     android:textColor="@color/colorText"
-                    android:textSize="16sp"
-                    android:textStyle="bold" />
+                    android:textSize="16sp" />
 
                 <LinearLayout
                     android:layout_width="wrap_content"

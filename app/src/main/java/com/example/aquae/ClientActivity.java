@@ -186,35 +186,29 @@ public class ClientActivity extends AppCompatActivity {
 
                                     if (Objects.equals(s.child("status").getValue(), "available")) {
 
-                                        for (DataSnapshot d : s.getChildren()) {
+                                        Object refillPrice = 0;
+                                        Object salePrice = 0;
 
-                                            Object refillPrice = 0;
-                                            Object salePrice = 0;
-
-                                            for (DataSnapshot e : d.getChildren()) {
-
-                                                if (Objects.equals(e.getKey(), "refill")) {
-                                                    refillPrice = e.child("price").getValue();
-                                                }
-
-                                                if (Objects.equals(e.getKey(), "sale")) {
-                                                    salePrice = e.child("price").getValue();
-                                                }
-
-                                                productModelList.add(new ProductModel(
-                                                        String.valueOf(s.getKey()),
-                                                        String.valueOf(s.child("product_image").getValue()),
-                                                        String.valueOf(refillPrice),
-                                                        String.valueOf(salePrice),
-                                                        String.valueOf(s.child("minimum_order").getValue()),
-                                                        String.valueOf(s.child("maximum_order").getValue())
-                                                ));
-
-                                                dialogFragment.dismiss();
-
+                                        for (DataSnapshot d : s.child("service_types").getChildren()) {
+                                            if (Objects.equals(d.getKey(), "refill")) {
+                                                refillPrice = d.child("price").getValue();
                                             }
 
+                                            if (Objects.equals(d.getKey(), "sale")) {
+                                                salePrice = d.child("price").getValue();
+                                            }
                                         }
+
+                                        productModelList.add(new ProductModel(
+                                                String.valueOf(s.getKey()),
+                                                String.valueOf(s.child("product_image").getValue()),
+                                                String.valueOf(refillPrice),
+                                                String.valueOf(salePrice),
+                                                String.valueOf(s.child("minimum_order").getValue()),
+                                                String.valueOf(s.child("maximum_order").getValue())
+                                        ));
+
+                                        dialogFragment.dismiss();
                                     }
 
                                 }

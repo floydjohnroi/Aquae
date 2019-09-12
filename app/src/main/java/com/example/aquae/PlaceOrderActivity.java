@@ -96,10 +96,10 @@ public class PlaceOrderActivity extends AppCompatActivity {
 
     Map<String, Object> items = new HashMap<>();
 
-    Map<String, Object> maps = new HashMap<>();
+//    Map<String, Object> maps = new HashMap<>();
+//
+//    Map<String, Object> map = new HashMap<>();
 
-    Map<String, Object> map = new HashMap<>();
-    
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -425,12 +425,16 @@ public class PlaceOrderActivity extends AppCompatActivity {
                                         for (DataSnapshot d : s.getChildren()) {
                                             if (Objects.equals(d.child("status").getValue(), "check")) {
 
+                                                Map<String, Object> refill = new HashMap<>();
+                                                Map<String, Object> purchase = new HashMap<>();
+                                                Map<String, Object> map = new HashMap<>();
+
+                                                map.put("water_type", Objects.requireNonNull(d.child("water_type").getValue()));
+
                                                 Object refillQuantity = 0;
                                                 Object refillPrice = 0;
                                                 Object purchaseQuantity = 0;
                                                 Object purchasePrice = 0;
-
-                                                map.put("water_type", Objects.requireNonNull(d.child("water_type").getValue()));
 
                                                 for (DataSnapshot e : d.getChildren()) {
 
@@ -438,21 +442,23 @@ public class PlaceOrderActivity extends AppCompatActivity {
                                                         refillQuantity = e.child("quantity").getValue();
                                                         refillPrice = e.child("price").getValue();
 
-                                                        maps.put("quantity", Objects.requireNonNull(e.child("quantity").getValue()));
-                                                        maps.put("price", Objects.requireNonNull(e.child("price").getValue()));
-                                                        map.put("refill", maps);
+                                                        refill.put("quantity", String.valueOf(e.child("quantity").getValue()));
+                                                        refill.put("price", String.valueOf(e.child("price").getValue()));
+                                                        map.put("refill", refill);
                                                     }
 
                                                     if (Objects.requireNonNull(e.getKey()).equals("purchase")) {
                                                         purchaseQuantity = e.child("quantity").getValue();
                                                         purchasePrice = e.child("price").getValue();
 
-                                                        maps.put("quantity", Objects.requireNonNull(e.child("quantity").getValue()));
-                                                        maps.put("price", Objects.requireNonNull(e.child("price").getValue()));
-                                                        map.put("purchase", maps);
+                                                        purchase.put("quantity", String.valueOf(e.child("quantity").getValue()));
+                                                        purchase.put("price", String.valueOf(e.child("price").getValue()));
+                                                        map.put("purchase", purchase);
                                                     }
 
                                                 }
+
+                                                items.put(Objects.requireNonNull(d.getKey()), map);
 
                                                 checkOutProductModelList.add(new CheckOutProductModel(
                                                         String.valueOf(snapshot.child("client_id").getValue()),
@@ -468,13 +474,12 @@ public class PlaceOrderActivity extends AppCompatActivity {
                                                 ));
 
 
-                                                items.put(Objects.requireNonNull(d.getKey()), map);
-
                                                 qtyr += Integer.parseInt(String.valueOf(refillQuantity));
                                                 qtyp += Integer.parseInt(String.valueOf(purchaseQuantity));
 
                                                 t += Integer.parseInt(String.valueOf(d.child("subtotal").getValue()));
                                                 subtotal.setText(t+".00");
+
 
                                             }
                                         }
@@ -535,12 +540,14 @@ public class PlaceOrderActivity extends AppCompatActivity {
             String dst = String.valueOf(distance.getText()).replace(" km", "");
             String[] ds = dst.split("\\.");
 
-            int dfee = Integer.parseInt(getIntent().getStringExtra("ship_fee")) * Integer.parseInt(ds[0]);
-            delivery_fee.setText(dfee + ".00");
+            if (ds[0] != null) {
+                int dfee = Integer.parseInt(getIntent().getStringExtra("ship_fee")) * Integer.parseInt(ds[0]);
+                delivery_fee.setText(dfee + ".00");
 
-            int newt = Integer.parseInt(String.valueOf(subtotal.getText()).replace(".00", "")) + dfee;
-            String ts = "₱<b>"+newt+".00</b>";
-            total.setText(Html.fromHtml(ts));
+                int newt = Integer.parseInt(String.valueOf(subtotal.getText()).replace(".00", "")) + dfee;
+                String ts = "₱<b>" + newt + ".00</b>";
+                total.setText(Html.fromHtml(ts));
+            }
 
 
         }, error -> Log.d("error", error.toString()));

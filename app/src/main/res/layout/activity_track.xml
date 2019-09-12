@@ -435,8 +435,6 @@
                 android:layout_marginEnd="32dp"
                 android:layout_marginTop="16dp"
                 android:textColor="@color/colorText"
-                android:drawableEnd="@drawable/icon_right"
-                android:drawablePadding="16dp"
                 android:textSize="20sp"
                 android:textStyle="bold" />
 

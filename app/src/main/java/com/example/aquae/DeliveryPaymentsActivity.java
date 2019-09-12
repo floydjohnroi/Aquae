@@ -8,11 +8,14 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -72,9 +75,10 @@ public class DeliveryPaymentsActivity extends AppCompatActivity {
 
         FirebaseDatabase.getInstance().getReference().child("customers")
                 .orderByChild("customer_id").equalTo(new Session(getApplicationContext()).getId())
-                .addListenerForSingleValueEvent(new ValueEventListener() {
+                .addValueEventListener(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                        addressModelList.clear();
                         for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                             for (DataSnapshot snap : snapshot.child("addresses").getChildren()) {
                                 addressModelList.add(new AddressModel(
@@ -155,6 +159,31 @@ public class DeliveryPaymentsActivity extends AppCompatActivity {
 
             AlertDialog alertDialog = builder.create();
             alertDialog.show();
+
+            alertDialog.getButton(DialogInterface.BUTTON_POSITIVE).setEnabled(false);
+
+            address.addTextChangedListener(new TextWatcher() {
+                @Override
+                public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+                }
+
+                @Override
+                public void onTextChanged(CharSequence s, int start, int before, int count) {
+                    if ("".contentEquals(s.toString().trim())) {
+                        alertDialog.getButton(DialogInterface.BUTTON_POSITIVE).setEnabled(false);
+                    }
+                    else {
+                        alertDialog.getButton(DialogInterface.BUTTON_POSITIVE).setEnabled(true);
+                    }
+                }
+
+                @Override
+                public void afterTextChanged(Editable s) {
+
+                }
+            });
+
         });
 
     }

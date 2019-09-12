@@ -35,6 +35,8 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.squareup.picasso.Picasso;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -53,14 +55,14 @@ public class TrackActivity extends AppCompatActivity {
     Toolbar toolbar;
     MaterialCardView toolbarCard;
     TextView toolbarTitle, orderId, orderTime, estTime, placedTime, placedDate, processedTime, processedDate, deliveredTime, deliveredDate;
-    ImageView check, check1, check2;
+    ImageView check, check1, check2, personnel_profile;
     LinearLayout dashed, dashed1, estLayout, notesLayout, placedLayout, processedLayout, deliveredLayout, historyLayout, declinedLayout;
     View line, line1;
     List<ScheduleProductModel> scheduleProductModelList = new ArrayList<>();
     RecyclerView recyclerView;
-    TextView station, deliveryAddress, subtotal, deliveryFee, orderTotal, paymentMethod, notes, historyTime;
+    TextView station, deliveryAddress, subtotal, deliveryFee, orderTotal, paymentMethod, notes, historyTime, personnel_name;
     MaterialButton contactStation, viewStation;
-    String contactNumber, activity;
+    String contactNumber, activity, personImage;
     LinearLayout personnelLayout;
 
     @Override
@@ -107,6 +109,8 @@ public class TrackActivity extends AppCompatActivity {
         historyTime = findViewById(R.id.history_time);
         declinedLayout = findViewById(R.id.declined_layout);
         personnelLayout = findViewById(R.id.personnel_layout);
+        personnel_profile = findViewById(R.id.personnel_profile);
+        personnel_name = findViewById(R.id.personnel_name);
 
         setSupportActionBar(toolbar);
         (Objects.requireNonNull(getSupportActionBar())).setDisplayHomeAsUpEnabled(true);
@@ -188,7 +192,10 @@ public class TrackActivity extends AppCompatActivity {
                         scheduleProductModelList.clear();
                         for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                             if (!"OrderHistory".equals(activity)) {
-                                if ("accepted".equals(snapshot.child("status").getValue())) {
+                                if ("pending".equals(snapshot.child("status").getValue())) {
+                                    personnelLayout.setVisibility(View.GONE);
+                                }
+                                else if ("accepted".equals(snapshot.child("status").getValue())) {
                                     check.setImageResource(R.drawable.icon_stepview_completed);
                                     dashed.setVisibility(View.GONE);
                                     line.setVisibility(View.VISIBLE);
@@ -219,7 +226,6 @@ public class TrackActivity extends AppCompatActivity {
                                     check2.setImageResource(R.drawable.icon_stepview_completed);
                                     deliveredTime.setText(new SimpleDateFormat("hh:mm a", Locale.getDefault()).format(new Date()));
                                     deliveredDate.setText(new SimpleDateFormat("MMM dd", Locale.getDefault()).format(new Date()));
-
 
                                     View view = LayoutInflater.from(TrackActivity.this).inflate(R.layout.ratefeedbacks_dialog_view, null);
                                     View titleView = LayoutInflater.from(TrackActivity.this).inflate(R.layout.custom_dialog_title, null);
@@ -260,6 +266,7 @@ public class TrackActivity extends AppCompatActivity {
                                                         @Override
                                                         public void onSuccess(Void aVoid) {
                                                             Toast.makeText(getApplicationContext(), "Review Posted", Toast.LENGTH_SHORT).show();
+                                                            dialog.dismiss();
                                                         }
                                                     });
                                         }
@@ -293,6 +300,30 @@ public class TrackActivity extends AppCompatActivity {
                             subtotal.setText(String.valueOf(sub));
                             deliveryFee.setText(String.valueOf(snapshot.child("delivery_fee").getValue()));
                             orderTotal.setText(String.valueOf(snapshot.child("total_amount").getValue()));
+
+
+                            FirebaseDatabase.getInstance().getReference().child("personnels")
+                                    .orderByChild("per_id").equalTo(String.valueOf(snapshot.child("per_id").getValue()))
+                                    .addListenerForSingleValueEvent(new ValueEventListener() {
+                                        @Override
+                                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                            for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                                                personImage = String.valueOf(snapshot.child("pic").getValue());
+                                                Picasso.get()
+                                                        .load(String.valueOf(snapshot.child("pic").getValue()))
+                                                        .fit()
+                                                        .centerCrop()
+                                                        .placeholder(R.drawable.refillssss)
+                                                        .into(personnel_profile);
+                                                personnel_name.setText(String.valueOf(snapshot.child("per_name").getValue()));
+                                            }
+                                        }
+
+                                        @Override
+                                        public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                                        }
+                                    });
 
 
                             if ("".equals(snapshot.child("notes").getValue())) {
@@ -341,54 +372,6 @@ public class TrackActivity extends AppCompatActivity {
 
                     }
                 });
-
-        station.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(TrackActivity.this, ClientActivity.class);
-
-                FirebaseDatabase.getInstance().getReference().child("clients")
-                        .orderByChild("client_id").equalTo(getIntent().getStringExtra("client_id"))
-                        .addListenerForSingleValueEvent(new ValueEventListener() {
-                            @Override
-                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                                    Object image = null;
-                                    for (DataSnapshot data : snapshot.getChildren()) {
-                                        image = data.child("store").getValue();
-                                    }
-
-                                    String finalStr = String.valueOf(snapshot.child("water_type").getValue()).substring(0, String.valueOf(snapshot.child("water_type").getValue()).length()-2);
-                                    String[] str = String.valueOf(snapshot.child("water_type").getValue()).split(", ");
-
-                                    if (str.length > 1) {
-                                        finalStr = finalStr.substring(0, finalStr.lastIndexOf(","))+" &"+finalStr.substring(finalStr.lastIndexOf(",")+1);
-                                        intent.putExtra("water_type", finalStr);
-                                    }
-                                    else {
-                                        intent.putExtra("water_type", finalStr);
-                                    }
-
-                                    intent.putExtra("client_id", String.valueOf(snapshot.child("client_id").getValue()));
-                                    intent.putExtra("company",  String.valueOf(snapshot.child("company").getValue()));
-                                    intent.putExtra("address", String.valueOf(snapshot.child("address").getValue()));
-                                    intent.putExtra("email",  String.valueOf(snapshot.child("email").getValue()));
-                                    intent.putExtra("contact", String.valueOf(snapshot.child("contact").getValue()));
-                                    intent.putExtra("storeImage", String.valueOf(image));
-                                    intent.putExtra("no_of_filter", String.valueOf(snapshot.child("no_of_filter").getValue()));
-                                    intent.putExtra("ship_fee", String.valueOf(snapshot.child("shipping_fee").getValue()));
-                                }
-
-                                startActivity(intent);
-                            }
-
-                            @Override
-                            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-                            }
-                        });
-            }
-        });
 
         contactStation.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -486,6 +469,40 @@ public class TrackActivity extends AppCompatActivity {
 
                             }
                         });
+            }
+        });
+
+        personnelLayout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                View view = LayoutInflater.from(TrackActivity.this).inflate(R.layout.personnel_dialog_view, null);
+
+                ImageView close = view.findViewById(R.id.close);
+                ImageView profile = view.findViewById(R.id.profile);
+                TextView name = view.findViewById(R.id.name);
+
+                Picasso.get()
+                        .load(personImage)
+                        .fit()
+                        .centerCrop()
+                        .placeholder(R.drawable.refillssss)
+                        .into(profile);
+
+                name.setText(personnel_name.getText());
+
+                AlertDialog.Builder builder = new AlertDialog.Builder(TrackActivity.this, R.style.AlertDialogTheme);
+                builder.setView(view);
+
+                AlertDialog alertDialog = builder.create();
+                alertDialog.show();
+
+                close.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        alertDialog.dismiss();
+                    }
+                });
+
             }
         });
 
