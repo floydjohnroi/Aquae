@@ -54,16 +54,10 @@ public class Filter1Fragment extends Fragment {
                 .addValueEventListener(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-
                         clientModelList.clear();
-
                         for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-
                             for (DataSnapshot data : snapshot.getChildren()) {
-
-
                                 if (data.child("store").getValue() != null) {
-
                                     clientModelList.add(new ClientModel(
                                             String.valueOf(snapshot.child("client_id").getValue()),
                                             String.valueOf(snapshot.child("company").getValue()),
@@ -76,15 +70,10 @@ public class Filter1Fragment extends Fragment {
                                             String.valueOf(snapshot.child("no_of_filter").getValue()),
                                             String.valueOf(snapshot.child("shipping_fee").getValue())
                                     ));
-
                                 }
-
                             }
-
                         }
-
                         recyclerView.setAdapter(new ClientAdapter(getContext(), clientModelList, isForDelivery));
-
                     }
 
                     @Override

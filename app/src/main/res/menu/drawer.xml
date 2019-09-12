@@ -9,10 +9,19 @@
 <!--            android:id="@+id/cart"-->
 <!--            android:title="@string/cart"-->
 <!--            android:icon="@drawable/icon_cart_light" />-->
+
         <item
             android:id="@+id/delivery_schedule"
             android:title="@string/delivery_schedule"
             android:icon="@drawable/icon_delivery_schedule" />
+        <item
+            android:id="@+id/track_order"
+            android:title="Track Order"
+            android:icon="@drawable/icon_track_order" />
+        <item
+            android:id="@+id/order_history"
+            android:title="Order History"
+            android:icon="@drawable/icon_history" />
         <item
             android:id="@+id/wallet"
             android:title="@string/wallet"

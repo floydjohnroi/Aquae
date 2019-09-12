@@ -294,6 +294,12 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
 //            case R.id.cart:
 //                startActivity(new Intent(HomeActivity.this, CartActivity.class));
 //                break;
+            case R.id.order_history:
+                startActivity(new Intent(HomeActivity.this, OrderHistoryActivity.class));
+                break;
+            case R.id.track_order:
+                startActivity(new Intent(HomeActivity.this, TrackOrderActivity.class));
+                break;
             case R.id.delivery_schedule:
                 startActivity(new Intent(HomeActivity.this, DeliveryScheduleActivity.class));
                 break;
