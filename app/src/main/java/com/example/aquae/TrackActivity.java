@@ -1,15 +1,19 @@
 package com.example.aquae;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.fragment.app.DialogFragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.Html;
@@ -44,6 +48,7 @@ import org.json.JSONObject;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.FormatFlagsConversionMismatchException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -54,16 +59,18 @@ public class TrackActivity extends AppCompatActivity {
 
     Toolbar toolbar;
     MaterialCardView toolbarCard;
-    TextView toolbarTitle, orderId, orderTime, estTime, placedTime, placedDate, processedTime, processedDate, deliveredTime, deliveredDate;
-    ImageView check, check1, check2, personnel_profile;
-    LinearLayout dashed, dashed1, estLayout, notesLayout, placedLayout, processedLayout, deliveredLayout, historyLayout, declinedLayout;
-    View line, line1;
+    TextView toolbarTitle, orderId, orderTime, estTime, acceptedTime, acceptedDate, outforpickupTime, outforpickupDate,
+    preparingTime, preparingDate, outfordeliveryTime, outfordeliveryDate, deliveredTime, deliveredDate;
+    ImageView acceptedCheck, outforpickupCheck, preparingCheck, outfordeliveryCheck, deliveredCheck, personnel_profile;
+    LinearLayout dashed, dashed1, dashed2, dashed3, estLayout, notesLayout, historyLayout, declinedLayout,
+    acceptedLayout, outforpickupLayout, preparingLayout, outfordeliveryLayout, deliveredLayout;
+    View solid, solid1, solid2, solid3;
     List<ScheduleProductModel> scheduleProductModelList = new ArrayList<>();
     RecyclerView recyclerView;
     TextView station, deliveryAddress, subtotal, deliveryFee, orderTotal, paymentMethod, notes, historyTime, personnel_name;
-    MaterialButton contactStation, viewStation;
+    MaterialButton contactStation, viewStation, cancelOrder;
     String contactNumber, activity, personImage;
-    LinearLayout personnelLayout;
+    LinearLayout personnelLayout, trackorderLayout, cancelOrderLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,17 +83,32 @@ public class TrackActivity extends AppCompatActivity {
         orderId = findViewById(R.id.order_id);
         estTime = findViewById(R.id.est_time);
         orderTime = findViewById(R.id.order_time);
-        check = findViewById(R.id.check);
-        check1 = findViewById(R.id.check1);
-        check2 = findViewById(R.id.check2);
         dashed = findViewById(R.id.dashed);
         dashed1 = findViewById(R.id.dashed1);
-        line = findViewById(R.id.line);
-        line1 = findViewById(R.id.line1);
-        placedTime = findViewById(R.id.placed_time);
-        placedDate = findViewById(R.id.placed_date);
-        processedTime = findViewById(R.id.processed_time);
-        processedDate = findViewById(R.id.processed_date);
+        dashed2 = findViewById(R.id.dashed2);
+        dashed3 = findViewById(R.id.dashed3);
+        solid  = findViewById(R.id.solid);
+        solid1 = findViewById(R.id.solid1);
+        solid2 = findViewById(R.id.solid2);
+        solid3 = findViewById(R.id.solid3);
+        acceptedLayout = findViewById(R.id.accepted_layout);
+        acceptedCheck = findViewById(R.id.accepted_check);
+        acceptedTime = findViewById(R.id.accepted_time);
+        acceptedDate = findViewById(R.id.accepted_date);
+        outforpickupLayout = findViewById(R.id.outforpickup_layout);
+        outforpickupCheck = findViewById(R.id.outforpickup_check);
+        outforpickupTime = findViewById(R.id.outforpickup_time);
+        outforpickupDate = findViewById(R.id.outforpickup_date);
+        preparingLayout = findViewById(R.id.preparing_layout);
+        preparingCheck = findViewById(R.id.preparing_check);
+        preparingTime = findViewById(R.id.preparing_time);
+        preparingDate = findViewById(R.id.preparing_date);
+        outfordeliveryLayout = findViewById(R.id.outfordelivery_layout);
+        outfordeliveryCheck = findViewById(R.id.outfordelivery_check);
+        outfordeliveryTime = findViewById(R.id.outfordelivery_time);
+        outfordeliveryDate = findViewById(R.id.outfordelivery_date);
+        deliveredLayout = findViewById(R.id.delivered_layout);
+        deliveredCheck = findViewById(R.id.delivered_check);
         deliveredTime = findViewById(R.id.delivered_time);
         deliveredDate = findViewById(R.id.delivered_date);
         estLayout = findViewById(R.id.est_layout);
@@ -102,8 +124,6 @@ public class TrackActivity extends AppCompatActivity {
         contactStation = findViewById(R.id.contact_station);
         viewStation = findViewById(R.id.view_station);
         activity = getIntent().getStringExtra("activity");
-        placedLayout = findViewById(R.id.placed_layout);
-        processedLayout = findViewById(R.id.processed_layout);
         deliveredLayout = findViewById(R.id.delivered_layout);
         historyLayout = findViewById(R.id.history_layout);
         historyTime = findViewById(R.id.history_time);
@@ -111,6 +131,9 @@ public class TrackActivity extends AppCompatActivity {
         personnelLayout = findViewById(R.id.personnel_layout);
         personnel_profile = findViewById(R.id.personnel_profile);
         personnel_name = findViewById(R.id.personnel_name);
+        trackorderLayout = findViewById(R.id.trackorder_layout);
+        cancelOrder = findViewById(R.id.cancel_order);
+        cancelOrderLayout = findViewById(R.id.cancel_order_layout);
 
         setSupportActionBar(toolbar);
         (Objects.requireNonNull(getSupportActionBar())).setDisplayHomeAsUpEnabled(true);
@@ -120,12 +143,9 @@ public class TrackActivity extends AppCompatActivity {
         if ("OrderHistory".equals(activity)) {
             toolbarTitle.setText("Order History");
             estLayout.setVisibility(View.GONE);
-            placedLayout.setVisibility(View.GONE);
-            processedLayout.setVisibility(View.GONE);
-            deliveredLayout.setVisibility(View.GONE);
-            dashed.setVisibility(View.GONE);
-            dashed1.setVisibility(View.GONE);
             contactStation.setVisibility(View.GONE);
+            trackorderLayout.setVisibility(View.GONE);
+            cancelOrderLayout.setVisibility(View.GONE);
         }
         else {
             toolbarTitle.setText("Track Order");
@@ -140,6 +160,9 @@ public class TrackActivity extends AppCompatActivity {
         orderId.setText(getIntent().getStringExtra("order_id"));
         orderTime.setText(getIntent().getStringExtra("order_time"));
 
+        DialogFragment dialogFragment = LoadingScreen.getInstance();
+        dialogFragment.show(getSupportFragmentManager(), "track_activity");
+
         FirebaseDatabase.getInstance().getReference().child("clients")
                 .orderByChild("client_id").equalTo(getIntent().getStringExtra("client_id"))
                 .addListenerForSingleValueEvent(new ValueEventListener() {
@@ -148,7 +171,6 @@ public class TrackActivity extends AppCompatActivity {
                         for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
 
                             contactNumber = String.valueOf(snapshot.child("contact").getValue());
-
                             station.setText(String.valueOf(snapshot.child("company").getValue()));
 
                             RequestQueue queue = Volley.newRequestQueue(TrackActivity.this);
@@ -165,6 +187,8 @@ public class TrackActivity extends AppCompatActivity {
                                     for (int i = 0; i < legs.length(); i++) {
                                         JSONObject leg = legs.getJSONObject(i);
                                         estTime.setText(leg.getJSONObject("duration").getString("text"));
+
+                                        dialogFragment.dismiss();
                                     }
 
                                 } catch (JSONException e) {
@@ -194,86 +218,223 @@ public class TrackActivity extends AppCompatActivity {
                             if (!"OrderHistory".equals(activity)) {
                                 if ("pending".equals(snapshot.child("status").getValue())) {
                                     personnelLayout.setVisibility(View.GONE);
+                                    cancelOrderLayout.setVisibility(View.VISIBLE);
                                 }
                                 else if ("accepted".equals(snapshot.child("status").getValue())) {
-                                    check.setImageResource(R.drawable.icon_stepview_completed);
-                                    dashed.setVisibility(View.GONE);
-                                    line.setVisibility(View.VISIBLE);
-                                    placedTime.setText(new SimpleDateFormat("hh:mm a", Locale.getDefault()).format(new Date()));
-                                    placedDate.setText(new SimpleDateFormat("MMM dd", Locale.getDefault()).format(new Date()));
-                                } else if ("processing".equals(snapshot.child("status").getValue())) {
-                                    check.setImageResource(R.drawable.icon_stepview_completed);
-                                    dashed.setVisibility(View.GONE);
-                                    line.setVisibility(View.VISIBLE);
-                                    placedTime.setText(new SimpleDateFormat("hh:mm a", Locale.getDefault()).format(new Date()));
-                                    placedDate.setText(new SimpleDateFormat("MMM dd", Locale.getDefault()).format(new Date()));
-                                    check1.setImageResource(R.drawable.icon_stepview_completed);
-                                    dashed1.setVisibility(View.GONE);
-                                    line1.setVisibility(View.VISIBLE);
-                                    processedTime.setText(new SimpleDateFormat("hh:mm a", Locale.getDefault()).format(new Date()));
-                                    processedDate.setText(new SimpleDateFormat("MMM dd", Locale.getDefault()).format(new Date()));
-                                } else if ("delivered".equals(snapshot.child("status").getValue())) {
-                                    check.setImageResource(R.drawable.icon_stepview_completed);
-                                    dashed.setVisibility(View.GONE);
-                                    line.setVisibility(View.VISIBLE);
-                                    placedTime.setText(new SimpleDateFormat("hh:mm a", Locale.getDefault()).format(new Date()));
-                                    placedDate.setText(new SimpleDateFormat("MMM dd", Locale.getDefault()).format(new Date()));
-                                    check1.setImageResource(R.drawable.icon_stepview_completed);
-                                    dashed1.setVisibility(View.GONE);
-                                    line1.setVisibility(View.VISIBLE);
-                                    processedTime.setText(new SimpleDateFormat("hh:mm a", Locale.getDefault()).format(new Date()));
-                                    processedDate.setText(new SimpleDateFormat("MMM dd", Locale.getDefault()).format(new Date()));
-                                    check2.setImageResource(R.drawable.icon_stepview_completed);
-                                    deliveredTime.setText(new SimpleDateFormat("hh:mm a", Locale.getDefault()).format(new Date()));
-                                    deliveredDate.setText(new SimpleDateFormat("MMM dd", Locale.getDefault()).format(new Date()));
+                                    if ("1".equals(snapshot.child("click").getValue())) {
+                                        cancelOrderLayout.setVisibility(View.GONE);
+                                        acceptedCheck.setImageResource(R.drawable.icon_stepview_completed);
+                                        dashed.setVisibility(View.GONE);
+                                        solid.setVisibility(View.VISIBLE);
 
-                                    View view = LayoutInflater.from(TrackActivity.this).inflate(R.layout.ratefeedbacks_dialog_view, null);
+                                        String[] accept = String.valueOf(snapshot.child("accepted_time").getValue()).split(" ");
+                                        acceptedTime.setText(accept[4]+" "+accept[5]);
+                                        acceptedDate.setText(accept[0]+" "+accept[1].replace(",", ""));
+                                    }
+                                    else if ("2".equals(snapshot.child("click").getValue()) || "3".equals(snapshot.child("click").getValue())) {
+                                        cancelOrderLayout.setVisibility(View.GONE);
+                                        acceptedCheck.setImageResource(R.drawable.icon_stepview_completed);
+                                        dashed.setVisibility(View.GONE);
+                                        solid.setVisibility(View.VISIBLE);
+                                        String[] accept = String.valueOf(snapshot.child("accepted_time").getValue()).split(" ");
+                                        acceptedTime.setText(accept[4]+" "+accept[5]);
+                                        acceptedDate.setText(accept[0]+" "+accept[1].replace(",", ""));
+                                        cancelOrderLayout.setVisibility(View.GONE);
+                                        outforpickupCheck.setImageResource(R.drawable.icon_stepview_completed);
+                                        dashed1.setVisibility(View.GONE);
+                                        solid1.setVisibility(View.VISIBLE);
+
+                                        String[] pickup = String.valueOf(snapshot.child("pickup_time").getValue()).split(" ");
+                                        outforpickupTime.setText(pickup[4]+" "+pickup[5]);
+                                        outforpickupDate.setText(pickup[0]+" "+pickup[1].replace(",", ""));
+                                    }
+                                }
+                                else if ("processing".equals(snapshot.child("status").getValue())) {
+                                    if ("1".equals(snapshot.child("click").getValue())) {
+                                        cancelOrderLayout.setVisibility(View.GONE);
+                                        acceptedCheck.setImageResource(R.drawable.icon_stepview_completed);
+                                        dashed.setVisibility(View.GONE);
+                                        solid.setVisibility(View.VISIBLE);
+                                        String[] accept = String.valueOf(snapshot.child("accepted_time").getValue()).split(" ");
+                                        acceptedTime.setText(accept[4]+" "+accept[5]);
+                                        acceptedDate.setText(accept[0]+" "+accept[1].replace(",", ""));
+                                        outforpickupCheck.setImageResource(R.drawable.icon_stepview_completed);
+                                        dashed1.setVisibility(View.GONE);
+                                        solid1.setVisibility(View.VISIBLE);
+
+                                        String[] pickup = String.valueOf(snapshot.child("pickup_time").getValue()).split(" ");
+                                        outforpickupTime.setText(pickup[4]+" "+pickup[5]);
+                                        outforpickupDate.setText(pickup[0]+" "+pickup[1].replace(",", ""));
+
+                                        preparingCheck.setImageResource(R.drawable.icon_stepview_completed);
+                                        dashed2.setVisibility(View.GONE);
+                                        solid2.setVisibility(View.VISIBLE);
+
+                                        String[] prepare = String.valueOf(snapshot.child("prepare_time").getValue()).split(" ");
+                                        preparingTime.setText(prepare[4]+" "+prepare[5]);
+                                        preparingDate.setText(prepare[0]+" "+prepare[1].replace(",", ""));
+
+                                    }
+                                    else if ("2".equals(snapshot.child("click").getValue()) || "3".equals(snapshot.child("click").getValue())) {
+                                        cancelOrderLayout.setVisibility(View.GONE);
+                                        acceptedCheck.setImageResource(R.drawable.icon_stepview_completed);
+                                        dashed.setVisibility(View.GONE);
+                                        solid.setVisibility(View.VISIBLE);
+                                        String[] accept = String.valueOf(snapshot.child("accepted_time").getValue()).split(" ");
+                                        acceptedTime.setText(accept[4]+" "+accept[5]);
+                                        acceptedDate.setText(accept[0]+" "+accept[1].replace(",", ""));
+                                        outforpickupCheck.setImageResource(R.drawable.icon_stepview_completed);
+                                        dashed1.setVisibility(View.GONE);
+                                        solid1.setVisibility(View.VISIBLE);
+
+                                        String[] pickup = String.valueOf(snapshot.child("pickup_time").getValue()).split(" ");
+                                        outforpickupTime.setText(pickup[4]+" "+pickup[5]);
+                                        outforpickupDate.setText(pickup[0]+" "+pickup[1].replace(",", ""));
+
+                                        preparingCheck.setImageResource(R.drawable.icon_stepview_completed);
+                                        dashed2.setVisibility(View.GONE);
+                                        solid2.setVisibility(View.VISIBLE);
+
+                                        String[] prepare = String.valueOf(snapshot.child("prepare_time").getValue()).split(" ");
+                                        preparingTime.setText(prepare[4]+" "+prepare[5]);
+                                        preparingDate.setText(prepare[0]+" "+prepare[1].replace(",", ""));
+
+                                        outfordeliveryCheck.setImageResource(R.drawable.icon_stepview_completed);
+                                        dashed3.setVisibility(View.GONE);
+                                        solid3.setVisibility(View.VISIBLE);
+
+                                        String[] deliver = String.valueOf(snapshot.child("deliver_time").getValue()).split(" ");
+                                        outfordeliveryTime.setText(deliver[4]+" "+deliver[5]);
+                                        outfordeliveryDate.setText(deliver[0]+" "+deliver[1].replace(",", ""));
+
+                                    }
+                                } else if ("delivered".equals(snapshot.child("status").getValue())) {
+                                    cancelOrderLayout.setVisibility(View.GONE);
+                                    acceptedCheck.setImageResource(R.drawable.icon_stepview_completed);
+                                    dashed.setVisibility(View.GONE);
+                                    solid.setVisibility(View.VISIBLE);
+                                    String[] accept = String.valueOf(snapshot.child("accepted_time").getValue()).split(" ");
+                                    acceptedTime.setText(accept[4]+" "+accept[5]);
+                                    acceptedDate.setText(accept[0]+" "+accept[1].replace(",", ""));
+                                    outforpickupCheck.setImageResource(R.drawable.icon_stepview_completed);
+                                    dashed1.setVisibility(View.GONE);
+                                    solid1.setVisibility(View.VISIBLE);
+                                    String[] pickup = String.valueOf(snapshot.child("pickup_time").getValue()).split(" ");
+                                    outforpickupTime.setText(pickup[4]+" "+pickup[5]);
+                                    outforpickupDate.setText(pickup[0]+" "+pickup[1].replace(",", ""));
+                                    preparingCheck.setImageResource(R.drawable.icon_stepview_completed);
+                                    dashed2.setVisibility(View.GONE);
+                                    solid2.setVisibility(View.VISIBLE);
+                                    String[] prepare = String.valueOf(snapshot.child("prepare_time").getValue()).split(" ");
+                                    preparingTime.setText(prepare[4]+" "+prepare[5]);
+                                    preparingDate.setText(prepare[0]+" "+prepare[1].replace(",", ""));
+                                    outfordeliveryCheck.setImageResource(R.drawable.icon_stepview_completed);
+                                    dashed3.setVisibility(View.GONE);
+                                    solid3.setVisibility(View.VISIBLE);
+                                    String[] deliver = String.valueOf(snapshot.child("deliver_time").getValue()).split(" ");
+                                    outfordeliveryTime.setText(deliver[4]+" "+deliver[5]);
+                                    outfordeliveryDate.setText(deliver[0]+" "+deliver[1].replace(",", ""));
+                                    deliveredCheck.setImageResource(R.drawable.icon_stepview_completed);
+
+                                    String[] delivered = String.valueOf(snapshot.child("delivered_time").getValue()).split(" ");
+                                    deliveredTime.setText(delivered[4]+" "+delivered[5]);
+                                    deliveredDate.setText(delivered[0]+" "+delivered[1].replace(",", ""));
+
+
+                                    View view = LayoutInflater.from(TrackActivity.this).inflate(R.layout.confimation_dialog_view, null);
                                     View titleView = LayoutInflater.from(TrackActivity.this).inflate(R.layout.custom_dialog_title, null);
 
                                     TextView title = titleView.findViewById(R.id.title);
-                                    title.setText("RATES & FEEDBACKS");
-
-                                    RatingBar ratingBar = view.findViewById(R.id.rating_bar);
-                                    TextInputEditText feedbacks = view.findViewById(R.id.feedbacks);
-
+                                    title.setText("CONFIRMATION");
 
                                     AlertDialog.Builder builder = new AlertDialog.Builder(TrackActivity.this, R.style.AlertDialogTheme);
                                     builder.setCustomTitle(titleView);
                                     builder.setView(view);
+                                    builder.setCancelable(false);
 
-                                    builder.setNegativeButton("not now", new DialogInterface.OnClickListener() {
-                                        @Override
-                                        public void onClick(DialogInterface dialog, int which) {
-                                            dialog.cancel();
-                                        }
-                                    });
-
-                                    builder.setPositiveButton("send", new DialogInterface.OnClickListener() {
+                                    builder.setPositiveButton("confirm", new DialogInterface.OnClickListener() {
                                         @Override
                                         public void onClick(DialogInterface dialog, int which) {
 
-                                            String id = FirebaseDatabase.getInstance().getReference().push().getKey();
-                                            Map<String, Object> map = new HashMap<>();
-                                            map.put("rating_id", id);
-                                            map.put("customer_id", new Session(getApplicationContext()).getId());
-                                            map.put("client_id", getIntent().getStringExtra("client_id"));
-                                            map.put("rate", String.valueOf(ratingBar.getRating()));
-                                            map.put("feedback", String.valueOf(feedbacks.getText()).trim());
-
-                                            FirebaseDatabase.getInstance().getReference().child("ratings")
-                                                    .child(id).setValue(map)
-                                                    .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                            FirebaseDatabase.getInstance().getReference().child("orders")
+                                                    .orderByChild("order_id").equalTo(String.valueOf(snapshot.child("order_id").getValue()))
+                                                    .addListenerForSingleValueEvent(new ValueEventListener() {
                                                         @Override
-                                                        public void onSuccess(Void aVoid) {
-                                                            Toast.makeText(getApplicationContext(), "Review Posted", Toast.LENGTH_SHORT).show();
-                                                            dialog.dismiss();
+                                                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                                            for (DataSnapshot snapshot1 : dataSnapshot.getChildren()) {
+                                                                snapshot1.getRef().child("status")
+                                                                        .setValue("confirmed")
+                                                                        .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                                                            @Override
+                                                                            public void onSuccess(Void aVoid) {
+                                                                                View view = LayoutInflater.from(TrackActivity.this).inflate(R.layout.ratefeedbacks_dialog_view, null);
+                                                                                View titleView = LayoutInflater.from(TrackActivity.this).inflate(R.layout.custom_dialog_title, null);
+
+                                                                                TextView title = titleView.findViewById(R.id.title);
+                                                                                title.setText("RATES & FEEDBACKS");
+
+                                                                                RatingBar ratingBar = view.findViewById(R.id.rating_bar);
+                                                                                TextInputEditText feedbacks = view.findViewById(R.id.feedbacks);
+
+
+                                                                                AlertDialog.Builder builder = new AlertDialog.Builder(TrackActivity.this, R.style.AlertDialogTheme);
+                                                                                builder.setCustomTitle(titleView);
+                                                                                builder.setView(view);
+
+                                                                                builder.setNegativeButton("not now", new DialogInterface.OnClickListener() {
+                                                                                    @Override
+                                                                                    public void onClick(DialogInterface dialog, int which) {
+                                                                                        startActivity(new Intent(TrackActivity.this, HomeActivity.class));
+                                                                                        finish();
+                                                                                    }
+                                                                                });
+
+                                                                                builder.setPositiveButton("submit", new DialogInterface.OnClickListener() {
+                                                                                    @Override
+                                                                                    public void onClick(DialogInterface dialog, int which) {
+
+                                                                                        Toast.makeText(getApplicationContext(), "Review Posted", Toast.LENGTH_SHORT).show();
+
+                                                                                        String id = FirebaseDatabase.getInstance().getReference().push().getKey();
+                                                                                        Map<String, Object> map = new HashMap<>();
+                                                                                        map.put("rating_id", id);
+                                                                                        map.put("customer_id", new Session(getApplicationContext()).getId());
+                                                                                        map.put("client_id", getIntent().getStringExtra("client_id"));
+                                                                                        map.put("rate", String.valueOf(ratingBar.getRating()));
+                                                                                        map.put("feedback", String.valueOf(feedbacks.getText()).trim());
+
+                                                                                        FirebaseDatabase.getInstance().getReference().child("ratings")
+                                                                                                .child(id).setValue(map)
+                                                                                                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                                                                                    @Override
+                                                                                                    public void onSuccess(Void aVoid) {
+                                                                                                        startActivity(new Intent(TrackActivity.this, HomeActivity.class));
+                                                                                                        finish();
+                                                                                                    }
+                                                                                                });
+                                                                                    }
+                                                                                });
+
+                                                                                AlertDialog alertDialog = builder.create();
+                                                                                alertDialog.show();
+                                                                            }
+                                                                        });
+                                                            }
+                                                        }
+
+                                                        @Override
+                                                        public void onCancelled(@NonNull DatabaseError databaseError) {
+
                                                         }
                                                     });
+
                                         }
                                     });
 
-                                    AlertDialog alertDialog = builder.create();
-                                    alertDialog.show();
+                                    if (!TrackActivity.this.isFinishing()) {
+                                        AlertDialog alertDialog = builder.create();
+                                        alertDialog.show();
+                                    }
 
                                 }
 
@@ -281,7 +442,7 @@ public class TrackActivity extends AppCompatActivity {
 
                             }
                             else {
-                                if ("delivered".equals(snapshot.child("status").getValue())) {
+                                if ("confirmed".equals(snapshot.child("status").getValue())) {
                                     historyLayout.setVisibility(View.VISIBLE);
                                     historyTime.setText(String.valueOf(snapshot.child("delivered_time").getValue()));
                                     paymentMethod.setText(String.valueOf(snapshot.child("payment").getValue()));
@@ -295,9 +456,14 @@ public class TrackActivity extends AppCompatActivity {
                             }
 
                             deliveryAddress.setText(String.valueOf(snapshot.child("delivery_address").getValue()));
-                            int sub = Integer.parseInt(String.valueOf(snapshot.child("total_amount").getValue()))
-                                    - Integer.parseInt(String.valueOf(snapshot.child("delivery_fee").getValue()));
-                            subtotal.setText(String.valueOf(sub));
+                            if ("FREE".equals(snapshot.child("delivery_fee").getValue())) {
+                                subtotal.setText(String.valueOf(snapshot.child("total_amount").getValue()));
+                            }
+                            else {
+                                int sub = Integer.parseInt(String.valueOf(snapshot.child("total_amount").getValue()))
+                                        - Integer.parseInt(String.valueOf(snapshot.child("delivery_fee").getValue()));
+                                subtotal.setText(String.valueOf(sub));
+                            }
                             deliveryFee.setText(String.valueOf(snapshot.child("delivery_fee").getValue()));
                             orderTotal.setText(String.valueOf(snapshot.child("total_amount").getValue()));
 
@@ -316,6 +482,8 @@ public class TrackActivity extends AppCompatActivity {
                                                         .placeholder(R.drawable.refillssss)
                                                         .into(personnel_profile);
                                                 personnel_name.setText(String.valueOf(snapshot.child("per_name").getValue()));
+
+                                                dialogFragment.dismiss();
                                             }
                                         }
 
@@ -360,8 +528,10 @@ public class TrackActivity extends AppCompatActivity {
                                         String.valueOf(purchasePrice),
                                         String.valueOf(refillQty),
                                         String.valueOf(purchaseQty),
-                                        String.valueOf(snapshot1.child("water_type").getValue())
+                                        String.valueOf(snapshot1.child("water_type").getValue()),
+                                        String.valueOf(snapshot1.child("image").getValue())
                                 ));
+
                             }
                         }
                         recyclerView.setAdapter(new ScheduleProductAdapter(TrackActivity.this, scheduleProductModelList));
@@ -506,6 +676,82 @@ public class TrackActivity extends AppCompatActivity {
             }
         });
 
+        cancelOrder.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                AlertDialog.Builder builder = new AlertDialog.Builder(TrackActivity.this, R.style.AlertDialogTheme);
+                builder.setTitle("Cancel Order?");
+                builder.setMessage("Station may accept your order soon. Are you sure you want to cancel?\n" +
+                        "\nPayments made will be refunded upon cancellation.");
+
+                builder.setNeutralButton("stay", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+
+                    }
+                });
+                builder.setPositiveButton("yes, cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+
+                        FirebaseDatabase.getInstance().getReference().child("orders")
+                                .orderByChild("order_id").equalTo(getIntent().getStringExtra("order_id"))
+                                .addListenerForSingleValueEvent(new ValueEventListener() {
+                                    @Override
+                                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                        for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+
+                                            FirebaseDatabase.getInstance().getReference().child("customers")
+                                                    .orderByChild("customer_id").equalTo(String.valueOf(snapshot.child("customer_id").getValue()))
+                                                    .addListenerForSingleValueEvent(new ValueEventListener() {
+                                                        @Override
+                                                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                                           for (DataSnapshot snapshot1 : dataSnapshot.getChildren()) {
+                                                               int refund = Integer.parseInt(String.valueOf(snapshot1.child("wallet").getValue()))
+                                                                       + Integer.parseInt(String.valueOf(snapshot.child("total_amount").getValue()));
+
+                                                               snapshot1.getRef().child("wallet")
+                                                                       .setValue(String.valueOf(refund))
+                                                                       .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                                                           @Override
+                                                                           public void onSuccess(Void aVoid) {
+                                                                               snapshot.getRef().removeValue()
+                                                                                       .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                                                                           @Override
+                                                                                           public void onSuccess(Void aVoid) {
+                                                                                               Toast.makeText(getApplicationContext(), "ORDER CANCELLED", Toast.LENGTH_SHORT).show();
+                                                                                               startActivity(new Intent(TrackActivity.this, TrackOrderActivity.class));
+                                                                                               finish();
+                                                                                           }
+                                                                                       });
+                                                                           }
+                                                                       });
+                                                           }
+                                                        }
+
+                                                        @Override
+                                                        public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                                                        }
+                                                    });
+
+
+                                        }
+                                    }
+
+                                    @Override
+                                    public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                                    }
+                                });
+                    }
+                });
+
+                builder.create().show();
+
+            }
+        });
 
     }
 
@@ -514,4 +760,5 @@ public class TrackActivity extends AppCompatActivity {
         onBackPressed();
         return true;
     }
+
 }

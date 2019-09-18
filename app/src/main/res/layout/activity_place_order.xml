@@ -228,6 +228,7 @@
                         android:background="@color/colorDivider" />
 
                     <LinearLayout
+                        android:id="@+id/subtotal_layout"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="16dp"
@@ -253,11 +254,13 @@
                     </LinearLayout>
 
                     <LinearLayout
+                        android:id="@+id/delivery_fee_layout"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
                         android:layout_marginStart="16dp"
                         android:layout_marginEnd="16dp"
+                        android:layout_marginBottom="8dp"
                         android:orientation="horizontal">
 
                         <TextView
@@ -273,22 +276,28 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:textColor="@color/colorText"
-                            android:text="0.00"
                             android:textStyle="bold"
                             android:textSize="16sp"/>
 
                     </LinearLayout>
 
                     <LinearLayout
-                        android:layout_width="wrap_content"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_gravity="end"
                         android:gravity="center"
-                        android:layout_marginTop="8dp"
                         android:layout_marginStart="16dp"
                         android:layout_marginEnd="16dp"
                         android:layout_marginBottom="16dp"
-                        android:orientation="vertical">
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="TOTAL"
+                            android:textSize="14sp"
+                            android:textStyle="bold"
+                            android:textColor="@color/colorDrawerItem"/>
 
                         <TextView
                             android:id="@+id/total"
@@ -297,15 +306,69 @@
                             android:textColor="@color/colorText"
                             android:textSize="24sp" />
 
-                        <TextView
+                    </LinearLayout>
+
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:cardBackgroundColor="@color/colorWhite"
+                    app:cardCornerRadius="0dp">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="24dp"
+                        android:layout_marginTop="16dp"
+                        android:layout_marginRight="24dp"
+                        android:layout_marginBottom="16dp"
+                        android:drawableStart="@drawable/icon_shipping_dark"
+                        android:drawablePadding="16dp"
+                        android:text="Delivery Options"
+                        android:textColor="@color/colorText"
+                        android:textSize="16sp" />
+
+                </com.google.android.material.card.MaterialCardView>
+
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="16dp"
+                    app:cardBackgroundColor="@color/colorWhite"
+                    app:cardCornerRadius="4dp"
+                    android:elevation="1dp">
+
+                    <RadioGroup
+                        android:id="@+id/delivery_options"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="16dp"
+                        android:layout_marginTop="12dp"
+                        android:layout_marginRight="16dp"
+                        android:layout_marginBottom="12dp"
+                        android:checkedButton="@+id/first"
+                        android:orientation="horizontal">
+
+                        <RadioButton
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="TOTAL"
-                            android:textSize="14sp"
-                            android:textStyle="bold"
-                            android:textColor="@color/colorDrawerItem"/>
+                            android:layout_weight="1"
+                            android:paddingStart="16dp"
+                            android:text="Standard"
+                            android:textColor="@color/colorText"
+                            android:textSize="16sp" />
 
-                    </LinearLayout>
+                        <RadioButton
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:paddingStart="16dp"
+                            android:text="Express"
+                            android:textColor="@color/colorText"
+                            android:textSize="16sp" />
+
+                    </RadioGroup>
+
+                </com.google.android.material.card.MaterialCardView>
 
 
                 <com.google.android.material.card.MaterialCardView

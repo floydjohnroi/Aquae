@@ -81,24 +81,17 @@ public class PlaceOrderActivity extends AppCompatActivity {
     Toolbar toolbar;
     MaterialCardView toolbarCard;
     TextView toolbarTitle, orderTime, location, notes, client, km, distance, shipfee, total, subtotal, delivery_fee;
-    RadioGroup paymentMethod;
-    RadioButton method;
-    String payment;
+    RadioGroup paymentMethod, deliveryOptions;
+    RadioButton method, options;
+    String payment, option;
     MaterialButton placeOrder;
     ConstraintLayout placeOrderLayout;
-    LinearLayout notesLayout;
+    LinearLayout notesLayout, deliveryFeeLayout, subtotalLayout;
     RecyclerView recyclerView;
-
     List<CheckOutProductModel> checkOutProductModelList = new ArrayList<>();
-
-    int qtyr;
-    int qtyp;
-
+    int qtyr, qtyp;
     Map<String, Object> items = new HashMap<>();
 
-//    Map<String, Object> maps = new HashMap<>();
-//
-//    Map<String, Object> map = new HashMap<>();
 
 
     @Override
@@ -124,6 +117,9 @@ public class PlaceOrderActivity extends AppCompatActivity {
         total = findViewById(R.id.total);
         subtotal = findViewById(R.id.subtotal);
         delivery_fee = findViewById(R.id.delivery_fee);
+        deliveryFeeLayout = findViewById(R.id.delivery_fee_layout);
+        subtotalLayout = findViewById(R.id.subtotal_layout);
+        deliveryOptions = findViewById(R.id.delivery_options);
 
         setSupportActionBar(toolbar);
         (Objects.requireNonNull(getSupportActionBar())).setDisplayHomeAsUpEnabled(true);
@@ -134,8 +130,7 @@ public class PlaceOrderActivity extends AppCompatActivity {
         MaterialCardView cardView = findViewById(R.id.materialCardView9);
         cardView.setBackgroundResource(R.drawable.card_background);
 
-        String k = "DISTANCE <i>(km)</i>";
-        km.setText(Html.fromHtml(k));
+        km.setText(Html.fromHtml("DISTANCE <i>(km)</i>"));
 
         recyclerView.setHasFixedSize(true);
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
@@ -185,27 +180,37 @@ public class PlaceOrderActivity extends AppCompatActivity {
 
         });
 
+        options = (RadioButton) deliveryOptions.getChildAt(0);
+        options.setChecked(true);
+
+        options = findViewById(deliveryOptions.getCheckedRadioButtonId());
+        option = options.getText().toString();
+
+        deliveryOptions.setOnCheckedChangeListener((group, checkedId) -> {
+
+            options = findViewById(checkedId);
+            option = options.getText().toString();
+
+        });
+
 
         placeOrder.setOnClickListener(v -> {
-
-            String tp = String.valueOf(total.getText()).replace("₱", "");
-            String tps = tp.replace(".00", "");
-            String dfe = String.valueOf(delivery_fee.getText()).replace(".00", "");
 
             String id = FirebaseDatabase.getInstance().getReference().push().getKey();
 
             Map<String, Object> order = new HashMap<>();
-            order.put("order_id", id);
+            order.put("order_id", String.valueOf(id));
             order.put("customer_id", new Session(getApplicationContext()).getId());
             order.put("client_id", getIntent().getStringExtra("client_id"));
             order.put("order_time", orderTime.getText());
             order.put("payment", payment);
-            order.put("total_amount", tps);
+            order.put("delivery_option", option);
+            order.put("total_amount", String.valueOf(total.getText()).replace("₱", ""));
             order.put("delivery_address", location.getText());
             order.put("items", items);
             order.put("status", "pending");
             order.put("click", "1");
-            order.put("delivery_fee", dfe);
+            order.put("delivery_fee", String.valueOf(shipfee.getText()).replace("₱", ""));
             order.put("notes", getIntent().getStringExtra("notes"));
 
             if (payment.equals("Aquae Wallet")) {
@@ -220,7 +225,7 @@ public class PlaceOrderActivity extends AppCompatActivity {
                 TextView textView2 = view.findViewById(R.id.textView2);
 
 
-                totalPayment.setText(tps);
+                totalPayment.setText(String.valueOf(total.getText()).replace("₱", ""));
 
                 String q = qtyr+qtyp+" items";
                 textView2.setText(q);
@@ -283,8 +288,8 @@ public class PlaceOrderActivity extends AppCompatActivity {
                                                                         .addListenerForSingleValueEvent(new ValueEventListener() {
                                                                             @RequiresApi(api = Build.VERSION_CODES.KITKAT)
                                                                             @Override
-                                                                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                                                                                for (DataSnapshot snapshot2 : dataSnapshot.getChildren()) {
+                                                                            public void onDataChange(@NonNull DataSnapshot dataSnapshot1) {
+                                                                                for (DataSnapshot snapshot2 : dataSnapshot1.getChildren()) {
                                                                                     if (Objects.equals(snapshot2.child("client_id").getValue(), snapshot.child("client_id").getValue())) {
                                                                                         for (DataSnapshot snap : snapshot2.child("products").getChildren()) {
                                                                                             for (DataSnapshot sn : snap.getChildren()) {
@@ -292,7 +297,6 @@ public class PlaceOrderActivity extends AppCompatActivity {
                                                                                                     snap.getRef().removeValue();
                                                                                                 }
                                                                                             }
-
                                                                                         }
                                                                                     }
                                                                                 }
@@ -311,8 +315,10 @@ public class PlaceOrderActivity extends AppCompatActivity {
                                                                                                     Toast.makeText(PlaceOrderActivity.this, "Payment Successful", Toast.LENGTH_SHORT).show();
                                                                                                     Toast.makeText(PlaceOrderActivity.this, "NEW BALANCE : "+newBal, Toast.LENGTH_LONG).show();
                                                                                                     Toast.makeText(PlaceOrderActivity.this, "ORDER PLACED", Toast.LENGTH_SHORT).show();
+
                                                                                                     startActivity(new Intent(PlaceOrderActivity.this, HomeActivity.class));
                                                                                                     finish();
+
                                                                                                 }
                                                                                             }
 
@@ -429,7 +435,8 @@ public class PlaceOrderActivity extends AppCompatActivity {
                                                 Map<String, Object> purchase = new HashMap<>();
                                                 Map<String, Object> map = new HashMap<>();
 
-                                                map.put("water_type", Objects.requireNonNull(d.child("water_type").getValue()));
+                                                map.put("water_type", String.valueOf(d.child("water_type").getValue()));
+                                                map.put("image", String.valueOf(d.child("image").getValue()));
 
                                                 Object refillQuantity = 0;
                                                 Object refillPrice = 0;
@@ -478,7 +485,7 @@ public class PlaceOrderActivity extends AppCompatActivity {
                                                 qtyp += Integer.parseInt(String.valueOf(purchaseQuantity));
 
                                                 t += Integer.parseInt(String.valueOf(d.child("subtotal").getValue()));
-                                                subtotal.setText(t+".00");
+                                                subtotal.setText(String.valueOf(t));
 
 
                                             }
@@ -501,10 +508,9 @@ public class PlaceOrderActivity extends AppCompatActivity {
 
         client.setText(getIntent().getStringExtra("client"));
 
-        String sf = "₱<b>" + getIntent().getStringExtra("ship_fee") + "</b>";
-        shipfee.setText(Html.fromHtml(sf));
+        shipfee.setText(Html.fromHtml("₱<b>" + getIntent().getStringExtra("ship_fee") + "</b>"));
 
-        total.setText(Html.fromHtml("₱<b>0.00</b>"));
+        total.setText(Html.fromHtml("₱<b>0</b>"));
 
 
         RequestQueue queue = Volley.newRequestQueue(this);
@@ -515,8 +521,8 @@ public class PlaceOrderActivity extends AppCompatActivity {
 
         StringRequest stringRequest = new StringRequest(Request.Method.GET, url, response -> {
 
-            String dist = null;
-            
+            String dist = "";
+
             try {
                 JSONObject jsonObject = new JSONObject(response);
                 JSONArray legs = jsonObject.getJSONArray("routes").getJSONObject(0).getJSONArray("legs");
@@ -530,25 +536,40 @@ public class PlaceOrderActivity extends AppCompatActivity {
                 e.printStackTrace();
             }
 
-            if (dist != null) {
-                distance.setText(dist);
-            }
-            else {
+            if ("".equals(dist)) {
                 distance.setText("0 km");
             }
+            else {
+                String d = dist.replace(" km" ,"");
+                String[] e = d.split("\\.");
 
-            String dst = String.valueOf(distance.getText()).replace(" km", "");
-            String[] ds = dst.split("\\.");
-
-            if (ds[0] != null) {
-                int dfee = Integer.parseInt(getIntent().getStringExtra("ship_fee")) * Integer.parseInt(ds[0]);
-                delivery_fee.setText(dfee + ".00");
-
-                int newt = Integer.parseInt(String.valueOf(subtotal.getText()).replace(".00", "")) + dfee;
-                String ts = "₱<b>" + newt + ".00</b>";
-                total.setText(Html.fromHtml(ts));
+                if (Integer.parseInt(String.valueOf(e[0])) > 4) {
+                    distance.setText(e[0]+" km");
+                    int fee = Integer.parseInt(getIntent().getStringExtra("ship_fee")) * Integer.parseInt(String.valueOf(e[0]));
+                    delivery_fee.setText(String.valueOf(fee));
+                    int newt = Integer.parseInt(String.valueOf(subtotal.getText())) + fee;
+                    String ts = "₱<b>" + newt + "</b>";
+                    total.setText(Html.fromHtml(ts));
+                }
+                else {
+                    distance.setText(e[0]+" km");
+                    shipfee.setText(Html.fromHtml("<b>FREE</b>"));
+                    subtotalLayout.setVisibility(View.GONE);
+                    deliveryFeeLayout.setVisibility(View.GONE);
+                    String ts = "₱<b>" + subtotal.getText() + "</b>";
+                    total.setText(Html.fromHtml(ts));
+                }
             }
 
+//            String dst = String.valueOf(distance.getText()).replace(" km", "");
+//            String[] ds = dst.split("\\.");
+//
+//            int dfee = Integer.parseInt(getIntent().getStringExtra("ship_fee")) * Integer.parseInt(String.valueOf(ds[0]));
+//            delivery_fee.setText(dfee + ".00");
+//
+//            int newt = Integer.parseInt(String.valueOf(subtotal.getText()).replace(".00", "")) + dfee;
+//            String ts = "₱<b>" + newt + ".00</b>";
+//            total.setText(Html.fromHtml(ts));
 
         }, error -> Log.d("error", error.toString()));
 

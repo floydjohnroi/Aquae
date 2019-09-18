@@ -52,22 +52,23 @@ public class TrackOrderAdapter extends RecyclerView.Adapter<TrackOrderAdapter.Tr
     public void onBindViewHolder(@NonNull TrackOrderViewHolder holder, int position) {
         TrackOrderModel trackOrderModel = trackOrderModelList.get(position);
 
-        FirebaseDatabase.getInstance().getReference().child("clients")
-                .orderByChild("client_id").equalTo(trackOrderModel.getClientId())
-                .addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                        for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                            holder.clientName.setText(String.valueOf(snapshot.child("company").getValue()));
-                        }
-                    }
+//        FirebaseDatabase.getInstance().getReference().child("clients")
+//                .orderByChild("client_id").equalTo(trackOrderModel.getClientId())
+//                .addListenerForSingleValueEvent(new ValueEventListener() {
+//                    @Override
+//                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+//                        for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+//                            holder.clientName.setText(String.valueOf(snapshot.child("company").getValue()));
+//                        }
+//                    }
+//
+//                    @Override
+//                    public void onCancelled(@NonNull DatabaseError databaseError) {
+//
+//                    }
+//                });
 
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError databaseError) {
-
-                    }
-                });
-
+        holder.clientName.setText(trackOrderModel.clientName);
         holder.orderId.setText(trackOrderModel.getOrderId());
         holder.orderTime.setText(trackOrderModel.getOrderTime());
         holder.status.setText(trackOrderModel.getStatus());

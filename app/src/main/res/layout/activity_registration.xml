@@ -356,6 +356,8 @@
                         android:layout_height="wrap_content"
                         android:padding="14dp"
                         android:singleLine="true"
+                        android:focusable="false"
+                        android:focusableInTouchMode="false"
                         android:textColor="@color/colorText"
                         android:textSize="16sp" />
 
@@ -388,6 +390,8 @@
                         android:layout_height="wrap_content"
                         android:padding="14dp"
                         android:singleLine="true"
+                        android:focusable="false"
+                        android:focusableInTouchMode="false"
                         android:textColor="@color/colorText"
                         android:textSize="16sp" />
 
@@ -420,6 +424,8 @@
                         android:layout_height="wrap_content"
                         android:padding="14dp"
                         android:singleLine="true"
+                        android:focusable="false"
+                        android:focusableInTouchMode="false"
                         android:textColor="@color/colorText"
                         android:textSize="16sp" />
 

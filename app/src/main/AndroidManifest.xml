@@ -11,7 +11,9 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:ignore="GoogleAppIndexingWarning">
-        <activity android:name=".OrderHistoryActivity"/>
+        <activity android:name=".ManageAddressesActivity"></activity>
+        <activity android:name=".AccountActivity" />
+        <activity android:name=".OrderHistoryActivity" />
         <activity android:name=".TrackActivity" />
         <activity android:name=".TrackOrderActivity" />
         <activity android:name=".ScheduleActivity" />
@@ -59,6 +61,7 @@
             android:name="com.google.firebase.messaging.default_notification_channel_id"
             android:value="@string/default_notification_channel_id" />
 
+        <receiver android:name=".ScheduleAlarm" />
         <service
             android:name=".FCMNotification"
             android:exported="false">
@@ -67,12 +70,15 @@
             </intent-filter>
         </service>
         <service android:name=".PusherService" />
+
+        <service android:name=".NotificationService" />
     </application>
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.INTERNET" />
-
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
 </manifest>

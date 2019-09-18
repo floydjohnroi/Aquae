@@ -2,15 +2,16 @@ package com.example.aquae;
 
 public class ScheduleProductModel {
 
-    private String product, refillPrice, purchasePrice, refillQty, purchaseQty, waterType;
+    private String product, refillPrice, purchasePrice, refillQty, purchaseQty, waterType, image;
 
-    public ScheduleProductModel(String product, String refillPrice, String purchasePrice, String refillQty, String purchaseQty, String waterType) {
+    public ScheduleProductModel(String product, String refillPrice, String purchasePrice, String refillQty, String purchaseQty, String waterType, String image) {
         this.product = product;
         this.refillPrice = refillPrice;
         this.purchasePrice = purchasePrice;
         this.refillQty = refillQty;
         this.purchaseQty = purchaseQty;
         this.waterType = waterType;
+        this.image = image;
     }
 
     public String getProduct() {
@@ -59,5 +60,13 @@ public class ScheduleProductModel {
 
     public void setWaterType(String waterType) {
         this.waterType = waterType;
+    }
+
+    public String getImage() {
+        return image;
+    }
+
+    public void setImage(String image) {
+        this.image = image;
     }
 }

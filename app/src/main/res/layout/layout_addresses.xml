@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="8dp"
+    app:cardElevation="4dp"
+    app:cardBackgroundColor="@android:color/transparent"
+    app:cardCornerRadius="8dp">
+
+    <com.daimajia.swipe.SwipeLayout
+        android:id="@+id/swipe"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/colorBottomWrapper"
+        android:orientation="vertical"
+        app:leftEdgeSwipeOffset="0dp"
+        app:rightEdgeSwipeOffset="0dp">
+
+        <LinearLayout
+            android:id="@+id/bottom_wraper"
+            android:layout_width="wrap_content"
+            android:orientation="horizontal"
+            android:layout_height="match_parent"
+            android:paddingLeft="24dp"
+            android:paddingRight="24dp">
+
+            <ImageView
+                android:id="@+id/remove"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:src="@drawable/icon_remove_dark" />
+
+        </LinearLayout>
+
+
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:cardBackgroundColor="@color/colorWhite"
+            app:cardCornerRadius="8dp">
+
+            <TextView
+                android:id="@+id/addr"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:layout_margin="16dp"
+                android:textColor="@color/colorText"
+                android:textSize="16sp"/>
+
+
+        </com.google.android.material.card.MaterialCardView>
+
+    </com.daimajia.swipe.SwipeLayout>
+
+</com.google.android.material.card.MaterialCardView>

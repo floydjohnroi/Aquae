@@ -1,8 +1,6 @@
 package com.example.aquae;
 
 import android.annotation.TargetApi;
-import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
@@ -11,18 +9,19 @@ import android.text.Selection;
 import android.text.TextWatcher;
 import android.text.method.HideReturnsTransformationMethod;
 import android.text.method.PasswordTransformationMethod;
-import android.view.LayoutInflater;
+import android.util.Log;
 import android.view.View;
-import android.widget.ArrayAdapter;
 import android.widget.ImageView;
-import android.widget.ListView;
-import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
+import com.google.android.libraries.places.api.Places;
+import com.google.android.libraries.places.api.model.Place;
+import com.google.android.libraries.places.widget.Autocomplete;
+import com.google.android.libraries.places.widget.model.AutocompleteActivityMode;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.textfield.TextInputEditText;
@@ -32,13 +31,12 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-
 
 public class RegistrationActivity extends AppCompatActivity {
 
@@ -189,6 +187,52 @@ public class RegistrationActivity extends AppCompatActivity {
 
         });
 
+        if (!Places.isInitialized()) {
+            Places.initialize(getApplicationContext(), "AIzaSyAuXUoYwfNp7P41GYhP3OShn3MAFd0s_CY");
+        }
+
+        address.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                List<Place.Field> fields = Arrays.asList(Place.Field.ID, Place.Field.NAME);
+
+                Intent intent = new Autocomplete.IntentBuilder(AutocompleteActivityMode.OVERLAY, fields)
+                        .setCountry("PH")
+                        .build(getApplicationContext());
+                startActivityForResult(intent, 0);
+
+            }
+        });
+
+        address1.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                List<Place.Field> fields = Arrays.asList(Place.Field.ID, Place.Field.NAME);
+
+                Intent intent = new Autocomplete.IntentBuilder(AutocompleteActivityMode.OVERLAY, fields)
+                        .setCountry("PH")
+                        .build(getApplicationContext());
+                startActivityForResult(intent, 1);
+
+            }
+        });
+
+        address2.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                List<Place.Field> fields = Arrays.asList(Place.Field.ID, Place.Field.NAME);
+
+                Intent intent = new Autocomplete.IntentBuilder(AutocompleteActivityMode.OVERLAY, fields)
+                        .setCountry("PH")
+                        .build(getApplicationContext());
+                startActivityForResult(intent, 2);
+
+            }
+        });
+
 
     }
 
@@ -251,6 +295,7 @@ public class RegistrationActivity extends AppCompatActivity {
                         session.setLastname(lname);
                         session.setUsername(uname);
                         session.setPassword(pword);
+                        session.setPhoneNumber(pnum);
 
                         Toast.makeText(RegistrationActivity.this, "ACCOUNT CREATED", Toast.LENGTH_SHORT).show();
                         startActivity(new Intent(RegistrationActivity.this, HomeActivity.class));
@@ -290,9 +335,9 @@ public class RegistrationActivity extends AppCompatActivity {
 
             register.setEnabled(!Objects.requireNonNull(phoneNumber.getText()).toString().equals("+63 ") && !Objects.requireNonNull(address.getText()).toString().trim().isEmpty());
 
-            if (!Objects.requireNonNull(address.getText()).toString().trim().isEmpty()) {
-                note.setVisibility(View.VISIBLE);
-            }
+//            if (!Objects.requireNonNull(address.getText()).toString().trim().isEmpty()) {
+//                note.setVisibility(View.VISIBLE);
+//            }
         }
 
         @Override
@@ -301,6 +346,22 @@ public class RegistrationActivity extends AppCompatActivity {
         }
     };
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == 0 && resultCode == RESULT_OK) {
+            Place place = Autocomplete.getPlaceFromIntent(data);
+            address.setText(String.valueOf(place.getName()));
+        }
+        else if (requestCode == 1 && resultCode == RESULT_OK) {
+            Place place = Autocomplete.getPlaceFromIntent(data);
+            address1.setText(String.valueOf(place.getName()));
+        }
+        else if (requestCode == 2 && resultCode == RESULT_OK) {
+            Place place = Autocomplete.getPlaceFromIntent(data);
+            address2.setText(String.valueOf(place.getName()));
+        }
+    }
 
     @Override
     public void onBackPressed() {

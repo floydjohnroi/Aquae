@@ -48,6 +48,13 @@ public class Session {
     public void setPassword(String password) {
         sharedPreferences.edit().putString("password", password).apply();
     }
+    public String getPhoneNumber() {
+        return sharedPreferences.getString("phoneNumber", null);
+    }
+
+    public void setPhoneNumber(String phoneNumber) {
+        sharedPreferences.edit().putString("phoneNumber", phoneNumber).apply();
+    }
     public String getPassword() {
         return sharedPreferences.getString("password", null);
     }

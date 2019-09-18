@@ -96,21 +96,23 @@ public class ScheduleAdapter extends RecyclerView.Adapter<ScheduleAdapter.Schedu
             }
         }
 
-        FirebaseDatabase.getInstance().getReference().child("clients")
-                .orderByChild("client_id").equalTo(scheduleModel.getClientId())
-                .addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                        for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                            holder.station.setText(String.valueOf(snapshot.child("company").getValue()));
-                        }
-                    }
+        holder.station.setText(scheduleModel.getClientName());
 
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError databaseError) {
-
-                    }
-                });
+//        FirebaseDatabase.getInstance().getReference().child("clients")
+//                .orderByChild("client_id").equalTo(scheduleModel.getClientId())
+//                .addListenerForSingleValueEvent(new ValueEventListener() {
+//                    @Override
+//                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+//                        for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+//                            holder.station.setText(String.valueOf(snapshot.child("company").getValue()));
+//                        }
+//                    }
+//
+//                    @Override
+//                    public void onCancelled(@NonNull DatabaseError databaseError) {
+//
+//                    }
+//                });
 
         holder.materialCardView.setOnClickListener(new View.OnClickListener() {
             @Override

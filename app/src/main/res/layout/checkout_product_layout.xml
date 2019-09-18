@@ -18,7 +18,7 @@
             android:layout_weight="1"
             android:gravity="center_vertical"
             android:textColor="@color/colorText"
-            android:textSize="16sp"
+            android:textSize="24sp"
             android:textStyle="bold" />
 
         <TextView
@@ -83,24 +83,26 @@
                 <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_gravity="bottom"
+                    android:layout_gravity="center"
                     android:orientation="horizontal">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="×"
-                        android:textColor="@color/colorText"
-                        android:layout_marginEnd="8dp"
-                        android:textSize="24sp"/>
 
                     <TextView
                         android:id="@+id/qtyRefill"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:textSize="24sp"
+                        android:textColor="@color/colorText"
                         android:textStyle="bold"
-                        android:textColor="@color/colorText" />
+                        android:textSize="24sp"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:layout_gravity="center"
+                        android:textColor="@color/colorDrawerItem"
+                        android:text="(qty)"
+                        android:textStyle="italic"
+                        android:textSize="16sp"/>
 
                 </LinearLayout>
 
@@ -147,24 +149,26 @@
                 <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_gravity="bottom"
+                    android:layout_gravity="center"
                     android:orientation="horizontal">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="×"
-                        android:textColor="@color/colorText"
-                        android:layout_marginEnd="8dp"
-                        android:textSize="24sp"/>
 
                     <TextView
                         android:id="@+id/qtyPurchase"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:textSize="24sp"
+                        android:textColor="@color/colorText"
                         android:textStyle="bold"
-                        android:textColor="@color/colorText" />
+                        android:textSize="24sp"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:layout_gravity="center"
+                        android:textColor="@color/colorDrawerItem"
+                        android:text="(qty)"
+                        android:textStyle="italic"
+                        android:textSize="16sp"/>
 
                 </LinearLayout>
 

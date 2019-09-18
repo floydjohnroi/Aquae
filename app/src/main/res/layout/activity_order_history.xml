@@ -36,5 +36,63 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/linearLayout12" />
 
+    <LinearLayout
+        android:id="@+id/empty_history"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/recyclerView"
+        app:layout_constraintVertical_bias="0.40">
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/icon_history_grayscale" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:gravity="center"
+            android:text="No Order History"
+            android:textColor="@color/colorEmptyCart"
+            android:textSize="24sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:gravity="center"
+            android:text="Your history of transaction will appear here"
+            android:textColor="@color/colorDivider"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <!--        <com.google.android.material.button.MaterialButton-->
+        <!--            android:id="@+id/startShopping"-->
+        <!--            style="@style/Widget.MaterialComponents.Button"-->
+        <!--            android:layout_width="wrap_content"-->
+        <!--            android:layout_height="wrap_content"-->
+        <!--            android:layout_marginStart="24dp"-->
+        <!--            android:layout_marginLeft="24dp"-->
+        <!--            android:layout_marginTop="24dp"-->
+        <!--            android:layout_marginEnd="24dp"-->
+        <!--            android:layout_marginRight="24dp"-->
+        <!--            android:paddingStart="16dp"-->
+        <!--            android:paddingTop="14dp"-->
+        <!--            android:paddingEnd="16dp"-->
+        <!--            android:paddingBottom="14dp"-->
+        <!--            android:text="@string/start_shopping"-->
+        <!--            android:textColor="@color/colorWhite"-->
+        <!--            app:cornerRadius="32dp"-->
+        <!--            app:icon="@drawable/icon_go" />-->
+
+    </LinearLayout>
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

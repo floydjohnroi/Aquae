@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.fragment.app.DialogFragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -53,11 +54,14 @@ public class ScheduleActivity extends AppCompatActivity {
 
     Toolbar toolbar;
     MaterialCardView toolbarCard;
-    TextView toolbarTitle, turn, schedule, station, deliveryAddress, deliveryFee, subtotal, total, notes, addNotes;
+    TextView toolbarTitle, turn, schedule, station, deliveryAddress, deliveryFee, subtotal, total,
+            notes, addNotes, shipfee, km, distance;
     Switch onOff;
     RecyclerView recyclerView;
     List<ScheduleProductModel> scheduleProductModelList = new ArrayList<>();
     MaterialButton removeSched;
+    LinearLayout subtotalLayout, deliveryFeeLayout;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -79,6 +83,12 @@ public class ScheduleActivity extends AppCompatActivity {
         notes = findViewById(R.id.notes);
         removeSched = findViewById(R.id.remove);
         addNotes = findViewById(R.id.add_notes);
+        subtotalLayout = findViewById(R.id.subtotal_layout);
+        deliveryFeeLayout = findViewById(R.id.delivery_fee_layout);
+        shipfee = findViewById(R.id.shipfee);
+        km = findViewById(R.id.km);
+        distance = findViewById(R.id.distance);
+
 
         setSupportActionBar(toolbar);
         (Objects.requireNonNull(getSupportActionBar())).setDisplayHomeAsUpEnabled(true);
@@ -92,6 +102,8 @@ public class ScheduleActivity extends AppCompatActivity {
         linearLayoutManager.setStackFromEnd(true);
         recyclerView.setLayoutManager(linearLayoutManager);
 
+        km.setText(Html.fromHtml("DISTANCE <i>(km)</i>"));
+
         if ("off".equals(getIntent().getStringExtra("switch"))) {
             turn.setText("Turn schedule on");
         }
@@ -102,12 +114,12 @@ public class ScheduleActivity extends AppCompatActivity {
 
         station.setText(getIntent().getStringExtra("station"));
 
-        if ("Everyday".equals(getIntent().getStringExtra("schedule"))) {
-            schedule.setText(getIntent().getStringExtra("schedule"));
-        }
-        else {
-            schedule.setText("Every "+getIntent().getStringExtra("schedule"));
-        }
+//        if ("Everyday".equals(getIntent().getStringExtra("schedule"))) {
+//            schedule.setText(getIntent().getStringExtra("schedule"));
+//        }
+
+        DialogFragment dialogFragment = LoadingScreen.getInstance();
+        dialogFragment.show(getSupportFragmentManager(), "delivery_schedule_activity");
 
         FirebaseDatabase.getInstance().getReference().child("schedules")
                 .orderByChild("schedule_id").equalTo(getIntent().getStringExtra("schedule_id"))
@@ -121,10 +133,10 @@ public class ScheduleActivity extends AppCompatActivity {
                                 schedule.setText("Everyday");
                             }
                             else if ("Mon – Tue – Wed – Thu – Fri".equals(snapshot.child("schedule").getValue())) {
-                                schedule.setText("Weekdays");
+                                schedule.setText("Every Mon – Fri");
                             }
                             else if ("Sun – Sat".equals(snapshot.child("schedule").getValue())) {
-                                schedule.setText("Weekends");
+                                schedule.setText("Every Sun & Sat");
                             }
                             else {
                                 if (String.valueOf(snapshot.child("schedule").getValue()).length() > 3) {
@@ -133,25 +145,25 @@ public class ScheduleActivity extends AppCompatActivity {
                                 }
                                 else {
                                     if ("Sun".equals(snapshot.child("schedule").getValue())) {
-                                        schedule.setText("Sunday");
+                                        schedule.setText("Every Sunday");
                                     }
                                     if ("Mon".equals(snapshot.child("schedule").getValue())) {
-                                        schedule.setText("Monday");
+                                        schedule.setText("Every Monday");
                                     }
                                     if ("Tue".equals(snapshot.child("schedule").getValue())) {
-                                        schedule.setText("Tuesday");
+                                        schedule.setText("Every Tuesday");
                                     }
                                     if ("Wed".equals(snapshot.child("schedule").getValue())) {
-                                        schedule.setText("Wednesday");
+                                        schedule.setText("Every Wednesday");
                                     }
                                     if ("Thu".equals(snapshot.child("schedule").getValue())) {
-                                        schedule.setText("Thursday");
+                                        schedule.setText("Every Thursday");
                                     }
                                     if ("Fri".equals(snapshot.child("schedule").getValue())) {
-                                        schedule.setText("Friday");
+                                        schedule.setText("Every Friday");
                                     }
                                     if ("Sat".equals(snapshot.child("schedule").getValue())) {
-                                        schedule.setText("Saturday");
+                                        schedule.setText("Every Saturday");
                                     }
                                 }
                             }
@@ -167,12 +179,24 @@ public class ScheduleActivity extends AppCompatActivity {
                             }
 
                             deliveryAddress.setText(String.valueOf(snapshot.child("delivery_address").getValue()));
-                            deliveryFee.setText(String.valueOf(snapshot.child("delivery_fee").getValue()));
-                            int sub = Integer.parseInt(String.valueOf(snapshot.child("total_amount").getValue()))
-                                    - Integer.parseInt(String.valueOf(snapshot.child("delivery_fee").getValue()));
-                            subtotal.setText(String.valueOf(sub));
-                            String t = "₱<b>"+snapshot.child("total_amount").getValue()+"</b>";
-                            total.setText(Html.fromHtml(t));
+                            distance.setText(snapshot.child("distance").getValue()+" km");
+                            if ("FREE".equals(snapshot.child("delivery_fee").getValue())) {
+                                subtotalLayout.setVisibility(View.GONE);
+                                deliveryFeeLayout.setVisibility(View.GONE);
+                                shipfee.setText(Html.fromHtml("<b>"+snapshot.child("delivery_fee").getValue()+"</b>"));
+                            }
+                            else {
+                                subtotalLayout.setVisibility(View.VISIBLE);
+                                deliveryFeeLayout.setVisibility(View.VISIBLE);
+                                int fee = Integer.parseInt(String.valueOf(snapshot.child("delivery_fee").getValue()))
+                                        * Integer.parseInt(String.valueOf(snapshot.child("distance").getValue()));
+                                deliveryFee.setText(String.valueOf(fee));
+                                int sub = Integer.parseInt(String.valueOf(snapshot.child("total_amount").getValue()))
+                                        - Integer.parseInt(String.valueOf(snapshot.child("delivery_fee").getValue()));
+                                subtotal.setText(String.valueOf(sub));
+                                shipfee.setText(Html.fromHtml("₱<b>"+snapshot.child("delivery_fee").getValue()+"</b>"));
+                            }
+                            total.setText(Html.fromHtml("₱<b>"+snapshot.child("total_amount").getValue()+"</b>"));
 
                             for (DataSnapshot snapshot1 : snapshot.child("items").getChildren()) {
 
@@ -201,13 +225,16 @@ public class ScheduleActivity extends AppCompatActivity {
                                         String.valueOf(purchasePrice),
                                         String.valueOf(refillQty),
                                         String.valueOf(purchaseQty),
-                                        String.valueOf(snapshot1.child("water_type").getValue())
+                                        String.valueOf(snapshot1.child("water_type").getValue()),
+                                        String.valueOf(snapshot1.child("image").getValue())
                                 ));
 
                             }
                         }
 
                         recyclerView.setAdapter(new ScheduleProductAdapter(ScheduleActivity.this, scheduleProductModelList));
+                        dialogFragment.dismiss();
+
                     }
 
                     @Override
@@ -602,6 +629,8 @@ public class ScheduleActivity extends AppCompatActivity {
 
             }
         });
+
+
     }
 
     @Override

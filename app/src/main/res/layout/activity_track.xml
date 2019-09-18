@@ -29,7 +29,7 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:background="@drawable/backdrop_light"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/cancel_order_layout"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/linearLayout12">
@@ -123,7 +123,13 @@
             </LinearLayout>
 
             <LinearLayout
-                android:id="@+id/placed_layout"
+                android:id="@+id/trackorder_layout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+            <LinearLayout
+                android:id="@+id/accepted_layout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
@@ -132,7 +138,7 @@
                 android:orientation="horizontal">
 
                 <ImageView
-                    android:id="@+id/check"
+                    android:id="@+id/accepted_check"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
@@ -154,13 +160,13 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="ORDER PLACED"
+                            android:text="ACCEPTED"
                             android:textColor="@color/colorText"
                             android:textStyle="bold"
                             android:textSize="16sp"/>
 
                         <TextView
-                            android:id="@+id/placed_time"
+                            android:id="@+id/accepted_time"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_gravity="top"
@@ -177,12 +183,12 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="You order has been accepted"
+                            android:text="Your order has been accepted"
                             android:textColor="@color/colorDrawerItem" />
 
 
                         <TextView
-                            android:id="@+id/placed_date"
+                            android:id="@+id/accepted_date"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:textColor="@color/colorText" />
@@ -227,7 +233,7 @@
             </LinearLayout>
 
             <View
-                android:id="@+id/line"
+                android:id="@+id/solid"
                 android:layout_width="4dp"
                 android:layout_height="56dp"
                 android:layout_marginTop="-8dp"
@@ -237,7 +243,7 @@
                 android:background="@color/colorPrimary" />
 
             <LinearLayout
-                android:id="@+id/processed_layout"
+                android:id="@+id/outforpickup_layout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="32dp"
@@ -245,7 +251,7 @@
                 android:orientation="horizontal">
 
                 <ImageView
-                    android:id="@+id/check1"
+                    android:id="@+id/outforpickup_check"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
@@ -267,13 +273,13 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="ORDER PROCESSED"
+                            android:text="OUT FOR PICK-UP"
                             android:textColor="@color/colorText"
                             android:textStyle="bold"
                             android:textSize="16sp"/>
 
                         <TextView
-                            android:id="@+id/processed_time"
+                            android:id="@+id/outforpickup_time"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_gravity="top"
@@ -290,12 +296,12 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="You order has been processed"
+                            android:text="Driver on the way"
                             android:textColor="@color/colorDrawerItem" />
 
 
                         <TextView
-                            android:id="@+id/processed_date"
+                            android:id="@+id/outforpickup_date"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:textColor="@color/colorText" />
@@ -339,7 +345,7 @@
             </LinearLayout>
 
             <View
-                android:id="@+id/line1"
+                android:id="@+id/solid1"
                 android:layout_width="4dp"
                 android:layout_height="56dp"
                 android:layout_marginTop="-8dp"
@@ -349,16 +355,15 @@
                 android:background="@color/colorPrimary" />
 
             <LinearLayout
-                android:id="@+id/delivered_layout"
+                android:id="@+id/preparing_layout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="32dp"
                 android:layout_marginEnd="32dp"
-                android:layout_marginBottom="32dp"
                 android:orientation="horizontal">
 
                 <ImageView
-                    android:id="@+id/check2"
+                    android:id="@+id/preparing_check"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
@@ -380,7 +385,231 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="ORDER DELIVERED"
+                            android:text="PREPARING"
+                            android:textColor="@color/colorText"
+                            android:textStyle="bold"
+                            android:textSize="16sp"/>
+
+                        <TextView
+                            android:id="@+id/preparing_time"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="top"
+                            android:textColor="@color/colorText" />
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Preparing your order"
+                            android:textColor="@color/colorDrawerItem" />
+
+
+                        <TextView
+                            android:id="@+id/preparing_date"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textColor="@color/colorText" />
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/dashed2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="-8dp"
+                android:layout_marginStart="46dp"
+                android:layout_marginBottom="-8dp"
+                android:orientation="vertical">
+
+                <View
+                    android:layout_width="4dp"
+                    android:layout_height="8dp"
+                    android:background="@color/colorPrimary" />
+                <View
+                    android:layout_width="4dp"
+                    android:layout_height="8dp"
+                    android:layout_marginTop="8dp"
+                    android:background="@color/colorPrimary" />
+                <View
+                    android:layout_width="4dp"
+                    android:layout_height="8dp"
+                    android:layout_marginTop="8dp"
+                    android:background="@color/colorPrimary" />
+                <View
+                    android:layout_width="4dp"
+                    android:layout_height="8dp"
+                    android:layout_marginTop="8dp"
+                    android:background="@color/colorPrimary" />
+
+            </LinearLayout>
+
+            <View
+                android:id="@+id/solid2"
+                android:layout_width="4dp"
+                android:layout_height="56dp"
+                android:layout_marginTop="-8dp"
+                android:layout_marginStart="46dp"
+                android:layout_marginBottom="-8dp"
+                android:visibility="gone"
+                android:background="@color/colorPrimary" />
+
+            <LinearLayout
+                android:id="@+id/outfordelivery_layout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="32dp"
+                android:layout_marginEnd="32dp"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:id="@+id/outfordelivery_check"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:src="@drawable/icon_stepview_default"/>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="OUT FOR DELIVERY"
+                            android:textColor="@color/colorText"
+                            android:textStyle="bold"
+                            android:textSize="16sp"/>
+
+                        <TextView
+                            android:id="@+id/outfordelivery_time"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="top"
+                            android:textColor="@color/colorText" />
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Driver on the way"
+                            android:textColor="@color/colorDrawerItem" />
+
+
+                        <TextView
+                            android:id="@+id/outfordelivery_date"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textColor="@color/colorText" />
+
+                    </LinearLayout>
+
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/dashed3"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="-8dp"
+                android:layout_marginStart="46dp"
+                android:layout_marginBottom="-8dp"
+                android:orientation="vertical">
+
+                <View
+                    android:layout_width="4dp"
+                    android:layout_height="8dp"
+                    android:background="@color/colorPrimary" />
+                <View
+                    android:layout_width="4dp"
+                    android:layout_height="8dp"
+                    android:layout_marginTop="8dp"
+                    android:background="@color/colorPrimary" />
+                <View
+                    android:layout_width="4dp"
+                    android:layout_height="8dp"
+                    android:layout_marginTop="8dp"
+                    android:background="@color/colorPrimary" />
+                <View
+                    android:layout_width="4dp"
+                    android:layout_height="8dp"
+                    android:layout_marginTop="8dp"
+                    android:background="@color/colorPrimary" />
+
+            </LinearLayout>
+
+            <View
+                android:id="@+id/solid3"
+                android:layout_width="4dp"
+                android:layout_height="56dp"
+                android:layout_marginTop="-8dp"
+                android:layout_marginStart="46dp"
+                android:layout_marginBottom="-8dp"
+                android:visibility="gone"
+                android:background="@color/colorPrimary" />
+
+            <LinearLayout
+                android:id="@+id/delivered_layout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="32dp"
+                android:layout_marginEnd="32dp"
+                android:layout_marginBottom="32dp"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:id="@+id/delivered_check"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:src="@drawable/icon_stepview_default"/>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="DELIVERED"
                             android:textColor="@color/colorText"
                             android:textStyle="bold"
                             android:textSize="16sp"/>
@@ -403,7 +632,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="You order has been delivered"
+                            android:text="Your order has been delivered"
                             android:textColor="@color/colorDrawerItem" />
 
 
@@ -418,6 +647,7 @@
 
                 </LinearLayout>
 
+            </LinearLayout>
             </LinearLayout>
 
             <View
@@ -781,5 +1011,37 @@
         </LinearLayout>
 
     </ScrollView>
+
+    <LinearLayout
+        android:id="@+id/cancel_order_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/colorWhite"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/scrollView7">
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/colorDivider" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/cancel_order"
+            style="@style/Widget.MaterialComponents.Button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="32dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="32dp"
+            android:layout_marginBottom="8dp"
+            android:padding="16dp"
+            android:text="CANCEL ORDER"
+            android:textColor="@color/colorWhite"
+            app:cornerRadius="32dp" />
+
+    </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

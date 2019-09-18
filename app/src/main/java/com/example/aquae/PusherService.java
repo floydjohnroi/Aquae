@@ -49,7 +49,7 @@ public class PusherService extends Service {
         HashMap<String, String> headers = new HashMap<>();
         headers.put("Content-Type", "application/x-www-form-urlencoded");
         headers.put("Accept", "application/json");
-        HttpAuthorizer authorizer = new HttpAuthorizer("http://192.168.1.7/pusher/auth.php");
+        HttpAuthorizer authorizer = new HttpAuthorizer("http://192.168.1.16/pusher/auth.php");
         authorizer.setHeaders(headers);
         options = new PusherOptions();
         options.setCluster("ap1");
@@ -67,6 +67,12 @@ public class PusherService extends Service {
         pusher.connect(new ConnectionEventListener() {
             @Override
             public void onConnectionStateChange(ConnectionStateChange change) {
+                Log.d("stateConnection", change.getCurrentState().toString());
+                if (change.getCurrentState() == ConnectionState.RECONNECTING) {
+                    pusher.unsubscribe("private-update");
+                    Log.d("pusher", "Reconnecting pusher");
+                }
+
                if (change.getCurrentState() == ConnectionState.CONNECTED) {
                    channel = pusher.subscribePrivate("private-update", new PrivateChannelEventListener() {
                        @Override
@@ -91,10 +97,19 @@ public class PusherService extends Service {
                                 public void onEvent(PusherEvent event) {
                                     try {
                                         JSONObject jsonObject = new JSONObject(event.getData());
-                                        if (jsonObject.getString("id").equals(new Session(getApplicationContext()).getId())) {
-                                            if (jsonObject.getString("name").equals("orders")) {
-                                                sendOrderNotification(jsonObject.getString("order_id"), jsonObject.getString("payment"),  jsonObject.getString("message"));
-                                            }
+
+                                        if (jsonObject.getString("customer_id").equals(new Session(getApplicationContext()).getId())) {
+
+                                                sendNotification(jsonObject.getString("order_id"),
+                                                        jsonObject.getString("delivery_address"),
+                                                        jsonObject.getString("client_id"),
+                                                        jsonObject.getString("order_time"),
+                                                        jsonObject.getString("activity"),
+                                                        jsonObject.getString("driverMessage"),
+                                                        jsonObject.getString("payment"),
+                                                        jsonObject.getString("stationMessage"),
+                                                        jsonObject.getString("sender"));
+
                                         }
 
                                     } catch (JSONException e) {
@@ -133,68 +148,81 @@ public class PusherService extends Service {
         return null;
     }
 
-    private void sendOrderNotification(String orderId, String payment, String messageBody) {
+    private void sendNotification(String orderId, String deliveryAddress, String clientId, String orderTime, String activity, String driverMessage, String payment, String stationMessage, String sender) {
 
-        if (payment.equals("Aquae Wallet")) {
+        String contentText;
 
-            FirebaseDatabase.getInstance().getReference().child("orders")
-                    .orderByChild("order_id").equalTo(orderId)
-                    .addListenerForSingleValueEvent(new ValueEventListener() {
-                        @RequiresApi(api = Build.VERSION_CODES.KITKAT)
-                        @Override
-                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                            for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                                if (Objects.equals(snapshot.child("status").getValue(), "accepted")) {
+        if ("station".equals(sender)) {
+            contentText = stationMessage;
+            if ("Aquae Wallet".equals(payment)) {
+                FirebaseDatabase.getInstance().getReference().child("orders")
+                        .orderByChild("order_id").equalTo(orderId)
+                        .addListenerForSingleValueEvent(new ValueEventListener() {
+                            @RequiresApi(api = Build.VERSION_CODES.KITKAT)
+                            @Override
+                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                                    if (Objects.equals(snapshot.child("status").getValue(), "accepted")) {
 
-                                    FirebaseDatabase.getInstance().getReference().child("customers")
-                                            .orderByChild("customer_id").equalTo(String.valueOf(snapshot.child("customer_id").getValue()))
-                                            .addListenerForSingleValueEvent(new ValueEventListener() {
-                                                @Override
-                                                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                                                    for (DataSnapshot snapshot1 : dataSnapshot.getChildren()) {
-                                                        int w = Integer.parseInt(String.valueOf(snapshot1.child("wallet").getValue()))
-                                                                - Integer.parseInt(String.valueOf(snapshot.child("total_amount").getValue()));
-                                                        snapshot1.getRef().child("wallet").setValue(String.valueOf(w));
+                                        FirebaseDatabase.getInstance().getReference().child("customers")
+                                                .orderByChild("customer_id").equalTo(String.valueOf(snapshot.child("customer_id").getValue()))
+                                                .addListenerForSingleValueEvent(new ValueEventListener() {
+                                                    @Override
+                                                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                                        for (DataSnapshot snapshot1 : dataSnapshot.getChildren()) {
+                                                            int w = Integer.parseInt(String.valueOf(snapshot1.child("wallet").getValue()))
+                                                                    - Integer.parseInt(String.valueOf(snapshot.child("total_amount").getValue()));
+                                                            snapshot1.getRef().child("wallet").setValue(String.valueOf(w));
+                                                        }
                                                     }
-                                                }
 
-                                                @Override
-                                                public void onCancelled(@NonNull DatabaseError databaseError) {
+                                                    @Override
+                                                    public void onCancelled(@NonNull DatabaseError databaseError) {
 
-                                                }
-                                            });
-
-                                    FirebaseDatabase.getInstance().getReference().child("clients")
-                                            .orderByChild("client_id").equalTo(String.valueOf(snapshot.child("client_id").getValue()))
-                                            .addListenerForSingleValueEvent(new ValueEventListener() {
-                                                @Override
-                                                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                                                    for (DataSnapshot snapshot1 : dataSnapshot.getChildren()) {
-                                                        int w = Integer.parseInt(String.valueOf(snapshot1.child("wallet").getValue()))
-                                                                + Integer.parseInt(String.valueOf(snapshot.child("total_amount").getValue()));
-                                                        snapshot1.getRef().child("wallet").setValue(String.valueOf(w));
                                                     }
-                                                }
+                                                });
 
-                                                @Override
-                                                public void onCancelled(@NonNull DatabaseError databaseError) {
+                                        FirebaseDatabase.getInstance().getReference().child("clients")
+                                                .orderByChild("client_id").equalTo(String.valueOf(snapshot.child("client_id").getValue()))
+                                                .addListenerForSingleValueEvent(new ValueEventListener() {
+                                                    @Override
+                                                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                                        for (DataSnapshot snapshot1 : dataSnapshot.getChildren()) {
+                                                            int w = Integer.parseInt(String.valueOf(snapshot1.child("wallet").getValue()))
+                                                                    + Integer.parseInt(String.valueOf(snapshot.child("total_amount").getValue()));
+                                                            snapshot1.getRef().child("wallet").setValue(String.valueOf(w));
+                                                        }
+                                                    }
 
-                                                }
-                                            });
+                                                    @Override
+                                                    public void onCancelled(@NonNull DatabaseError databaseError) {
 
+                                                    }
+                                                });
+
+                                    }
                                 }
                             }
-                        }
 
-                        @Override
-                        public void onCancelled(@NonNull DatabaseError databaseError) {
+                            @Override
+                            public void onCancelled(@NonNull DatabaseError databaseError) {
 
-                        }
-                    });
+                            }
+                        });
 
+            }
+        }
+        else {
+            contentText = driverMessage;
         }
 
-        Intent intent = new Intent(this, HomeActivity.class);
+
+        Intent intent = new Intent(this, TrackActivity.class);
+        intent.putExtra("order_id", orderId);
+        intent.putExtra("delivery_address", deliveryAddress);
+        intent.putExtra("client_id", clientId);
+        intent.putExtra("order_time", orderTime);
+        intent.putExtra("activity", activity);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0 /* Request code */, intent,
                 PendingIntent.FLAG_ONE_SHOT);
@@ -204,8 +232,8 @@ public class PusherService extends Service {
         NotificationCompat.Builder notificationBuilder =
                 new NotificationCompat.Builder(this, channelId)
                         .setSmallIcon(R.drawable.icon_aquae_dark)
-                        .setContentTitle(getString(R.string.fcm_message))
-                        .setContentText(messageBody)
+                        .setContentTitle("AQUAE")
+                        .setContentText(contentText)
                         .setAutoCancel(true)
                         .setSound(defaultSoundUri)
                         .setContentIntent(pendingIntent);
@@ -222,6 +250,6 @@ public class PusherService extends Service {
         }
 
         notificationManager.notify(0 /* ID of notification */, notificationBuilder.build());
-
     }
+
 }

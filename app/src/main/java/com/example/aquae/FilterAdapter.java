@@ -11,7 +11,7 @@ import androidx.fragment.app.FragmentStatePagerAdapter;
 public class FilterAdapter extends FragmentStatePagerAdapter {
 
     final int PAGE_COUNT = 2;
-    private String tabTitles[] = new String[]{"TOP PAIDS", "PRICE"};
+    private String tabTitles[] = new String[]{"NEARBY", "PRICE"};
     private Context context;
     String isForDelivery;
 

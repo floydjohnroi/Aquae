@@ -11,6 +11,10 @@
 <!--            android:icon="@drawable/icon_cart_light" />-->
 
         <item
+            android:id="@+id/notification"
+            android:title="Notification"
+            android:icon="@drawable/icon_notification" />
+        <item
             android:id="@+id/delivery_schedule"
             android:title="@string/delivery_schedule"
             android:icon="@drawable/icon_delivery_schedule" />
@@ -26,6 +30,10 @@
             android:id="@+id/wallet"
             android:title="@string/wallet"
             android:icon="@drawable/icon_wallet" />
+        <item
+            android:id="@+id/account"
+            android:title="Account"
+            android:icon="@drawable/icon_account" />
         <item
             android:id="@+id/logout"
             android:title="@string/logout"

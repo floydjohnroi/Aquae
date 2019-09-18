@@ -39,7 +39,7 @@ public class CartActivity extends AppCompatActivity {
     Toolbar toolbar;
     MaterialCardView toolbarCard;
     MaterialButton removeAll;
-    TextView toolbarTitle, total;
+    TextView toolbarTitle, total, emptyTitle, emptyBody;
     RecyclerView recyclerView;
     List<CartModel> cartModelList = new ArrayList<>();
     CheckBox checkBoxAll;
@@ -49,6 +49,7 @@ public class CartActivity extends AppCompatActivity {
     CartAdapter cartAdapter;
     List<CartProductModel> cartProductModelList = new ArrayList<>();
     String isForDelivery, ref, title;
+    ImageView emptyIcon;
 
 
     @TargetApi(Build.VERSION_CODES.KITKAT)
@@ -71,16 +72,26 @@ public class CartActivity extends AppCompatActivity {
         selectAllLayout = findViewById(R.id.selectAllLayout);
         startShopping = findViewById(R.id.startShopping);
         isForDelivery = getIntent().getStringExtra("isForDelivery");
+        emptyIcon = findViewById(R.id.empty_icon);
+        emptyTitle = findViewById(R.id.empty_title);
+        emptyBody = findViewById(R.id.empty_body);
 
         if ("isForDelivery".equals(isForDelivery)) {
             ref = "deliveries";
             title = "List";
             checkout.setText("NEXT");
+            emptyIcon.setImageResource(R.drawable.icon_list_grayscale);
+            emptyTitle.setText("Empty List");
+            emptyBody.setText("Add items to list now");
+            startShopping.setVisibility(View.GONE);
         }
         else {
             ref = "carts";
             title = "Cart";
             checkout.setText("CHECKOUT");
+            emptyIcon.setImageResource(R.drawable.icon_cart_empty);
+            emptyTitle.setText("Empty Cart");
+            emptyBody.setText("Add items to cart now");
         }
 
         setSupportActionBar(toolbar);
@@ -288,8 +299,7 @@ public class CartActivity extends AppCompatActivity {
                             }
                         }
 
-                        String st = "₱<b>"+t+ ".00</b>";
-                        total.setText(Html.fromHtml(st));
+                        total.setText(Html.fromHtml("₱<b>"+t+ "</b>"));
 
                     }
 
@@ -305,8 +315,9 @@ public class CartActivity extends AppCompatActivity {
         cartAdapter = new CartAdapter(CartActivity.this, cartProductModelList, isForDelivery, new CartAdapter.OnDataChangeListener() {
             @Override
             public void onChanged(double totalAmount) {
-                String s = "₱<b>" + String.format(Locale.getDefault(), "%.2f", totalAmount) + "</b>";
-                total.setText(Html.fromHtml(s));
+//                String s = "₱<b>" + String.format(Locale.getDefault(), "%.2f", totalAmount) + "</b>";
+//                String s = "₱<b>" + totalAmount + "</b>";
+//                total.setText(Html.fromHtml(s));
             }
 
             @Override

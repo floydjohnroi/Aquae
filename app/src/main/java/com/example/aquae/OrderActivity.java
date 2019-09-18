@@ -223,20 +223,17 @@ public class OrderActivity extends AppCompatActivity {
             if (!purchaseCheckBox.isChecked() && !isChecked) {
                 addToCart.setEnabled(false);
                 sub = 0;
-                String s = "\u20B1<b>" + sub + ".00</b>";
-                subtotal.setText(Html.fromHtml(s));
+                subtotal.setText(Html.fromHtml("\u20B1<b>" + sub + "</b>"));
             } else if (isChecked) {
                 addToCart.setEnabled(true);
 
                 sub = sub + (Integer.parseInt(getIntent().getStringExtra("refillPrice")) * Integer.parseInt(getIntent().getStringExtra("min_order")));
 
-                String s = "\u20B1<b>" + sub + ".00</b>";
-                subtotal.setText(Html.fromHtml(s));
+                subtotal.setText(Html.fromHtml("\u20B1<b>" + sub + "</b>"));
             } else {
                 sub = sub - (Integer.parseInt(getIntent().getStringExtra("refillPrice")) * Integer.parseInt(getIntent().getStringExtra("min_order")));
 
-                String s = "\u20B1<b>" + sub + ".00</b>";
-                subtotal.setText(Html.fromHtml(s));
+                subtotal.setText(Html.fromHtml("\u20B1<b>" + sub + "</b>"));
             }
 
         });
@@ -245,20 +242,17 @@ public class OrderActivity extends AppCompatActivity {
             if (!refillCheckBox.isChecked() && !isChecked) {
                 addToCart.setEnabled(false);
                 sub = 0;
-                String s = "\u20B1<b>" + sub + ".00</b>";
-                subtotal.setText(Html.fromHtml(s));
+                subtotal.setText(Html.fromHtml("\u20B1<b>" + sub + "</b>"));
             } else if (isChecked) {
                 addToCart.setEnabled(true);
 
                 sub = sub + (Integer.parseInt(getIntent().getStringExtra("purchasePrice")) * Integer.parseInt(getIntent().getStringExtra("min_order")));
 
-                String s = "\u20B1<b>" + sub + ".00</b>";
-                subtotal.setText(Html.fromHtml(s));
+                subtotal.setText(Html.fromHtml("\u20B1<b>" + sub + ".00</b>"));
             } else {
                 sub = sub - (Integer.parseInt(getIntent().getStringExtra("purchasePrice")) * Integer.parseInt(getIntent().getStringExtra("min_order")));
 
-                String s = "\u20B1<b>" + sub + ".00</b>";
-                subtotal.setText(Html.fromHtml(s));
+                subtotal.setText(Html.fromHtml("\u20B1<b>" + sub + "</b>"));
             }
 
         });
@@ -272,8 +266,7 @@ public class OrderActivity extends AppCompatActivity {
         sub = (Integer.parseInt(getIntent().getStringExtra("refillPrice")) * Integer.parseInt(getIntent().getStringExtra("min_order"))) +
                 (Integer.parseInt(getIntent().getStringExtra("purchasePrice")) * Integer.parseInt(getIntent().getStringExtra("min_order")));
 
-        String s = "\u20B1<b>" + sub + ".00</b>";
-        subtotal.setText(Html.fromHtml(s));
+        subtotal.setText(Html.fromHtml("\u20B1<b>" + sub + "</b>"));
 
         minusRefill.setOnClickListener(v -> {
 
@@ -281,8 +274,7 @@ public class OrderActivity extends AppCompatActivity {
 
             sub = sub - Integer.parseInt(refillPrice.getText().toString().replace("₱", ""));
             quantityRefill.setText(String.valueOf(qtyRefill));
-            String s12 = "\u20B1<b>" + sub + ".00</b>";
-            subtotal.setText(Html.fromHtml(s12));
+            subtotal.setText(Html.fromHtml("\u20B1<b>" + sub + "</b>"));
 
             if (qtyRefill == Integer.parseInt(getIntent().getStringExtra("min_order"))) {
                 minusRefill.setEnabled(false);
@@ -299,8 +291,7 @@ public class OrderActivity extends AppCompatActivity {
             qtyRefill++;
             sub = sub + Integer.parseInt(refillPrice.getText().toString().replace("₱", ""));
             quantityRefill.setText(String.valueOf(qtyRefill));
-            String s13 = "\u20B1<b>" + sub + ".00</b>";
-            subtotal.setText(Html.fromHtml(s13));
+            subtotal.setText(Html.fromHtml("\u20B1<b>" + sub + "</b>"));
             minusRefill.setEnabled(true);
 
             refillCheckBox.setChecked(true);
@@ -317,8 +308,7 @@ public class OrderActivity extends AppCompatActivity {
 
             sub = sub - Integer.parseInt(purchasePrice.getText().toString().replace("₱", ""));
             quantityPurchase.setText(String.valueOf(qtyPurchase));
-            String s12 = "\u20B1<b>" + sub + ".00</b>";
-            subtotal.setText(Html.fromHtml(s12));
+            subtotal.setText(Html.fromHtml("\u20B1<b>" + sub + "</b>"));
 
             if (qtyPurchase == Integer.parseInt(getIntent().getStringExtra("min_order"))) {
                 minusPurchase.setEnabled(false);
@@ -333,8 +323,7 @@ public class OrderActivity extends AppCompatActivity {
             qtyPurchase++;
             sub = sub + Integer.parseInt(purchasePrice.getText().toString().replace("₱", ""));
             quantityPurchase.setText(String.valueOf(qtyPurchase));
-            String s13 = "\u20B1<b>" + sub + ".00</b>";
-            subtotal.setText(Html.fromHtml(s13));
+            subtotal.setText(Html.fromHtml("\u20B1<b>" + sub + "</b>"));
             minusPurchase.setEnabled(true);
 
             purchaseCheckBox.setChecked(true);
@@ -369,14 +358,11 @@ public class OrderActivity extends AppCompatActivity {
             purchase.put("price", getIntent().getStringExtra("purchasePrice"));
             purchase.put("quantity", String.valueOf(qtyPurchase));
 
-            String s1 = String.valueOf(subtotal.getText()).substring(1);
-            String sub = s1.replace(".00", "");
-
             Map<String, Object> details = new HashMap<>();
             details.put("image", getIntent().getStringExtra("productImage"));
             details.put("min_order", getIntent().getStringExtra("min_order"));
             details.put("max_order", getIntent().getStringExtra("max_order"));
-            details.put("subtotal", sub);
+            details.put("subtotal", String.valueOf(subtotal.getText()).substring(1));
             details.put("water_type", getIntent().getStringExtra("water_type"));
             details.put("status", "check");
             if (refillCheckBox.isChecked() && refillLayout.getVisibility() == View.VISIBLE)

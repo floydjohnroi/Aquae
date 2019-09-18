@@ -22,6 +22,11 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.google.android.libraries.places.api.Places;
+import com.google.android.libraries.places.api.model.Place;
+import com.google.android.libraries.places.widget.Autocomplete;
+import com.google.android.libraries.places.widget.model.AutocompleteActivityMode;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.textfield.TextInputEditText;
@@ -31,6 +36,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
@@ -45,6 +51,8 @@ public class DeliveryPaymentsActivity extends AppCompatActivity {
     List<AddressModel> addressModelList = new ArrayList<>();
     EditText note;
     String address;
+
+    TextInputEditText addr;
 
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     @Override
@@ -111,23 +119,112 @@ public class DeliveryPaymentsActivity extends AppCompatActivity {
 
         });
 
+        if (!Places.isInitialized()) {
+            Places.initialize(getApplicationContext(), "AIzaSyAuXUoYwfNp7P41GYhP3OShn3MAFd0s_CY");
+        }
+
         addNew.setOnClickListener(v -> {
 
-            View view = LayoutInflater.from(DeliveryPaymentsActivity.this).inflate(R.layout.address_dialog_view, null);
-            View titleView = LayoutInflater.from(DeliveryPaymentsActivity.this).inflate(R.layout.custom_dialog_title, null);
+            List<Place.Field> fields = Arrays.asList(Place.Field.ID, Place.Field.NAME);
+            Intent intent = new Autocomplete.IntentBuilder(AutocompleteActivityMode.OVERLAY, fields)
+                    .setCountry("PH")
+                    .build(getApplicationContext());
+            startActivityForResult(intent, 0);
 
-            TextView title = titleView.findViewById(R.id.title);
-            title.setText(R.string.add_new_address);
+//            View view = LayoutInflater.from(DeliveryPaymentsActivity.this).inflate(R.layout.address_dialog_view, null);
+//            View titleView = LayoutInflater.from(DeliveryPaymentsActivity.this).inflate(R.layout.custom_dialog_title, null);
+//
+//            TextView title = titleView.findViewById(R.id.title);
+//            title.setText(R.string.add_new_address);
+//
+//            addr = view.findViewById(R.id.address);
+//
+//            addr.setOnClickListener(new View.OnClickListener() {
+//                @Override
+//                public void onClick(View v) {
+//                    List<Place.Field> fields = Arrays.asList(Place.Field.ID, Place.Field.NAME);
+//                    Intent intent = new Autocomplete.IntentBuilder(AutocompleteActivityMode.OVERLAY, fields)
+//                            .setCountry("PH")
+//                            .build(getApplicationContext());
+//                    startActivityForResult(intent, 0);
+//                }
+//            });
+//
+//            AlertDialog.Builder builder = new AlertDialog.Builder(DeliveryPaymentsActivity.this, R.style.AlertDialogTheme);
+//            builder.setCustomTitle(titleView);
+//            builder.setView(view);
+//
+//            builder.setNegativeButton("Cancel", (dialog, which) -> dialog.cancel());
+//
+//            builder.setPositiveButton("Add", (dialog, which) -> FirebaseDatabase.getInstance().getReference().child("customers")
+//                    .orderByChild("customer_id").equalTo(new Session(getApplicationContext()).getId())
+//                    .addListenerForSingleValueEvent(new ValueEventListener() {
+//                        @Override
+//                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+//
+//                            List<String> add = new ArrayList<>();
+//
+//                            for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+//                                for (DataSnapshot snap : snapshot.child("addresses").getChildren()) {
+//                                    add.add(String.valueOf(snap.getValue()));
+//                                }
+//                            }
+//
+//                            add.add(String.valueOf(addr.getText()));
+//
+//                            addressModelList.clear();
+//
+//                            dataSnapshot.getRef().child(new Session(getApplicationContext()).getId()).child("addresses").setValue(add);
+//                            Toast.makeText(DeliveryPaymentsActivity.this, "NEW ADDRESS ADDED", Toast.LENGTH_SHORT).show();
+//
+//                        }
+//
+//                        @Override
+//                        public void onCancelled(@NonNull DatabaseError databaseError) {
+//
+//                        }
+//                    }));
+//
+//
+//            AlertDialog alertDialog = builder.create();
+//            alertDialog.show();
+//
+//            alertDialog.getButton(DialogInterface.BUTTON_POSITIVE).setEnabled(false);
+//
+//            addr.addTextChangedListener(new TextWatcher() {
+//                @Override
+//                public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+//
+//                }
+//
+//                @Override
+//                public void onTextChanged(CharSequence s, int start, int before, int count) {
+//                    if ("".contentEquals(s.toString().trim())) {
+//                        alertDialog.getButton(DialogInterface.BUTTON_POSITIVE).setEnabled(false);
+//                    }
+//                    else {
+//                        alertDialog.getButton(DialogInterface.BUTTON_POSITIVE).setEnabled(true);
+//                    }
+//                }
+//
+//                @Override
+//                public void afterTextChanged(Editable s) {
+//
+//                }
+//            });
+//
+       });
 
-            TextInputEditText address = view.findViewById(R.id.address);
+    }
 
-            AlertDialog.Builder builder = new AlertDialog.Builder(DeliveryPaymentsActivity.this, R.style.AlertDialogTheme);
-            builder.setCustomTitle(titleView);
-            builder.setView(view);
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == 0 && resultCode == RESULT_OK) {
+            Place place = Autocomplete.getPlaceFromIntent(data);
+//            addr.setText(String.valueOf(place.getName()));
 
-            builder.setNegativeButton("Cancel", (dialog, which) -> dialog.cancel());
-
-            builder.setPositiveButton("Add", (dialog, which) -> FirebaseDatabase.getInstance().getReference().child("customers")
+            FirebaseDatabase.getInstance().getReference().child("customers")
                     .orderByChild("customer_id").equalTo(new Session(getApplicationContext()).getId())
                     .addListenerForSingleValueEvent(new ValueEventListener() {
                         @Override
@@ -141,7 +238,7 @@ public class DeliveryPaymentsActivity extends AppCompatActivity {
                                 }
                             }
 
-                            add.add(String.valueOf(address.getText()));
+                            add.add(String.valueOf(place.getName()));
 
                             addressModelList.clear();
 
@@ -154,38 +251,9 @@ public class DeliveryPaymentsActivity extends AppCompatActivity {
                         public void onCancelled(@NonNull DatabaseError databaseError) {
 
                         }
-                    }));
+                    });
 
-
-            AlertDialog alertDialog = builder.create();
-            alertDialog.show();
-
-            alertDialog.getButton(DialogInterface.BUTTON_POSITIVE).setEnabled(false);
-
-            address.addTextChangedListener(new TextWatcher() {
-                @Override
-                public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-                }
-
-                @Override
-                public void onTextChanged(CharSequence s, int start, int before, int count) {
-                    if ("".contentEquals(s.toString().trim())) {
-                        alertDialog.getButton(DialogInterface.BUTTON_POSITIVE).setEnabled(false);
-                    }
-                    else {
-                        alertDialog.getButton(DialogInterface.BUTTON_POSITIVE).setEnabled(true);
-                    }
-                }
-
-                @Override
-                public void afterTextChanged(Editable s) {
-
-                }
-            });
-
-        });
-
+        }
     }
 
 

@@ -93,6 +93,7 @@ public class LoginActivity extends AppCompatActivity {
                                 session.setLastname(String.valueOf(data.child("lastname").getValue()));
                                 session.setUsername(String.valueOf(data.child("username").getValue()));
                                 session.setPassword(String.valueOf(data.child("password").getValue()));
+                                session.setPhoneNumber(String.valueOf(data.child("phone_number").getValue()));
 
                                 startActivity(new Intent(LoginActivity.this, HomeActivity.class));
                                 finish();

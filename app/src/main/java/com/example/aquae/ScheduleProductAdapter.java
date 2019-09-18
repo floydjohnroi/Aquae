@@ -13,6 +13,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.daimajia.swipe.SwipeLayout;
+import com.squareup.picasso.Picasso;
 
 import java.util.List;
 
@@ -46,6 +47,13 @@ public class ScheduleProductAdapter extends RecyclerView.Adapter<ScheduleProduct
             holder.purchaseLayout.setVisibility(View.GONE);
         }
 
+        Picasso.get()
+                .load(scheduleProductModel.getImage())
+                .fit()
+                .centerCrop()
+                .placeholder(R.drawable.refillssss)
+                .into(holder.productImage);
+
         holder.itemName.setText(capitalize(scheduleProductModel.getProduct()));
         holder.refillPrice.setText("₱"+scheduleProductModel.getRefillPrice());
         holder.purchasePrice.setText("₱"+scheduleProductModel.getPurchasePrice());
@@ -64,6 +72,7 @@ public class ScheduleProductAdapter extends RecyclerView.Adapter<ScheduleProduct
 
         LinearLayout refillLayout, purchaseLayout;
         TextView itemName, waterType, refillPrice, purchasePrice, refillQty, purchaseQty;
+        ImageView productImage;
 
         public ScheduleProductViewHolder(View itemView) {
             super(itemView);
@@ -76,6 +85,7 @@ public class ScheduleProductAdapter extends RecyclerView.Adapter<ScheduleProduct
             purchasePrice = itemView.findViewById(R.id.purchasePrice);
             refillQty = itemView.findViewById(R.id.refillQty);
             purchaseQty = itemView.findViewById(R.id.purchaseQty);
+            productImage = itemView.findViewById(R.id.productImage);
 
         }
     }

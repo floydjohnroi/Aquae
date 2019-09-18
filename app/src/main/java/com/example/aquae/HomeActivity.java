@@ -38,6 +38,8 @@ import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.firebase.iid.InstanceIdResult;
 import com.miguelcatalan.materialsearchview.MaterialSearchView;
+import com.squareup.picasso.Picasso;
+
 import java.util.Objects;
 
 import static android.widget.Toast.makeText;
@@ -52,6 +54,7 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
     NavigationView navigationView;
     TextView userName, userEmail, toolbarTitle;
     MaterialSearchView searchView;
+    ImageView profile;
 
     DatabaseReference databaseReference;
     Session session;
@@ -76,28 +79,32 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
         databaseReference = FirebaseDatabase.getInstance().getReference();
         session = new Session(getApplicationContext());
 
-        fcmNotification = new FCMNotification(this);
+//        fcmNotification = new FCMNotification(this);
 
         startService(new Intent(this, PusherService.class));
+
+        //startService(new Intent(this, NotificationService.class));
+
+
 //        fcmNotification.getToken();
 
-        FirebaseInstanceId.getInstance().getInstanceId()
-                .addOnCompleteListener(new OnCompleteListener<InstanceIdResult>() {
-                    @Override
-                    public void onComplete(@NonNull Task<InstanceIdResult> task) {
-                        if (!task.isSuccessful()) {
-                            Log.w("TEST", "getInstanceId failed", task.getException());
-                            return;
-                        }
-
-                        // Get new Instance ID token
-                        String token = task.getResult().getToken();
-
-                        // Log and toast
-                        //Log.d("TEST", token);
-                        //Toast.makeText(HomeActivity.this, token, Toast.LENGTH_SHORT).show();
-                    }
-                });
+//        FirebaseInstanceId.getInstance().getInstanceId()
+//                .addOnCompleteListener(new OnCompleteListener<InstanceIdResult>() {
+//                    @Override
+//                    public void onComplete(@NonNull Task<InstanceIdResult> task) {
+//                        if (!task.isSuccessful()) {
+//                            Log.w("TEST", "getInstanceId failed", task.getException());
+//                            return;
+//                        }
+//
+//                        // Get new Instance ID token
+//                        String token = task.getResult().getToken();
+//
+//                        // Log and toast
+//                        //Log.d("TEST", token);
+//                        //Toast.makeText(HomeActivity.this, token, Toast.LENGTH_SHORT).show();
+//                    }
+//                });
 
         toolbarCard = findViewById(R.id.toolbarCard);
         toolbar = findViewById(R.id.toolbar);
@@ -107,10 +114,33 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
         floatingActionButton = findViewById(R.id.floatingActionButton);
         userName = navigationView.getHeaderView(0).findViewById(R.id.userName);
         userEmail = navigationView.getHeaderView(0).findViewById(R.id.userEmail);
+        profile = navigationView.getHeaderView(0).findViewById(R.id.imageView);
 
         setSupportActionBar(toolbar);
         (Objects.requireNonNull(getSupportActionBar())).setDisplayHomeAsUpEnabled(true);
         toolbarCard.setCardBackgroundColor(getResources().getColor(R.color.colorWhite));
+
+        FirebaseDatabase.getInstance().getReference().child("customers")
+                .orderByChild("customer_id").equalTo(new Session(getApplicationContext()).getId())
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                        for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                            Picasso.get()
+                                    .load(String.valueOf(snapshot.child("profile").getValue()))
+                                    .fit()
+                                    .centerCrop()
+                                    .placeholder(R.drawable.profile_image_placeholder)
+                                    .into(profile);
+                        }
+
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                    }
+                });
 
         toolbarTitle.setOnClickListener(v -> searchView.showSearch());
 
@@ -188,18 +218,18 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
 
     }
 
-//    @Override
-//    public boolean onCreateOptionsMenu(Menu menu) {
-//        getMenuInflater().inflate(R.menu.main, menu);
-//
-//        MenuItem item = menu.findItem(R.id.cart);
-//        item.setIcon(R.drawable.icon_cart_dark);
-//        MenuItemCompat.setActionView(item, R.layout.cart_badge);
-//        RelativeLayout cart = (RelativeLayout) MenuItemCompat.getActionView(item);
-//        ImageView cartIcon = cart.findViewById(R.id.cartIcon);
-//        final TextView badge = cart.findViewById(R.id.badge);
-//        cartIcon.setImageDrawable(getResources().getDrawable(R.drawable.icon_cart_dark));
-//
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main, menu);
+
+        MenuItem item = menu.findItem(R.id.cart);
+        item.setIcon(R.drawable.icon_cart_dark);
+        MenuItemCompat.setActionView(item, R.layout.cart_badge);
+        RelativeLayout cart = (RelativeLayout) MenuItemCompat.getActionView(item);
+        ImageView cartIcon = cart.findViewById(R.id.cartIcon);
+        final TextView badge = cart.findViewById(R.id.badge);
+        cartIcon.setImageDrawable(getResources().getDrawable(R.drawable.icon_notification_dark));
+
 //        cartIcon.setOnClickListener(v -> startActivity(new Intent(HomeActivity.this, CartActivity.class)));
 //
 //        databaseReference.child("carts").orderByChild("customer_id").equalTo(new Session(getApplicationContext()).getId())
@@ -244,9 +274,9 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
 //
 //                    }
 //                });
-//
-//        return super.onCreateOptionsMenu(menu);
-//    }
+
+        return super.onCreateOptionsMenu(menu);
+    }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -294,6 +324,9 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
 //            case R.id.cart:
 //                startActivity(new Intent(HomeActivity.this, CartActivity.class));
 //                break;
+            case R.id.account:
+                startActivity(new Intent(HomeActivity.this, AccountActivity.class));
+                break;
             case R.id.order_history:
                 startActivity(new Intent(HomeActivity.this, OrderHistoryActivity.class));
                 break;

@@ -11,6 +11,7 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.os.BadParcelableException;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.Html;
@@ -18,6 +19,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.CheckBox;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -26,6 +28,10 @@ import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.libraries.places.api.Places;
+import com.google.android.libraries.places.api.model.Place;
+import com.google.android.libraries.places.widget.Autocomplete;
+import com.google.android.libraries.places.widget.model.AutocompleteActivityMode;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.snackbar.Snackbar;
@@ -42,6 +48,7 @@ import org.json.JSONObject;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -53,15 +60,13 @@ public class ScheduledDelivery extends AppCompatActivity {
     Toolbar toolbar;
     MaterialCardView toolbarCard;
     TextView toolbarTitle, addNew, km, distance, shipfee, total, subtotal, delivery_fee;
-    TextInputEditText setDays;
+    TextInputEditText setDays, notes;
     RecyclerView recyclerView, recyclerView1;
     List<AddressModel> addressModelList = new ArrayList<>();
     List<CheckOutProductModel> checkOutProductModelList = new ArrayList<>();
     MaterialButton setSchedule;
     Map<String, Object> items = new HashMap<>();
-    Map<String, Object> maps = new HashMap<>();
-    Map<String, Object> map = new HashMap<>();
-
+    LinearLayout subtotalLayout, deliveryFeeLayout, notesLayout;
     String addr;
 
     @Override
@@ -83,6 +88,9 @@ public class ScheduledDelivery extends AppCompatActivity {
         subtotal = findViewById(R.id.subtotal);
         delivery_fee = findViewById(R.id.delivery_fee);
         setSchedule = findViewById(R.id.set_schedule);
+        subtotalLayout = findViewById(R.id.subtotal_layout);
+        deliveryFeeLayout = findViewById(R.id.delivery_fee_layout);
+        notes = findViewById(R.id.notes);
 
         setSupportActionBar(toolbar);
         (Objects.requireNonNull(getSupportActionBar())).setDisplayHomeAsUpEnabled(true);
@@ -102,11 +110,9 @@ public class ScheduledDelivery extends AppCompatActivity {
         linearLayoutManager.setStackFromEnd(true);
         recyclerView1.setLayoutManager(linearLayoutManager1);
 
-        String k = "DISTANCE <i>(km)</i>";
-        km.setText(Html.fromHtml(k));
+        km.setText(Html.fromHtml("DISTANCE <i>(km)</i>"));
 
-        String sf = "₱<b>" + getIntent().getStringExtra("ship_fee") + "</b>";
-        shipfee.setText(Html.fromHtml(sf));
+        shipfee.setText(Html.fromHtml("₱<b>" + getIntent().getStringExtra("ship_fee") + "</b>"));
 
         total.setText(Html.fromHtml("₱<b>0</b>"));
 
@@ -136,7 +142,7 @@ public class ScheduledDelivery extends AppCompatActivity {
 
                                 StringRequest stringRequest = new StringRequest(Request.Method.GET, url, response -> {
 
-                                    String dist = null;
+                                    String dist = "";
 
                                     try {
                                         JSONObject jsonObject = new JSONObject(response);
@@ -151,22 +157,32 @@ public class ScheduledDelivery extends AppCompatActivity {
                                         e.printStackTrace();
                                     }
 
-                                    if (dist != null) {
-                                        distance.setText(dist);
-                                    }
-                                    else {
+
+                                    if ("".equals(dist)) {
                                         distance.setText("0 km");
                                     }
+                                    else {
+                                        String d = dist.replace(" km" ,"");
+                                        String[] e = d.split("\\.");
 
-                                    String dst = String.valueOf(distance.getText()).replace(" km", "");
-                                    String[] ds = dst.split("\\.");
-
-                                    int dfee = Integer.parseInt(getIntent().getStringExtra("ship_fee")) * Integer.parseInt(ds[0]);
-                                    delivery_fee.setText(String.valueOf(dfee));
-
-                                    int newt = Integer.parseInt(String.valueOf(subtotal.getText())) + dfee;
-                                    String ts = "₱<b>"+newt+"</b>";
-                                    total.setText(Html.fromHtml(ts));
+                                        if (Integer.parseInt(String.valueOf(e[0])) > 4) {
+                                            distance.setText(e[0]+" km");
+                                            int fee = Integer.parseInt(getIntent().getStringExtra("ship_fee")) * Integer.parseInt(String.valueOf(e[0]));
+                                            delivery_fee.setText(String.valueOf(fee));
+                                            int newt = Integer.parseInt(String.valueOf(subtotal.getText())) + fee;
+                                            total.setText(Html.fromHtml("₱<b>" + newt + "</b>"));
+                                            subtotalLayout.setVisibility(View.VISIBLE);
+                                            deliveryFeeLayout.setVisibility(View.VISIBLE);
+                                            shipfee.setText(Html.fromHtml("₱<b>" + getIntent().getStringExtra("ship_fee") + "</b>"));
+                                        }
+                                        else {
+                                            distance.setText(e[0]+" km");
+                                            shipfee.setText(Html.fromHtml("<b>FREE</b>"));
+                                            subtotalLayout.setVisibility(View.GONE);
+                                            deliveryFeeLayout.setVisibility(View.GONE);
+                                            total.setText(Html.fromHtml("₱<b>" + subtotal.getText() + "</b>"));
+                                        }
+                                    }
 
 
                                 }, error -> Log.d("error", error.toString()));
@@ -302,132 +318,272 @@ public class ScheduledDelivery extends AppCompatActivity {
             }
         });
 
+        if (!Places.isInitialized()) {
+            Places.initialize(getApplicationContext(), "AIzaSyAuXUoYwfNp7P41GYhP3OShn3MAFd0s_CY");
+        }
+
         addNew.setOnClickListener(v -> {
 
-            View view = LayoutInflater.from(ScheduledDelivery.this).inflate(R.layout.address_dialog_view, null);
-            View titleView = LayoutInflater.from(ScheduledDelivery.this).inflate(R.layout.custom_dialog_title, null);
+            List<Place.Field> fields = Arrays.asList(Place.Field.ID, Place.Field.NAME);
+            Intent intent = new Autocomplete.IntentBuilder(AutocompleteActivityMode.OVERLAY, fields)
+                    .setCountry("PH")
+                    .build(getApplicationContext());
+            startActivityForResult(intent, 0);
 
-            TextView title = titleView.findViewById(R.id.title);
-            title.setText(R.string.add_new_address);
+//            View view = LayoutInflater.from(ScheduledDelivery.this).inflate(R.layout.address_dialog_view, null);
+//            View titleView = LayoutInflater.from(ScheduledDelivery.this).inflate(R.layout.custom_dialog_title, null);
+//
+//            TextView title = titleView.findViewById(R.id.title);
+//            title.setText(R.string.add_new_address);
+//
+//            TextInputEditText address = view.findViewById(R.id.address);
+//
+//            AlertDialog.Builder builder = new AlertDialog.Builder(ScheduledDelivery.this, R.style.AlertDialogTheme);
+//            builder.setCustomTitle(titleView);
+//            builder.setView(view);
+//
+//            builder.setNegativeButton("Cancel", (dialog, which) -> dialog.cancel());
+//
+//            builder.setPositiveButton("Add", (dialog, which) -> FirebaseDatabase.getInstance().getReference().child("customers")
+//                    .orderByChild("customer_id").equalTo(new Session(getApplicationContext()).getId())
+//                    .addListenerForSingleValueEvent(new ValueEventListener() {
+//                        @Override
+//                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+//
+//                            List<String> add = new ArrayList<>();
+//
+//                            for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+//                                for (DataSnapshot snap : snapshot.child("addresses").getChildren()) {
+//                                    add.add(String.valueOf(snap.getValue()));
+//                                }
+//                            }
+//
+//                            add.add(String.valueOf(address.getText()));
+//
+//                            addressModelList.clear();
+//
+//                            dataSnapshot.getRef().child(new Session(getApplicationContext()).getId()).child("addresses").setValue(add);
+//                            Toast.makeText(ScheduledDelivery.this, "NEW ADDRESS ADDED", Toast.LENGTH_SHORT).show();
+//
+//                        }
+//
+//                        @Override
+//                        public void onCancelled(@NonNull DatabaseError databaseError) {
+//
+//                        }
+//                    }));
+//
+//
+//            AlertDialog alertDialog = builder.create();
+//            alertDialog.show();
 
-            TextInputEditText address = view.findViewById(R.id.address);
+        });
 
-            AlertDialog.Builder builder = new AlertDialog.Builder(ScheduledDelivery.this, R.style.AlertDialogTheme);
-            builder.setCustomTitle(titleView);
-            builder.setView(view);
 
-            builder.setNegativeButton("Cancel", (dialog, which) -> dialog.cancel());
+        setSchedule.setOnClickListener(v -> {
 
-            builder.setPositiveButton("Add", (dialog, which) -> FirebaseDatabase.getInstance().getReference().child("customers")
+            String id = FirebaseDatabase.getInstance().getReference().push().getKey();
+
+            Map<String, Object> schedule = new HashMap<>();
+            schedule.put("schedule_id", String.valueOf(id));
+            schedule.put("customer_id", new Session(getApplicationContext()).getId());
+            schedule.put("client_id", getIntent().getStringExtra("client_id"));
+            schedule.put("total_amount", String.valueOf(total.getText()).replace("₱", ""));
+            schedule.put("delivery_address", addr);
+            schedule.put("items", items);
+            schedule.put("status", "pending");
+            schedule.put("delivery_fee", String.valueOf(shipfee.getText()).replace("₱", ""));
+            schedule.put("notes", String.valueOf(notes.getText()).trim());
+            schedule.put("schedule", String.valueOf(setDays.getText()));
+            schedule.put("switch", "on");
+            schedule.put("distance", String.valueOf(distance.getText()).replace(" km", ""));
+
+            FirebaseDatabase.getInstance().getReference().child("schedules")
                     .orderByChild("customer_id").equalTo(new Session(getApplicationContext()).getId())
                     .addListenerForSingleValueEvent(new ValueEventListener() {
                         @Override
                         public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                            for (DataSnapshot snapshot1 : dataSnapshot.getChildren()) {
+                                if (getIntent().getStringExtra("client_id").equals(snapshot1.child("client_id").getValue())) {
+                                    if ("scheduled".equals(snapshot1.child("status").getValue())
+                                            || "pending".equals(snapshot1.child("status").getValue())) {
+                                        if (String.valueOf(setDays.getText()).equals(snapshot1.child("schedule").getValue())
+                                                && addr.equals(snapshot1.child("delivery_address").getValue())) {
+                                            AlertDialog.Builder builder = new AlertDialog.Builder(ScheduledDelivery.this, R.style.AlertDialogTheme);
+                                            builder.setTitle("Ooops!");
+                                            builder.setMessage("You've already set this schedule. Please wait for the confirmation.");
 
-                            List<String> add = new ArrayList<>();
+                                            builder.setPositiveButton("okay", new DialogInterface.OnClickListener() {
+                                                @Override
+                                                public void onClick(DialogInterface dialog, int which) {
 
-                            for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                                for (DataSnapshot snap : snapshot.child("addresses").getChildren()) {
-                                    add.add(String.valueOf(snap.getValue()));
+                                                }
+                                            });
+                                            builder.create().show();
+                                        } else {
+                                            dataSnapshot.getRef().child(String.valueOf(id))
+                                                    .setValue(schedule)
+                                                    .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                                        @Override
+                                                        public void onSuccess(Void aVoid) {
+                                                            FirebaseDatabase.getInstance().getReference().child("deliveries")
+                                                                    .orderByChild("customer_id").equalTo(String.valueOf(snapshot1.child("customer_id").getValue()))
+                                                                    .addListenerForSingleValueEvent(new ValueEventListener() {
+                                                                        @RequiresApi(api = Build.VERSION_CODES.KITKAT)
+                                                                        @Override
+                                                                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                                                            for (DataSnapshot snapshot2 : dataSnapshot.getChildren()) {
+                                                                                if (Objects.equals(snapshot2.child("client_id").getValue(), snapshot1.child("client_id").getValue())) {
+                                                                                    for (DataSnapshot snap : snapshot2.child("products").getChildren()) {
+                                                                                        for (DataSnapshot sn : snap.getChildren()) {
+                                                                                            if (Objects.equals(sn.child("status").getValue(), "check")) {
+                                                                                                snap.getRef().removeValue();
+                                                                                            }
+                                                                                        }
+
+                                                                                    }
+                                                                                }
+                                                                            }
+
+//                                                                            Toast.makeText(ScheduledDelivery.this, "SCHEDULE SET", Toast.LENGTH_SHORT).show();
+//                                                                            startActivity(new Intent(ScheduledDelivery.this, DeliveryScheduleActivity.class));
+//                                                                            finish();
+
+                                                                        }
+
+                                                                        @Override
+                                                                        public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                                                                        }
+                                                                    });
+                                                        }
+                                                    });
+                                        }
+                                    }
+                                }
+                                else {
+                                    dataSnapshot.getRef().child(String.valueOf(id))
+                                            .setValue(schedule)
+                                            .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                                @Override
+                                                public void onSuccess(Void aVoid) {
+                                                    FirebaseDatabase.getInstance().getReference().child("deliveries")
+                                                            .orderByChild("customer_id").equalTo(String.valueOf(snapshot1.child("customer_id").getValue()))
+                                                            .addListenerForSingleValueEvent(new ValueEventListener() {
+                                                                @RequiresApi(api = Build.VERSION_CODES.KITKAT)
+                                                                @Override
+                                                                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                                                    for (DataSnapshot snapshot2 : dataSnapshot.getChildren()) {
+                                                                        if (Objects.equals(snapshot2.child("client_id").getValue(), snapshot1.child("client_id").getValue())) {
+                                                                            for (DataSnapshot snap : snapshot2.child("products").getChildren()) {
+                                                                                for (DataSnapshot sn : snap.getChildren()) {
+                                                                                    if (Objects.equals(sn.child("status").getValue(), "check")) {
+                                                                                        snap.getRef().removeValue();
+                                                                                    }
+                                                                                }
+
+                                                                            }
+                                                                        }
+                                                                    }
+
+//                                                                    Toast.makeText(ScheduledDelivery.this, "SCHEDULE SET", Toast.LENGTH_SHORT).show();
+//                                                                    startActivity(new Intent(ScheduledDelivery.this, DeliveryScheduleActivity.class));
+//                                                                    finish();
+
+                                                                }
+
+                                                                @Override
+                                                                public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                                                                }
+                                                            });
+                                                }
+                                            });
                                 }
                             }
 
-                            add.add(String.valueOf(address.getText()));
-
-                            addressModelList.clear();
-
-                            dataSnapshot.getRef().child(new Session(getApplicationContext()).getId()).child("addresses").setValue(add);
-                            Toast.makeText(ScheduledDelivery.this, "NEW ADDRESS ADDED", Toast.LENGTH_SHORT).show();
-
+                            Toast.makeText(ScheduledDelivery.this, "SCHEDULE SET", Toast.LENGTH_SHORT).show();
+                            startActivity(new Intent(ScheduledDelivery.this, DeliveryScheduleActivity.class));
+                            finish();
                         }
 
                         @Override
                         public void onCancelled(@NonNull DatabaseError databaseError) {
 
                         }
-                    }));
-
-
-            AlertDialog alertDialog = builder.create();
-            alertDialog.show();
-        });
-
-
-        setSchedule.setOnClickListener(v -> {
-
-            String tp = String.valueOf(total.getText()).replace("₱", "");
-            String dfe = String.valueOf(delivery_fee.getText()).replace(".00", "");
-
-            String id = FirebaseDatabase.getInstance().getReference().push().getKey();
-
-            Map<String, Object> schedule = new HashMap<>();
-            schedule.put("schedule_id", id);
-            schedule.put("customer_id", new Session(getApplicationContext()).getId());
-            schedule.put("client_id", getIntent().getStringExtra("client_id"));
-            schedule.put("total_amount", tp);
-            schedule.put("delivery_address", addr);
-            schedule.put("items", items);
-            schedule.put("status", "pending");
-            schedule.put("delivery_fee", dfe);
-            schedule.put("notes", String.valueOf(getIntent().getStringExtra("notes")));
-            schedule.put("schedule", String.valueOf(setDays.getText()));
-            schedule.put("switch", "on");
-
-            FirebaseDatabase.getInstance().getReference().child("schedules")
-                    .child(id)
-                    .setValue(schedule)
-                    .addOnSuccessListener(new OnSuccessListener<Void>() {
-                        @Override
-                        public void onSuccess(Void aVoid) {
-
-                            FirebaseDatabase.getInstance().getReference().child("schedules")
-                                    .orderByChild("schedule_id").equalTo(id)
-                                    .addListenerForSingleValueEvent(new ValueEventListener() {
-                                        @Override
-                                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                                            for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                                                FirebaseDatabase.getInstance().getReference().child("deliveries")
-                                                        .orderByChild("customer_id").equalTo(String.valueOf(snapshot.child("customer_id").getValue()))
-                                                        .addListenerForSingleValueEvent(new ValueEventListener() {
-                                                            @RequiresApi(api = Build.VERSION_CODES.KITKAT)
-                                                            @Override
-                                                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                                                                for (DataSnapshot snapshot2 : dataSnapshot.getChildren()) {
-                                                                    if (Objects.equals(snapshot2.child("client_id").getValue(), snapshot.child("client_id").getValue())) {
-                                                                        for (DataSnapshot snap : snapshot2.child("products").getChildren()) {
-                                                                            for (DataSnapshot sn : snap.getChildren()) {
-                                                                                if (Objects.equals(sn.child("status").getValue(), "check")) {
-                                                                                    snap.getRef().removeValue();
-                                                                                }
-                                                                            }
-
-                                                                        }
-                                                                    }
-                                                                }
-
-                                                                Toast.makeText(ScheduledDelivery.this, "SCHEDULE SET", Toast.LENGTH_SHORT).show();
-                                                                startActivity(new Intent(ScheduledDelivery.this, DeliveryScheduleActivity.class));
-                                                                finish();
-
-                                                            }
-
-                                                            @Override
-                                                            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-                                                            }
-                                                        });
-                                            }
-                                        }
-
-                                        @Override
-                                        public void onCancelled(@NonNull DatabaseError databaseError) {
-
-                                        }
-                                    });
-
-
-                        }
                     });
+
+//            String id = FirebaseDatabase.getInstance().getReference().push().getKey();
+//
+//            Map<String, Object> schedule = new HashMap<>();
+//            schedule.put("schedule_id", String.valueOf(id));
+//            schedule.put("customer_id", new Session(getApplicationContext()).getId());
+//            schedule.put("client_id", getIntent().getStringExtra("client_id"));
+//            schedule.put("total_amount", String.valueOf(total.getText()).replace("₱", ""));
+//            schedule.put("delivery_address", addr);
+//            schedule.put("items", items);
+//            schedule.put("status", "pending");
+//            schedule.put("delivery_fee", String.valueOf(shipfee.getText()).replace("₱", ""));
+//            schedule.put("notes", String.valueOf(notes.getText()).trim());
+//            schedule.put("schedule", String.valueOf(setDays.getText()));
+//            schedule.put("switch", "on");
+//            schedule.put("distance", String.valueOf(distance.getText()).replace(" km", ""));
+//
+//            FirebaseDatabase.getInstance().getReference().child("schedules")
+//                    .child(String.valueOf(id))
+//                    .setValue(schedule)
+//                    .addOnSuccessListener(new OnSuccessListener<Void>() {
+//                        @Override
+//                        public void onSuccess(Void aVoid) {
+//
+//                            FirebaseDatabase.getInstance().getReference().child("schedules")
+//                                    .orderByChild("schedule_id").equalTo(id)
+//                                    .addListenerForSingleValueEvent(new ValueEventListener() {
+//                                        @Override
+//                                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+//                                            for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+//                                                FirebaseDatabase.getInstance().getReference().child("deliveries")
+//                                                        .orderByChild("customer_id").equalTo(String.valueOf(snapshot.child("customer_id").getValue()))
+//                                                        .addListenerForSingleValueEvent(new ValueEventListener() {
+//                                                            @RequiresApi(api = Build.VERSION_CODES.KITKAT)
+//                                                            @Override
+//                                                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+//                                                                for (DataSnapshot snapshot2 : dataSnapshot.getChildren()) {
+//                                                                    if (Objects.equals(snapshot2.child("client_id").getValue(), snapshot.child("client_id").getValue())) {
+//                                                                        for (DataSnapshot snap : snapshot2.child("products").getChildren()) {
+//                                                                            for (DataSnapshot sn : snap.getChildren()) {
+//                                                                                if (Objects.equals(sn.child("status").getValue(), "check")) {
+//                                                                                    snap.getRef().removeValue();
+//                                                                                }
+//                                                                            }
+//
+//                                                                        }
+//                                                                    }
+//                                                                }
+//
+//                                                                Toast.makeText(ScheduledDelivery.this, "SCHEDULE SET", Toast.LENGTH_SHORT).show();
+//                                                                startActivity(new Intent(ScheduledDelivery.this, DeliveryScheduleActivity.class));
+//                                                                finish();
+//
+//                                                            }
+//
+//                                                            @Override
+//                                                            public void onCancelled(@NonNull DatabaseError databaseError) {
+//
+//                                                            }
+//                                                        });
+//                                            }
+//                                        }
+//
+//                                        @Override
+//                                        public void onCancelled(@NonNull DatabaseError databaseError) {
+//
+//                                        }
+//                                    });
+//
+//
+//                        }
+//                    });
 
         });
 
@@ -448,12 +604,17 @@ public class ScheduledDelivery extends AppCompatActivity {
                                         for (DataSnapshot d : s.getChildren()) {
                                             if (Objects.equals(d.child("status").getValue(), "check")) {
 
+                                                Map<String, Object> refill = new HashMap<>();
+                                                Map<String, Object> purchase = new HashMap<>();
+                                                Map<String, Object> map = new HashMap<>();
+
                                                 Object refillQuantity = 0;
                                                 Object refillPrice = 0;
                                                 Object purchaseQuantity = 0;
                                                 Object purchasePrice = 0;
 
                                                 map.put("water_type", Objects.requireNonNull(d.child("water_type").getValue()));
+                                                map.put("image", String.valueOf(d.child("image").getValue()));
 
                                                 for (DataSnapshot e : d.getChildren()) {
 
@@ -461,18 +622,18 @@ public class ScheduledDelivery extends AppCompatActivity {
                                                         refillQuantity = e.child("quantity").getValue();
                                                         refillPrice = e.child("price").getValue();
 
-                                                        maps.put("quantity", Objects.requireNonNull(e.child("quantity").getValue()));
-                                                        maps.put("price", Objects.requireNonNull(e.child("price").getValue()));
-                                                        map.put("refill", maps);
+                                                        refill.put("quantity", Objects.requireNonNull(e.child("quantity").getValue()));
+                                                        refill.put("price", Objects.requireNonNull(e.child("price").getValue()));
+                                                        map.put("refill", refill);
                                                     }
 
                                                     if (Objects.requireNonNull(e.getKey()).equals("purchase")) {
                                                         purchaseQuantity = e.child("quantity").getValue();
                                                         purchasePrice = e.child("price").getValue();
 
-                                                        maps.put("quantity", Objects.requireNonNull(e.child("quantity").getValue()));
-                                                        maps.put("price", Objects.requireNonNull(e.child("price").getValue()));
-                                                        map.put("purchase", maps);
+                                                        purchase.put("quantity", Objects.requireNonNull(e.child("quantity").getValue()));
+                                                        purchase.put("price", Objects.requireNonNull(e.child("price").getValue()));
+                                                        map.put("purchase", purchase);
                                                     }
 
                                                 }
@@ -513,6 +674,45 @@ public class ScheduledDelivery extends AppCompatActivity {
         recyclerView1.setAdapter(new CheckOutProductAdapter(ScheduledDelivery.this, checkOutProductModelList));
 
 
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == 0 && resultCode == RESULT_OK) {
+            Place place = Autocomplete.getPlaceFromIntent(data);
+//            addr.setText(String.valueOf(place.getName()));
+
+            FirebaseDatabase.getInstance().getReference().child("customers")
+                    .orderByChild("customer_id").equalTo(new Session(getApplicationContext()).getId())
+                    .addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+                            List<String> add = new ArrayList<>();
+
+                            for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                                for (DataSnapshot snap : snapshot.child("addresses").getChildren()) {
+                                    add.add(String.valueOf(snap.getValue()));
+                                }
+                            }
+
+                            add.add(String.valueOf(place.getName()));
+
+                            addressModelList.clear();
+
+                            dataSnapshot.getRef().child(new Session(getApplicationContext()).getId()).child("addresses").setValue(add);
+                            Toast.makeText(ScheduledDelivery.this, "NEW ADDRESS ADDED", Toast.LENGTH_SHORT).show();
+
+                        }
+
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                        }
+                    });
+
+        }
     }
 
     @Override

@@ -14,6 +14,7 @@ import androidx.fragment.app.DialogFragment;
 
 public class LoadingScreen extends DialogFragment {
 
+
     public static LoadingScreen getInstance() {
         return new LoadingScreen();
     }
@@ -30,4 +31,5 @@ public class LoadingScreen extends DialogFragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         return inflater.inflate(R.layout.loading_screen, container, false);
     }
+
 }

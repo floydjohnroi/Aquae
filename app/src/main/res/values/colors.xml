@@ -19,4 +19,5 @@
     <color name="colorBottomWrapper">#f0f0f0</color>
     <color name="colorTransparent">#43000000</color>
     <color name="colorStatus">#24bd64</color>
+    <color name="colorTextBlack">#504f54</color>
 </resources>
