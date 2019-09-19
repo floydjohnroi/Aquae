@@ -1,6 +1,7 @@
 package com.example.aquae;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -54,6 +55,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.database.core.Constants;
+import com.miguelcatalan.materialsearchview.MaterialSearchView;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -63,6 +65,8 @@ import java.io.FileDescriptor;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
@@ -76,7 +80,7 @@ public class Filter1Fragment extends Fragment {
 //    FirebaseRecyclerAdapter<ClientModel, ClientAdapter> adapter;
     List<ClientModel> clientModelList = new ArrayList<>();
     String isForDelivery;
-
+    ClientAdapter clientAdapter;
 
     @Nullable
     @Override
@@ -87,8 +91,6 @@ public class Filter1Fragment extends Fragment {
 
         recyclerView.setHasFixedSize(true);
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getContext());
-        linearLayoutManager.setReverseLayout(true);
-        linearLayoutManager.setStackFromEnd(true);
         recyclerView.setLayoutManager(linearLayoutManager);
 
         LocationRequest mLocationRequest = new LocationRequest();
@@ -133,6 +135,36 @@ public class Filter1Fragment extends Fragment {
 //                    }
 //                });
 
+        ((HomeActivity) Objects.requireNonNull(getActivity())).searchView.setOnQueryTextListener(new MaterialSearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                clientAdapter.getFilter().filter(newText);
+                return false;
+            }
+        });
+
+        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @SuppressLint("RestrictedApi")
+            @Override
+            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+
+                if (dy > 0) {
+                    ((HomeActivity) Objects.requireNonNull(getActivity())).floatingActionButton.setVisibility(View.GONE);
+                } else if (dy < 0) {
+                    ((HomeActivity) Objects.requireNonNull(getActivity())).floatingActionButton.setVisibility(View.VISIBLE);
+                } else {
+                    ((HomeActivity) Objects.requireNonNull(getActivity())).floatingActionButton.setVisibility(View.VISIBLE);
+                }
+            }
+        });
+
+
+
 
         return view;
     }
@@ -158,7 +190,7 @@ public class Filter1Fragment extends Fragment {
 
         FirebaseDatabase.getInstance().getReference().child("clients")
                 .orderByChild("status").equalTo("activate")
-                .addValueEventListener(new ValueEventListener() {
+                .addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                         clientModelList.clear();
@@ -193,23 +225,31 @@ public class Filter1Fragment extends Fragment {
                                     String[] m = l.split("\\.");
 
                                     if (Integer.parseInt(m[0]) < 5) {
-                                        for (DataSnapshot data : snapshot.getChildren()) {
-                                            if (data.child("store").getValue() != null) {
-                                                clientModelList.add(new ClientModel(
-                                                        String.valueOf(snapshot.child("client_id").getValue()),
-                                                        String.valueOf(snapshot.child("company").getValue()),
-                                                        String.valueOf(snapshot.child("email").getValue()),
-                                                        String.valueOf(snapshot.child("password").getValue()),
-                                                        String.valueOf(snapshot.child("address").getValue()),
-                                                        String.valueOf(snapshot.child("contact").getValue()),
-                                                        String.valueOf(data.child("store").getValue()),
-                                                        String.valueOf(snapshot.child("water_type").getValue()),
-                                                        String.valueOf(snapshot.child("no_of_filter").getValue()),
-                                                        String.valueOf(snapshot.child("shipping_fee").getValue())
-                                                ));
+
+                                        clientModelList.add(new ClientModel(
+                                                String.valueOf(snapshot.child("client_id").getValue()),
+                                                String.valueOf(snapshot.child("company").getValue()),
+                                                String.valueOf(snapshot.child("email").getValue()),
+                                                String.valueOf(snapshot.child("password").getValue()),
+                                                String.valueOf(snapshot.child("address").getValue()),
+                                                String.valueOf(snapshot.child("contact").getValue()),
+                                                String.valueOf(snapshot.child("files").child("store").getValue()),
+                                                String.valueOf(snapshot.child("water_type").getValue()),
+                                                String.valueOf(snapshot.child("no_of_filter").getValue()),
+                                                String.valueOf(snapshot.child("shipping_fee").getValue()),
+                                                l
+                                        ));
+
+                                        Collections.sort(clientModelList, new Comparator<ClientModel>() {
+                                            @Override
+                                            public int compare(ClientModel o1, ClientModel o2) {
+                                                return o1.getKmAway().compareTo(o2.getKmAway());
                                             }
-                                        }
-                                        recyclerView.setAdapter(new ClientAdapter(getContext(), clientModelList, isForDelivery));
+                                        });
+
+                                        clientAdapter = new ClientAdapter(getContext(), clientModelList, isForDelivery);
+                                        recyclerView.setAdapter(clientAdapter);
+
                                     }
 
                                 }
@@ -227,6 +267,8 @@ public class Filter1Fragment extends Fragment {
 
                     }
                 });
+
+
 
         LocationServices.getFusedLocationProviderClient(Objects.requireNonNull(getActivity())).removeLocationUpdates(locationCallback);
 

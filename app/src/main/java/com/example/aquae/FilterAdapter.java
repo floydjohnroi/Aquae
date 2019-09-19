@@ -11,7 +11,7 @@ import androidx.fragment.app.FragmentStatePagerAdapter;
 public class FilterAdapter extends FragmentStatePagerAdapter {
 
     final int PAGE_COUNT = 2;
-    private String tabTitles[] = new String[]{"NEARBY", "PRICE"};
+    private String tabTitles[] = new String[]{"NEARBY", "POPULAR", "ALL"};
     private Context context;
     String isForDelivery;
 
@@ -26,17 +26,23 @@ public class FilterAdapter extends FragmentStatePagerAdapter {
 
         switch (position) {
             case 0:
-                Bundle b = new Bundle();
-                b.putString("isForDelivery", isForDelivery);
-                Filter1Fragment fragment = new Filter1Fragment();
-                fragment.setArguments(b);
-                return fragment;
-            case 1:
                 Bundle b1 = new Bundle();
                 b1.putString("isForDelivery", isForDelivery);
-                Filter2Fragment fragment1 = new Filter2Fragment();
+                Filter1Fragment fragment1 = new Filter1Fragment();
                 fragment1.setArguments(b1);
                 return fragment1;
+            case 1:
+                Bundle b2 = new Bundle();
+                b2.putString("isForDelivery", isForDelivery);
+                Filter2Fragment fragment2 = new Filter2Fragment();
+                fragment2.setArguments(b2);
+                return fragment2;
+            case 2:
+                Bundle b3 = new Bundle();
+                b3.putString("isForDelivery", isForDelivery);
+                Filter3Fragment fragment3 = new Filter3Fragment();
+                fragment3.setArguments(b3);
+                return fragment3;
 
             default:
                 return null;

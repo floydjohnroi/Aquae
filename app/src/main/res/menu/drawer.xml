@@ -11,10 +11,6 @@
 <!--            android:icon="@drawable/icon_cart_light" />-->
 
         <item
-            android:id="@+id/notification"
-            android:title="Notification"
-            android:icon="@drawable/icon_notification" />
-        <item
             android:id="@+id/delivery_schedule"
             android:title="@string/delivery_schedule"
             android:icon="@drawable/icon_delivery_schedule" />

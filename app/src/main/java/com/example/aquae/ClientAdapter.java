@@ -3,22 +3,29 @@ package com.example.aquae;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.text.Html;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Filter;
+import android.widget.Filterable;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.card.MaterialCardView;
 import com.squareup.picasso.Picasso;
+
+import java.util.ArrayList;
 import java.util.List;
 
-public class ClientAdapter extends RecyclerView.Adapter<ClientAdapter.ClientViewHolder> {
+public class ClientAdapter extends RecyclerView.Adapter<ClientAdapter.ClientViewHolder> implements Filterable {
 
     private Context context;
     private List<ClientModel> clientModelList;
+    private List<ClientModel> clientModelListFull;
     String isForDelivery;
 
     String finalStr;
@@ -28,6 +35,7 @@ public class ClientAdapter extends RecyclerView.Adapter<ClientAdapter.ClientView
         this.context = context;
         this.clientModelList = clientModelList;
         this.isForDelivery = isForDelivery;
+        clientModelListFull = new ArrayList<>(clientModelList);
     }
 
     @NonNull
@@ -82,6 +90,13 @@ public class ClientAdapter extends RecyclerView.Adapter<ClientAdapter.ClientView
                 .placeholder(R.drawable.station_image_placeholder)
                 .into(holder.storeImage);
 
+        if ("".equals(clientModel.getKmAway())) {
+            holder.kmAwayLayout.setVisibility(View.GONE);
+        }
+        else {
+            holder.kmAwayLayout.setVisibility(View.VISIBLE);
+            holder.kmAway.setText(Html.fromHtml(clientModel.getKmAway()));
+        }
     }
 
 
@@ -90,11 +105,49 @@ public class ClientAdapter extends RecyclerView.Adapter<ClientAdapter.ClientView
         return clientModelList.size();
     }
 
+    @Override
+    public Filter getFilter() {
+        return clientFilter;
+    }
+
+    private Filter clientFilter = new Filter() {
+        @Override
+        protected FilterResults performFiltering(CharSequence constraint) {
+            List<ClientModel> filteredList = new ArrayList<>();
+
+            if (constraint == null || constraint.length() == 0) {
+                filteredList.addAll(clientModelListFull);
+            }
+            else {
+                String filterPattern = constraint.toString().toLowerCase().trim();
+
+                for (ClientModel clientModel : clientModelListFull) {
+                    if (clientModel.getCompany().toLowerCase().contains(filterPattern)) {
+                        filteredList.add(clientModel);
+                    }
+                }
+            }
+
+            FilterResults results = new FilterResults();
+            results.values = filteredList;
+
+            return results;
+        }
+
+        @Override
+        protected void publishResults(CharSequence constraint, FilterResults results) {
+            clientModelList.clear();
+            clientModelList.addAll((List) results.values);
+            notifyDataSetChanged();
+        }
+    };
+
     class ClientViewHolder extends RecyclerView.ViewHolder {
 
         MaterialCardView station;
-        TextView company, address, waterType;
+        TextView company, address, waterType, kmAway;
         ImageView storeImage;
+        LinearLayout kmAwayLayout;
 
         public ClientViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -104,6 +157,8 @@ public class ClientAdapter extends RecyclerView.Adapter<ClientAdapter.ClientView
             address = itemView.findViewById(R.id.address);
             storeImage = itemView.findViewById(R.id.storeImage);
             waterType = itemView.findViewById(R.id.water_type);
+            kmAway = itemView.findViewById(R.id.km_away);
+            kmAwayLayout = itemView.findViewById(R.id.km_away_layout);
         }
     }
 }

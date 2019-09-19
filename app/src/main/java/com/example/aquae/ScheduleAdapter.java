@@ -125,8 +125,9 @@ public class ScheduleAdapter extends RecyclerView.Adapter<ScheduleAdapter.Schedu
                     intent.putExtra("switch", "on");
                 }
                 intent.putExtra("schedule_id", scheduleModel.getSchedId());
-                intent.putExtra("station", holder.station.getText());
+                intent.putExtra("station", scheduleModel.getClientName());
                 intent.putExtra("client_id", scheduleModel.getClientId());
+                intent.putExtra("activity", "schedule");
                 context.startActivity(intent);
             }
         });

@@ -60,9 +60,9 @@ public class DeliveryScheduleActivity extends AppCompatActivity {
         toolbar = findViewById(R.id.toolbar);
         toolbarTitle = findViewById(R.id.title);
         floatingActionButton = findViewById(R.id.floatingActionButton);
-        today = findViewById(R.id.today);
+//        today = findViewById(R.id.today);
         recyclerView = findViewById(R.id.recyclerView);
-        noSchedule = findViewById(R.id.no_schedule);
+//        noSchedule = findViewById(R.id.no_schedule);
 
         setSupportActionBar(toolbar);
         (Objects.requireNonNull(getSupportActionBar())).setDisplayHomeAsUpEnabled(true);
@@ -70,110 +70,114 @@ public class DeliveryScheduleActivity extends AppCompatActivity {
         toolbarCard.setCardBackgroundColor(getResources().getColor(R.color.colorWhite));
         toolbarTitle.setText("Delivery Schedule");
 
-        recyclerView.setHasFixedSize(true);
-        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
-        linearLayoutManager.setReverseLayout(true);
-        linearLayoutManager.setStackFromEnd(true);
-        recyclerView.setLayoutManager(linearLayoutManager);
+        if (savedInstanceState == null) {
+            getSupportFragmentManager().beginTransaction().replace(R.id.drawerContent, new DeliveryScheduleFragment()).commit();
+        }
 
-        today.setText(new SimpleDateFormat("E, MMM dd", Locale.getDefault()).format(new Date()));
+//        recyclerView.setHasFixedSize(true);
+//        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
+//        linearLayoutManager.setReverseLayout(true);
+//        linearLayoutManager.setStackFromEnd(true);
+//        recyclerView.setLayoutManager(linearLayoutManager);
+//
+//        today.setText(new SimpleDateFormat("E, MMM dd", Locale.getDefault()).format(new Date()));
+//
+//        Thread thread = new Thread() {
+//
+//            @Override
+//            public void run() {
+//                while (!isInterrupted()) {
+//                    try {
+//                        Thread.sleep(1000);
+//
+//                        runOnUiThread(() -> today.setText(new SimpleDateFormat("E, MMM dd", Locale.getDefault()).format(new Date())));
+//
+//                    } catch (InterruptedException e) {
+//                        e.printStackTrace();
+//                    }
+//                }
+//            }
+//        };
+//        thread.start();
+//
+//        floatingActionButton.setOnClickListener(v -> {
+//            startActivity(new Intent(DeliveryScheduleActivity.this, SelectStationActivity.class));
+//        });
+//
+//        DialogFragment dialogFragment = LoadingScreen.getInstance();
+//        dialogFragment.show(getSupportFragmentManager(), "delivery_schedule_activity");
+//
+//        FirebaseDatabase.getInstance().getReference().child("schedules")
+//                .orderByChild("customer_id").equalTo(new Session(getApplicationContext()).getId())
+//                .addValueEventListener(new ValueEventListener() {
+//                    @Override
+//                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+//                        scheduleModelList.clear();
+//
+//                        if (!dataSnapshot.exists()) {
+//                            noSchedule.setVisibility(View.VISIBLE);
+//                            dialogFragment.dismiss();
+//                            recyclerView.setAdapter(new ScheduleAdapter(DeliveryScheduleActivity.this, scheduleModelList));
+//                        }
+//                        else {
+//                            for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+//                                if ("scheduled".equals(snapshot.child("status").getValue())) {
+//                                    FirebaseDatabase.getInstance().getReference().child("clients")
+//                                            .orderByChild("client_id").equalTo(String.valueOf(snapshot.child("client_id").getValue()))
+//                                            .addListenerForSingleValueEvent(new ValueEventListener() {
+//                                                @Override
+//                                                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+//                                                    for (DataSnapshot snapshot1 : dataSnapshot.getChildren()) {
+//                                                        scheduleModelList.add(new ScheduleModel(
+//                                                                String.valueOf(snapshot.child("schedule_id").getValue()),
+//                                                                String.valueOf(snapshot.child("client_id").getValue()),
+//                                                                String.valueOf(snapshot.child("schedule").getValue()),
+//                                                                String.valueOf(snapshot.child("switch").getValue()),
+//                                                                String.valueOf(snapshot1.child("company").getValue())
+//                                                        ));
+//
+//                                                        recyclerView.setAdapter(new ScheduleAdapter(DeliveryScheduleActivity.this, scheduleModelList));
+//                                                        noSchedule.setVisibility(View.GONE);
+//                                                        dialogFragment.dismiss();
+//                                                    }
+//                                                }
+//
+//                                                @Override
+//                                                public void onCancelled(@NonNull DatabaseError databaseError) {
+//
+//                                                }
+//                                            });
+//
+//                                }
+//                                else {
+//                                    dialogFragment.dismiss();
+//                                }
+//
+//                            }
+//                        }
+//
+//                    }
+//
+//                    @Override
+//                    public void onCancelled(@NonNull DatabaseError databaseError) {
+//
+//                    }
+//                });
 
-        Thread thread = new Thread() {
-
-            @Override
-            public void run() {
-                while (!isInterrupted()) {
-                    try {
-                        Thread.sleep(1000);
-
-                        runOnUiThread(() -> today.setText(new SimpleDateFormat("E, MMM dd", Locale.getDefault()).format(new Date())));
-
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-        };
-        thread.start();
-
-        floatingActionButton.setOnClickListener(v -> {
-            startActivity(new Intent(DeliveryScheduleActivity.this, SelectStationActivity.class));
-        });
-
-        DialogFragment dialogFragment = LoadingScreen.getInstance();
-        dialogFragment.show(getSupportFragmentManager(), "delivery_schedule_activity");
-
-        FirebaseDatabase.getInstance().getReference().child("schedules")
-                .orderByChild("customer_id").equalTo(new Session(getApplicationContext()).getId())
-                .addValueEventListener(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                        scheduleModelList.clear();
-
-                        if (!dataSnapshot.exists()) {
-                            noSchedule.setVisibility(View.VISIBLE);
-                            dialogFragment.dismiss();
-                            recyclerView.setAdapter(new ScheduleAdapter(DeliveryScheduleActivity.this, scheduleModelList));
-                        }
-                        else {
-                            for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                                if ("scheduled".equals(snapshot.child("status").getValue())) {
-                                    FirebaseDatabase.getInstance().getReference().child("clients")
-                                            .orderByChild("client_id").equalTo(String.valueOf(snapshot.child("client_id").getValue()))
-                                            .addListenerForSingleValueEvent(new ValueEventListener() {
-                                                @Override
-                                                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                                                    for (DataSnapshot snapshot1 : dataSnapshot.getChildren()) {
-                                                        scheduleModelList.add(new ScheduleModel(
-                                                                String.valueOf(snapshot.child("schedule_id").getValue()),
-                                                                String.valueOf(snapshot.child("client_id").getValue()),
-                                                                String.valueOf(snapshot.child("schedule").getValue()),
-                                                                String.valueOf(snapshot.child("switch").getValue()),
-                                                                String.valueOf(snapshot1.child("company").getValue())
-                                                        ));
-
-                                                        recyclerView.setAdapter(new ScheduleAdapter(DeliveryScheduleActivity.this, scheduleModelList));
-                                                        noSchedule.setVisibility(View.GONE);
-                                                        dialogFragment.dismiss();
-                                                    }
-                                                }
-
-                                                @Override
-                                                public void onCancelled(@NonNull DatabaseError databaseError) {
-
-                                                }
-                                            });
-
-                                }
-                                else {
-                                    dialogFragment.dismiss();
-                                }
-
-                            }
-                        }
-
-                    }
-
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError databaseError) {
-
-                    }
-                });
-
-        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-            @SuppressLint("RestrictedApi")
-            @Override
-            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
-
-                if (dy > 0) {
-                    floatingActionButton.setVisibility(View.GONE);
-                } else if (dy < 0) {
-                    floatingActionButton.setVisibility(View.VISIBLE);
-                } else {
-                    floatingActionButton.setVisibility(View.VISIBLE);
-                }
-            }
-        });
+//        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+//            @SuppressLint("RestrictedApi")
+//            @Override
+//            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+//
+//                if (dy > 0) {
+//                    floatingActionButton.setVisibility(View.GONE);
+//                } else if (dy < 0) {
+//                    floatingActionButton.setVisibility(View.VISIBLE);
+//                } else {
+//                    floatingActionButton.setVisibility(View.VISIBLE);
+//                }
+//            }
+//        });
 
 
     }

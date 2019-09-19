@@ -19,6 +19,37 @@
         android:adjustViewBounds="true" />
 
     <LinearLayout
+        android:id="@+id/km_away_layout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:elevation="1dp"
+        android:layout_marginEnd="24dp"
+        android:layout_marginBottom="14dp"
+        android:layout_gravity="end|bottom">
+
+        <TextView
+            android:id="@+id/km_away"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:textColor="@color/colorWhite" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="-4dp"
+            android:text="km"
+            android:textStyle="bold"
+            android:textColor="@color/colorWhite" />
+
+    </LinearLayout>
+
+
+
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
@@ -45,6 +76,7 @@
             android:textAllCaps="true"
             android:textColor="@color/colorWhite" />
 
+
         <TextView
             android:id="@+id/address"
             android:layout_width="match_parent"
@@ -52,6 +84,7 @@
             android:gravity="center"
             android:textSize="12sp"
             android:textColor="@color/colorWhite" />
+
 
     </LinearLayout>
 

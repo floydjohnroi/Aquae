@@ -4,12 +4,14 @@ import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.DialogFragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.renderscript.Allocation;
@@ -23,6 +25,9 @@ import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
+import android.widget.RatingBar;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -31,13 +36,16 @@ import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
+import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.squareup.picasso.Picasso;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -46,8 +54,11 @@ import org.json.JSONObject;
 import java.sql.BatchUpdateException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
 
 public class ScheduleActivity extends AppCompatActivity {
@@ -55,12 +66,19 @@ public class ScheduleActivity extends AppCompatActivity {
     Toolbar toolbar;
     MaterialCardView toolbarCard;
     TextView toolbarTitle, turn, schedule, station, deliveryAddress, deliveryFee, subtotal, total,
-            notes, addNotes, shipfee, km, distance;
+            notes, addNotes, shipfee, km, distance, perName;
     Switch onOff;
     RecyclerView recyclerView;
     List<ScheduleProductModel> scheduleProductModelList = new ArrayList<>();
-    MaterialButton removeSched;
-    LinearLayout subtotalLayout, deliveryFeeLayout;
+    MaterialButton removeSched, skip, take;
+    LinearLayout subtotalLayout, deliveryFeeLayout, reminderButtons, onoffLayout, personnelLayout, reminderNote;
+    String activity, payment, perId, personImage, perContact;
+    int qtyr, qtyp;
+    ConstraintLayout placeOrderLayout;
+    RadioGroup paymentMethod;
+    RadioButton method;
+    Map<String, Object> items = new HashMap<>();
+    ImageView perProfile;
 
 
     @Override
@@ -88,13 +106,21 @@ public class ScheduleActivity extends AppCompatActivity {
         shipfee = findViewById(R.id.shipfee);
         km = findViewById(R.id.km);
         distance = findViewById(R.id.distance);
-
+        activity = getIntent().getStringExtra("activity");
+        reminderButtons = findViewById(R.id.reminder_buttons);
+        onoffLayout = findViewById(R.id.onoff_layout);
+        skip = findViewById(R.id.skip);
+        take = findViewById(R.id.take);
+        perProfile = findViewById(R.id.personnel_profile);
+        perName = findViewById(R.id.personnel_name);
+        personnelLayout = findViewById(R.id.personnel_layout);
+        reminderNote = findViewById(R.id.reminder_note);
 
         setSupportActionBar(toolbar);
         (Objects.requireNonNull(getSupportActionBar())).setDisplayHomeAsUpEnabled(true);
         Objects.requireNonNull(getSupportActionBar()).setHomeAsUpIndicator(R.drawable.icon_back_dark);
         toolbarCard.setCardBackgroundColor(getResources().getColor(R.color.colorWhite));
-        toolbarTitle.setText("Schedule");
+
 
         recyclerView.setHasFixedSize(true);
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
@@ -102,21 +128,33 @@ public class ScheduleActivity extends AppCompatActivity {
         linearLayoutManager.setStackFromEnd(true);
         recyclerView.setLayoutManager(linearLayoutManager);
 
-        km.setText(Html.fromHtml("DISTANCE <i>(km)</i>"));
+        if ("schedule".equals(activity)) {
+            toolbarTitle.setText("Schedule");
+            removeSched.setVisibility(View.VISIBLE);
+            reminderButtons.setVisibility(View.GONE);
+            onoffLayout.setVisibility(View.VISIBLE);
+            reminderNote.setVisibility(View.GONE);
 
-        if ("off".equals(getIntent().getStringExtra("switch"))) {
-            turn.setText("Turn schedule on");
+            if ("off".equals(getIntent().getStringExtra("switch"))) {
+                turn.setText("Turn schedule on");
+            }
+            else {
+                turn.setText("Turn schedule off");
+                onOff.setChecked(true);
+            }
         }
         else {
-            turn.setText("Turn schedule off");
-            onOff.setChecked(true);
+            toolbarTitle.setText("Reminder");
+            removeSched.setVisibility(View.GONE);
+            reminderButtons.setVisibility(View.VISIBLE);
+            onoffLayout.setVisibility(View.GONE);
+            reminderNote.setVisibility(View.VISIBLE);
         }
+
+        km.setText(Html.fromHtml("DISTANCE <i>(km)</i>"));
 
         station.setText(getIntent().getStringExtra("station"));
 
-//        if ("Everyday".equals(getIntent().getStringExtra("schedule"))) {
-//            schedule.setText(getIntent().getStringExtra("schedule"));
-//        }
 
         DialogFragment dialogFragment = LoadingScreen.getInstance();
         dialogFragment.show(getSupportFragmentManager(), "delivery_schedule_activity");
@@ -200,6 +238,10 @@ public class ScheduleActivity extends AppCompatActivity {
 
                             for (DataSnapshot snapshot1 : snapshot.child("items").getChildren()) {
 
+                                Map<String, Object> refill = new HashMap<>();
+                                Map<String, Object> purchase = new HashMap<>();
+                                Map<String, Object> map = new HashMap<>();
+
                                 Object refillPrice = 0;
                                 Object purchasePrice = 0;
                                 Object refillQty = 0;
@@ -210,14 +252,24 @@ public class ScheduleActivity extends AppCompatActivity {
                                     if (Objects.requireNonNull(e.getKey()).equals("refill")) {
                                         refillQty = e.child("quantity").getValue();
                                         refillPrice = e.child("price").getValue();
+
+                                        refill.put("quantity", String.valueOf(e.child("quantity").getValue()));
+                                        refill.put("price", String.valueOf(e.child("price").getValue()));
+                                        map.put("refill", refill);
                                     }
 
                                     if (Objects.requireNonNull(e.getKey()).equals("purchase")) {
                                         purchaseQty = e.child("quantity").getValue();
                                         purchasePrice = e.child("price").getValue();
+
+                                        purchase.put("quantity", String.valueOf(e.child("quantity").getValue()));
+                                        purchase.put("price", String.valueOf(e.child("price").getValue()));
+                                        map.put("purchase", purchase);
                                     }
 
                                 }
+
+                                items.put(Objects.requireNonNull(snapshot1.getKey()), map);
 
                                 scheduleProductModelList.add(new ScheduleProductModel(
                                         String.valueOf(snapshot1.getKey()),
@@ -229,7 +281,68 @@ public class ScheduleActivity extends AppCompatActivity {
                                         String.valueOf(snapshot1.child("image").getValue())
                                 ));
 
+                                qtyr += Integer.parseInt(String.valueOf(refillQty));
+                                qtyp += Integer.parseInt(String.valueOf(purchaseQty));
+
                             }
+
+                            FirebaseDatabase.getInstance().getReference()
+                                    .child("personnels")
+                                    .orderByChild("per_id").equalTo(String.valueOf(snapshot.child("per_id").getValue()))
+                                    .addListenerForSingleValueEvent(new ValueEventListener() {
+                                        @Override
+                                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                            for (DataSnapshot snapshot1 : dataSnapshot.getChildren()) {
+                                                Picasso.get()
+                                                        .load(String.valueOf(snapshot1.child("pic").getValue()))
+                                                        .fit()
+                                                        .centerCrop()
+                                                        .placeholder(R.drawable.refillssss)
+                                                        .into(perProfile);
+                                                perName.setText(capitalize(String.valueOf(snapshot1.child("per_name").getValue())));
+
+                                                perId = String.valueOf(snapshot1.child("per_id").getValue());
+                                                personImage = String.valueOf(snapshot1.child("pic").getValue());
+                                                perContact = String.valueOf(snapshot1.child("per_contact").getValue());
+
+                                                dialogFragment.dismiss();
+                                            }
+                                        }
+
+                                        @Override
+                                        public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                                        }
+                                    });
+
+                            if ("schedule".equals(activity) && snapshot.child("message").getValue() != null) {
+                                if (!"".equals(String.valueOf(snapshot.child("message").getValue())) ) {
+                                    View view = LayoutInflater.from(ScheduleActivity.this).inflate(R.layout.message_dialog_view, null);
+                                    View titleView = LayoutInflater.from(ScheduleActivity.this).inflate(R.layout.custom_dialog_title, null);
+
+                                    TextView title = titleView.findViewById(R.id.title);
+                                    title.setText("MESSAGE");
+
+                                    TextView msg = view.findViewById(R.id.message);
+
+                                    msg.setText(String.valueOf(snapshot.child("message").getValue()));
+
+                                    AlertDialog.Builder builder = new AlertDialog.Builder(ScheduleActivity.this, R.style.AlertDialogTheme);
+                                    builder.setCustomTitle(titleView);
+                                    builder.setView(view);
+
+                                    builder.setPositiveButton("okay", new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            snapshot.getRef().child("message").removeValue();
+                                        }
+                                    });
+
+                                    AlertDialog alertDialog = builder.create();
+                                    alertDialog.show();
+                                }
+                            }
+
                         }
 
                         recyclerView.setAdapter(new ScheduleProductAdapter(ScheduleActivity.this, scheduleProductModelList));
@@ -242,6 +355,43 @@ public class ScheduleActivity extends AppCompatActivity {
 
                     }
                 });
+
+
+        personnelLayout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                View view = LayoutInflater.from(ScheduleActivity.this).inflate(R.layout.personnel_dialog_view, null);
+
+                ImageView close = view.findViewById(R.id.close);
+                ImageView profile = view.findViewById(R.id.profile);
+                TextView name = view.findViewById(R.id.name);
+                TextView contact = view.findViewById(R.id.contact);
+
+                Picasso.get()
+                        .load(personImage)
+                        .fit()
+                        .centerCrop()
+                        .placeholder(R.drawable.refillssss)
+                        .into(profile);
+
+                name.setText(perName.getText());
+                contact.setText(perContact);
+
+                AlertDialog.Builder builder = new AlertDialog.Builder(ScheduleActivity.this, R.style.AlertDialogTheme);
+                builder.setView(view);
+
+                AlertDialog alertDialog = builder.create();
+                alertDialog.show();
+
+                close.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        alertDialog.dismiss();
+                    }
+                });
+
+            }
+        });
 
 
 
@@ -631,6 +781,300 @@ public class ScheduleActivity extends AppCompatActivity {
         });
 
 
+        skip.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                FirebaseDatabase.getInstance().getReference()
+                        .child("schedules")
+                        .orderByChild("schedule_id").equalTo(getIntent().getStringExtra("schedule_id"))
+                        .addListenerForSingleValueEvent(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                                    snapshot.getRef().child("status")
+                                            .setValue("scheduled")
+                                            .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                                @Override
+                                                public void onSuccess(Void aVoid) {
+                                                    snapshot.getRef().child("remind_time")
+                                                            .removeValue()
+                                                            .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                                                @Override
+                                                                public void onSuccess(Void aVoid) {
+                                                                    Toast.makeText(getApplicationContext(), "Skipped Schedule", Toast.LENGTH_SHORT).show();
+                                                                    finish();
+                                                                }
+                                                            });
+
+                                                }
+                                            });
+                                }
+                            }
+
+                            @Override
+                            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                            }
+                        });
+            }
+        });
+
+        take.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+
+                View view = LayoutInflater.from(ScheduleActivity.this).inflate(R.layout.payment_method_dialog_view, null);
+                View titleView = LayoutInflater.from(ScheduleActivity.this).inflate(R.layout.custom_dialog_title, null);
+
+                TextView title = titleView.findViewById(R.id.title);
+                title.setText("PAYMENT METHOD");
+
+                paymentMethod = view.findViewById(R.id.paymentMethod);
+
+                method = (RadioButton) paymentMethod.getChildAt(0);
+                method.setChecked(true);
+
+                method = view.findViewById(paymentMethod.getCheckedRadioButtonId());
+                payment = (String) method.getText();
+
+                paymentMethod.setOnCheckedChangeListener((group, checkedId) -> {
+
+                    method = view.findViewById(checkedId);
+                    payment = (String) method.getText();
+
+                });
+
+
+                AlertDialog.Builder builder = new AlertDialog.Builder(ScheduleActivity.this, R.style.AlertDialogTheme);
+                builder.setCustomTitle(titleView);
+                builder.setView(view);
+
+                builder.setNegativeButton("CANCEL", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.cancel();
+                    }
+                });
+
+                builder.setPositiveButton("PROCEED", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+
+                        String id = FirebaseDatabase.getInstance().getReference().push().getKey();
+
+                        Map<String, Object> order = new HashMap<>();
+                        order.put("order_id", String.valueOf(id));
+                        order.put("customer_id", new Session(getApplicationContext()).getId());
+                        order.put("client_id", getIntent().getStringExtra("client_id"));
+                        order.put("payment", payment);
+                        order.put("total_amount", String.valueOf(total.getText()).replace("₱", ""));
+                        order.put("delivery_address", String.valueOf(deliveryAddress.getText()));
+                        order.put("items", items);
+                        order.put("status", "schedule");
+                        order.put("click", "1");
+                        order.put("delivery_fee", String.valueOf(shipfee.getText()).replace("₱", ""));
+                        order.put("notes", String.valueOf(notes.getText()));
+                        order.put("per_id", perId);
+
+                        View view = LayoutInflater.from(ScheduleActivity.this).inflate(R.layout.wallet_dialog_layout, null);
+                        View titleView = LayoutInflater.from(ScheduleActivity.this).inflate(R.layout.custom_dialog_title, null);
+
+                        TextView title = titleView.findViewById(R.id.title);
+                        title.setText("Pay with Aquae Wallet");
+
+                        TextView balance = view.findViewById(R.id.balance);
+                        TextView totalPayment = view.findViewById(R.id.totalPayment);
+                        TextView textView2 = view.findViewById(R.id.textView2);
+
+                        totalPayment.setText(String.valueOf(total.getText()).replace("₱", ""));
+
+                        String q = qtyr+qtyp+" items";
+                        textView2.setText(q);
+
+                        FirebaseDatabase.getInstance().getReference().child("customers")
+                                .orderByChild("customer_id").equalTo(new Session(getApplicationContext()).getId())
+                                .addValueEventListener(new ValueEventListener() {
+                                    @Override
+                                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                        for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                                            balance.setText(String.valueOf(snapshot.child("wallet").getValue()));
+                                        }
+                                    }
+
+                                    @Override
+                                    public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                                    }
+                                });
+                        AlertDialog.Builder builder = new AlertDialog.Builder(ScheduleActivity.this, R.style.AlertDialogTheme);
+                        builder.setCustomTitle(titleView);
+                        builder.setView(view);
+
+                        builder.setNegativeButton("cancel", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.cancel();
+                            }
+                        });
+
+                        builder.setPositiveButton("Pay", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+
+                                if (Integer.parseInt(String.valueOf(totalPayment.getText())) > Integer.parseInt(String.valueOf(balance.getText()))) {
+
+                                    Snackbar snackbar = Snackbar.make(placeOrderLayout, "Insufficient funds", 10000)
+                                            .setAction("REQUEST", v1 -> startActivity(new Intent(ScheduleActivity.this, RequestCashInActivity.class)))
+                                            .setActionTextColor(getResources().getColor(R.color.colorSnackBarAction));
+
+                                    View snackbarView = snackbar.getView();
+                                    snackbarView.setPadding(24, 24, 24, 24);
+                                    TextView textView = snackbarView.findViewById(com.google.android.material.R.id.snackbar_text);
+                                    textView.setTextColor(getResources().getColor(R.color.colorWhite));
+
+                                    snackbar.show();
+                                }
+                                else {
+
+                                    FirebaseDatabase.getInstance().getReference().child("orders")
+                                            .child(id)
+                                            .setValue(order)
+                                            .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                                @Override
+                                                public void onSuccess(Void aVoid) {
+                                                    FirebaseDatabase.getInstance().getReference().child("orders")
+                                                            .orderByChild("order_id").equalTo(id)
+                                                            .addListenerForSingleValueEvent(new ValueEventListener() {
+                                                                @Override
+                                                                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                                                    for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                                                                        FirebaseDatabase.getInstance().getReference().child("carts")
+                                                                                .orderByChild("customer_id").equalTo(String.valueOf(snapshot.child("customer_id").getValue()))
+                                                                                .addListenerForSingleValueEvent(new ValueEventListener() {
+                                                                                    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
+                                                                                    @Override
+                                                                                    public void onDataChange(@NonNull DataSnapshot dataSnapshot1) {
+                                                                                        for (DataSnapshot snapshot2 : dataSnapshot1.getChildren()) {
+                                                                                            if (Objects.equals(snapshot2.child("client_id").getValue(), snapshot.child("client_id").getValue())) {
+                                                                                                for (DataSnapshot snap : snapshot2.child("products").getChildren()) {
+                                                                                                    for (DataSnapshot sn : snap.getChildren()) {
+                                                                                                        if (Objects.equals(sn.child("status").getValue(), "check")) {
+                                                                                                            snap.getRef().removeValue();
+                                                                                                        }
+                                                                                                    }
+                                                                                                }
+                                                                                            }
+                                                                                        }
+
+                                                                                        FirebaseDatabase.getInstance().getReference().child("customers")
+                                                                                                .orderByChild("customer_id").equalTo(String.valueOf(snapshot.child("customer_id").getValue()))
+                                                                                                .addListenerForSingleValueEvent(new ValueEventListener() {
+                                                                                                    @Override
+                                                                                                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                                                                                        for (DataSnapshot snapshot1 : dataSnapshot.getChildren()) {
+                                                                                                            int newBal = Integer.parseInt(String.valueOf(snapshot1.child("wallet").getValue()))
+                                                                                                                    - Integer.parseInt(String.valueOf(snapshot.child("total_amount").getValue()));
+
+                                                                                                            snapshot1.getRef().child("wallet").setValue(String.valueOf(newBal))
+                                                                                                                    .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                                                                                                        @Override
+                                                                                                                        public void onSuccess(Void aVoid) {
+                                                                                                                            FirebaseDatabase.getInstance().getReference()
+                                                                                                                                    .child("schedules")
+                                                                                                                                    .orderByChild("schedule_id").equalTo(getIntent().getStringExtra("schedule_id"))
+                                                                                                                                    .addListenerForSingleValueEvent(new ValueEventListener() {
+                                                                                                                                        @Override
+                                                                                                                                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                                                                                                                            for (DataSnapshot snapshot2 : dataSnapshot.getChildren()) {
+                                                                                                                                                snapshot2.getRef().child("status")
+                                                                                                                                                        .setValue("scheduled")
+                                                                                                                                                        .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                                                                                                                                            @Override
+                                                                                                                                                            public void onSuccess(Void aVoid) {
+                                                                                                                                                                snapshot2.getRef().child("remind_time")
+                                                                                                                                                                        .removeValue()
+                                                                                                                                                                        .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                                                                                                                                                            @Override
+                                                                                                                                                                            public void onSuccess(Void aVoid) {
+                                                                                                                                                                                Toast.makeText(ScheduleActivity.this, "Payment Successful", Toast.LENGTH_SHORT).show();
+                                                                                                                                                                                Toast.makeText(ScheduleActivity.this, "NEW BALANCE : "+newBal, Toast.LENGTH_LONG).show();
+
+                                                                                                                                                                                startActivity(new Intent(ScheduleActivity.this, HomeActivity.class));
+                                                                                                                                                                                finish();
+                                                                                                                                                                            }
+                                                                                                                                                                        });
+                                                                                                                                                            }
+                                                                                                                                                        });
+                                                                                                                                            }
+                                                                                                                                        }
+
+                                                                                                                                        @Override
+                                                                                                                                        public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                                                                                                                                        }
+                                                                                                                                    });
+                                                                                                                        }
+                                                                                                                    });
+                                                                                                        }
+                                                                                                    }
+
+                                                                                                    @Override
+                                                                                                    public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                                                                                                    }
+                                                                                                });
+
+                                                                                    }
+
+                                                                                    @Override
+                                                                                    public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                                                                                    }
+                                                                                });
+                                                                    }
+                                                                }
+
+                                                                @Override
+                                                                public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                                                                }
+                                                            });
+                                                }
+                                            });
+
+                                }
+
+                            }
+                        });
+
+                        AlertDialog alertDialog = builder.create();
+                        alertDialog.show();
+
+
+                    }
+                });
+
+                AlertDialog alertDialog = builder.create();
+                alertDialog.show();
+
+            }
+        });
+
+
+    }
+
+    private String capitalize(final String line) {
+
+        String[] strings = line.split(" ");
+        StringBuilder stringBuilder = new StringBuilder();
+
+        for (String s : strings) {
+            String cap = s.substring(0, 1).toUpperCase() + s.substring(1);
+            stringBuilder.append(cap).append(" ");
+        }
+
+        return stringBuilder.toString();
     }
 
     @Override

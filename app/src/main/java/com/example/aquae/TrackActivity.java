@@ -69,7 +69,7 @@ public class TrackActivity extends AppCompatActivity {
     RecyclerView recyclerView;
     TextView station, deliveryAddress, subtotal, deliveryFee, orderTotal, paymentMethod, notes, historyTime, personnel_name;
     MaterialButton contactStation, viewStation, cancelOrder;
-    String contactNumber, activity, personImage;
+    String contactNumber, activity, personImage, perContact;
     LinearLayout personnelLayout, trackorderLayout, cancelOrderLayout;
 
     @Override
@@ -481,7 +481,8 @@ public class TrackActivity extends AppCompatActivity {
                                                         .centerCrop()
                                                         .placeholder(R.drawable.refillssss)
                                                         .into(personnel_profile);
-                                                personnel_name.setText(String.valueOf(snapshot.child("per_name").getValue()));
+                                                personnel_name.setText(capitalize(String.valueOf(snapshot.child("per_name").getValue())));
+                                                perContact = String.valueOf(snapshot.child("per_contact").getValue());
 
                                                 dialogFragment.dismiss();
                                             }
@@ -650,6 +651,7 @@ public class TrackActivity extends AppCompatActivity {
                 ImageView close = view.findViewById(R.id.close);
                 ImageView profile = view.findViewById(R.id.profile);
                 TextView name = view.findViewById(R.id.name);
+                TextView contact = view.findViewById(R.id.contact);
 
                 Picasso.get()
                         .load(personImage)
@@ -659,6 +661,7 @@ public class TrackActivity extends AppCompatActivity {
                         .into(profile);
 
                 name.setText(personnel_name.getText());
+                contact.setText(perContact);
 
                 AlertDialog.Builder builder = new AlertDialog.Builder(TrackActivity.this, R.style.AlertDialogTheme);
                 builder.setView(view);
@@ -753,6 +756,19 @@ public class TrackActivity extends AppCompatActivity {
             }
         });
 
+    }
+
+    private String capitalize(final String line) {
+
+        String[] strings = line.split(" ");
+        StringBuilder stringBuilder = new StringBuilder();
+
+        for (String s : strings) {
+            String cap = s.substring(0, 1).toUpperCase() + s.substring(1);
+            stringBuilder.append(cap).append(" ");
+        }
+
+        return stringBuilder.toString();
     }
 
     @Override

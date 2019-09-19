@@ -4,14 +4,19 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.NotificationCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.view.MenuItemCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import android.annotation.TargetApi;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
+import android.media.RingtoneManager;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -20,12 +25,14 @@ import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewAnimationUtils;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -40,6 +47,11 @@ import com.google.firebase.iid.InstanceIdResult;
 import com.miguelcatalan.materialsearchview.MaterialSearchView;
 import com.squareup.picasso.Picasso;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
 
 import static android.widget.Toast.makeText;
@@ -68,6 +80,12 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
     Toast toast;
 
     public static final String CHANNEL_ID = "AQUAE";
+
+//    private SearchCallback searchCallback;
+//
+//    public interface SearchCallback {
+//        void onSearch(String search);
+//    }
 
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     @Override
@@ -186,6 +204,62 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
 
         toast = Toast.makeText(this, "Press BACK again to exit", Toast.LENGTH_SHORT);
 
+
+        // test schedule
+
+
+        Handler handler = new Handler();
+        Runnable runnable = new Runnable() {
+            @Override
+            public void run() {
+                FirebaseDatabase.getInstance().getReference()
+                        .child("schedules")
+                        .orderByChild("customer_id").equalTo(new Session(getApplicationContext()).getId())
+                        .addListenerForSingleValueEvent(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                                    if (new SimpleDateFormat("EEE", Locale.getDefault()).format(new Date())
+                                            .equals(snapshot.child("schedule").getValue())) {
+                                        FirebaseDatabase.getInstance().getReference()
+                                                .child("clients")
+                                                .orderByChild("client_id").equalTo(String.valueOf(snapshot.child("client_id").getValue()))
+                                                .addListenerForSingleValueEvent(new ValueEventListener() {
+                                                    @Override
+                                                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                                        for (DataSnapshot snapshot1 : dataSnapshot.getChildren()) {
+                                                            if (new SimpleDateFormat("h:mm a", Locale.getDefault()).format(new Date())
+                                                                    .equals(String.valueOf(snapshot1.child("open_time").getValue()))) {
+
+                                                                sendNotif(String.valueOf(snapshot.child("schedule_id").getValue()));
+
+                                                            }
+                                                        }
+                                                    }
+
+                                                    @Override
+                                                    public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                                                    }
+                                                });
+                                    }
+                                }
+                            }
+
+                            @Override
+                            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                            }
+                        });
+
+                handler.postAtTime(this, System.currentTimeMillis()+60000);
+                handler.postDelayed(this, 60000);
+            }
+        };
+        runnable.run();
+
+        // end test
+
     }
 
     private void searchViewCode() {
@@ -194,7 +268,6 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
         searchView.setOnQueryTextListener(new MaterialSearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
-                makeText(getApplicationContext(),query, Toast.LENGTH_SHORT).show();
                 return false;
             }
 
@@ -228,52 +301,9 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
         RelativeLayout cart = (RelativeLayout) MenuItemCompat.getActionView(item);
         ImageView cartIcon = cart.findViewById(R.id.cartIcon);
         final TextView badge = cart.findViewById(R.id.badge);
-        cartIcon.setImageDrawable(getResources().getDrawable(R.drawable.icon_notification_dark));
+        cartIcon.setImageDrawable(getResources().getDrawable(R.drawable.icon_search));
 
-//        cartIcon.setOnClickListener(v -> startActivity(new Intent(HomeActivity.this, CartActivity.class)));
-//
-//        databaseReference.child("carts").orderByChild("customer_id").equalTo(new Session(getApplicationContext()).getId())
-//                .addValueEventListener(new ValueEventListener() {
-//                    @TargetApi(Build.VERSION_CODES.KITKAT)
-//                    @Override
-//                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-//
-//                        int c = 0;
-//
-//                        for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-//                            for (DataSnapshot data : snapshot.getChildren()) {
-//                                for (DataSnapshot d : data.getChildren()) {
-//                                    for (DataSnapshot e : d.getChildren()) {
-//                                        for (DataSnapshot f : e.getChildren()) {
-//                                            try {
-//                                                c += Integer.parseInt(String.valueOf(f.child("quantity").getValue()));
-//                                            } catch (NumberFormatException nfe) {
-//                                                nfe.printStackTrace();
-//                                            }
-//                                        }
-//                                    }
-//                                }
-//                            }
-//                        }
-//
-//                        if (c < 1) {
-//                            badge.setVisibility(View.GONE);
-//                        }
-//                        else if (c > 9) {
-//                            badge.setVisibility(View.VISIBLE);
-//                            badge.setText("9+");
-//                        }
-//                        else {
-//                            badge.setVisibility(View.VISIBLE);
-//                            badge.setText(String.valueOf(c));
-//                        }
-//                    }
-//
-//                    @Override
-//                    public void onCancelled(@NonNull DatabaseError databaseError) {
-//
-//                    }
-//                });
+        cartIcon.setOnClickListener(v -> searchView.showSearch());
 
         return super.onCreateOptionsMenu(menu);
     }
@@ -364,6 +394,69 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
         }
 
         return stringBuilder.toString();
+    }
+
+
+    public void sendNotif(String scheduleId) {
+
+        FirebaseDatabase.getInstance().getReference()
+                .child("schedules")
+                .orderByChild("schedule_id").equalTo(scheduleId)
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                        for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                            snapshot.getRef().child("remind_time")
+                                    .setValue(new SimpleDateFormat("MMM dd, yyyy | h:mm a", Locale.getDefault()).format(new Date()))
+                                    .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                        @Override
+                                        public void onSuccess(Void aVoid) {
+                                            snapshot.getRef().child("status")
+                                                    .setValue("remind")
+                                                    .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                                        @Override
+                                                        public void onSuccess(Void aVoid) {
+                                                            Intent intent = new Intent(getApplicationContext(), DeliveryScheduleActivity.class);
+                                                            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                                                            PendingIntent pendingIntent = PendingIntent.getActivity(getApplicationContext(), 0 /* Request code */, intent,
+                                                                    PendingIntent.FLAG_ONE_SHOT);
+
+                                                            String channelId = getApplication().getString(R.string.default_notification_channel_id);
+                                                            Uri defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+                                                            NotificationCompat.Builder notificationBuilder =
+                                                                    new NotificationCompat.Builder(getApplicationContext(), channelId)
+                                                                            .setSmallIcon(R.drawable.icon_aquae_dark)
+                                                                            .setContentTitle("AQUAE REMINDER")
+                                                                            .setContentText("Yay, you have delivery schedule today!")
+                                                                            .setAutoCancel(true)
+                                                                            .setSound(defaultSoundUri)
+                                                                            .setContentIntent(pendingIntent);
+
+                                                            NotificationManager notificationManager =
+                                                                    (NotificationManager) getApplication().getSystemService(Context.NOTIFICATION_SERVICE);
+
+                                                            // Since android Oreo notification channel is needed.
+                                                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                                                                NotificationChannel channel = new NotificationChannel(channelId,
+                                                                        "Channel human readable title",
+                                                                        NotificationManager.IMPORTANCE_DEFAULT);
+                                                                notificationManager.createNotificationChannel(channel);
+                                                            }
+
+                                                            notificationManager.notify(0 /* ID of notification */, notificationBuilder.build());
+                                                        }
+                                                    });
+                                        }
+                                    });
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                    }
+                });
+
     }
 
 

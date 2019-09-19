@@ -2,9 +2,9 @@ package com.example.aquae;
 
 public class ClientModel {
 
-    private String client_id, company, email, password, address, contact, storeImage, water_type, no_of_filter, ship_fee;
+    private String client_id, company, email, password, address, contact, storeImage, water_type, no_of_filter, ship_fee, kmAway;
 
-    public ClientModel(String client_id, String company, String email, String password, String address, String contact, String storeImage, String water_type, String no_of_filter, String ship_fee) {
+    public ClientModel(String client_id, String company, String email, String password, String address, String contact, String storeImage, String water_type, String no_of_filter, String ship_fee, String kmAway) {
         this.client_id = client_id;
         this.company = company;
         this.email = email;
@@ -15,6 +15,7 @@ public class ClientModel {
         this.water_type = water_type;
         this.no_of_filter = no_of_filter;
         this.ship_fee = ship_fee;
+        this.kmAway = kmAway;
     }
 
     public String getClient_id() {
@@ -95,5 +96,13 @@ public class ClientModel {
 
     public void setShip_fee(String ship_fee) {
         this.ship_fee = ship_fee;
+    }
+
+    public String getKmAway() {
+        return kmAway;
+    }
+
+    public void setKmAway(String kmAway) {
+        this.kmAway = kmAway;
     }
 }

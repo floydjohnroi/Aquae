@@ -139,7 +139,7 @@ public class PlaceOrderActivity extends AppCompatActivity {
         recyclerView.setLayoutManager(linearLayoutManager);
 
 
-        orderTime.setText(new SimpleDateFormat("MMM dd, yyyy | hh:mm a", Locale.getDefault()).format(new Date()));
+        orderTime.setText(new SimpleDateFormat("MMM dd, yyyy | h:mm a", Locale.getDefault()).format(new Date()));
 
         Thread thread = new Thread() {
 
@@ -149,7 +149,7 @@ public class PlaceOrderActivity extends AppCompatActivity {
                     try {
                         Thread.sleep(1000);
 
-                        runOnUiThread(() -> orderTime.setText(new SimpleDateFormat("MMM dd, yyyy | hh:mm a", Locale.getDefault()).format(new Date())));
+                        runOnUiThread(() -> orderTime.setText(new SimpleDateFormat("MMM dd, yyyy | h:mm a", Locale.getDefault()).format(new Date())));
 
                     } catch (InterruptedException e) {
                         e.printStackTrace();
