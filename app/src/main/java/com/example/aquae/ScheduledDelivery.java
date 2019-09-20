@@ -403,102 +403,142 @@ public class ScheduledDelivery extends AppCompatActivity {
                     .addListenerForSingleValueEvent(new ValueEventListener() {
                         @Override
                         public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                            for (DataSnapshot snapshot1 : dataSnapshot.getChildren()) {
-                                if (getIntent().getStringExtra("client_id").equals(snapshot1.child("client_id").getValue())) {
-                                    if ("scheduled".equals(snapshot1.child("status").getValue())
-                                            || "pending".equals(snapshot1.child("status").getValue())) {
-                                        if (String.valueOf(setDays.getText()).equals(snapshot1.child("schedule").getValue())
-                                                && addr.equals(snapshot1.child("delivery_address").getValue())) {
-                                            AlertDialog.Builder builder = new AlertDialog.Builder(ScheduledDelivery.this, R.style.AlertDialogTheme);
-                                            builder.setTitle("Ooops!");
-                                            builder.setMessage("You've already set this schedule. Please wait for the confirmation.");
-
-                                            builder.setPositiveButton("okay", new DialogInterface.OnClickListener() {
-                                                @Override
-                                                public void onClick(DialogInterface dialog, int which) {
-
-                                                }
-                                            });
-                                            builder.create().show();
-                                        } else {
-                                            dataSnapshot.getRef().child(String.valueOf(id))
-                                                    .setValue(schedule)
-                                                    .addOnSuccessListener(new OnSuccessListener<Void>() {
-                                                        @Override
-                                                        public void onSuccess(Void aVoid) {
-                                                            FirebaseDatabase.getInstance().getReference().child("deliveries")
-                                                                    .orderByChild("customer_id").equalTo(String.valueOf(snapshot1.child("customer_id").getValue()))
-                                                                    .addListenerForSingleValueEvent(new ValueEventListener() {
-                                                                        @RequiresApi(api = Build.VERSION_CODES.KITKAT)
-                                                                        @Override
-                                                                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                                                                            for (DataSnapshot snapshot2 : dataSnapshot.getChildren()) {
-                                                                                if (Objects.equals(snapshot2.child("client_id").getValue(), snapshot1.child("client_id").getValue())) {
-                                                                                    for (DataSnapshot snap : snapshot2.child("products").getChildren()) {
-                                                                                        for (DataSnapshot sn : snap.getChildren()) {
-                                                                                            if (Objects.equals(sn.child("status").getValue(), "check")) {
-                                                                                                snap.getRef().removeValue();
-                                                                                            }
-                                                                                        }
-
-                                                                                    }
+                            if (!dataSnapshot.exists()) {
+                                dataSnapshot.getRef().child(String.valueOf(id))
+                                        .setValue(schedule)
+                                        .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                            @Override
+                                            public void onSuccess(Void aVoid) {
+                                                FirebaseDatabase.getInstance().getReference().child("deliveries")
+                                                        .orderByChild("customer_id").equalTo(String.valueOf(new Session(getApplicationContext()).getId()))
+                                                        .addListenerForSingleValueEvent(new ValueEventListener() {
+                                                            @RequiresApi(api = Build.VERSION_CODES.KITKAT)
+                                                            @Override
+                                                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                                                for (DataSnapshot snapshot2 : dataSnapshot.getChildren()) {
+                                                                    if (Objects.equals(snapshot2.child("client_id").getValue(), getIntent().getStringExtra("client_id"))) {
+                                                                        for (DataSnapshot snap : snapshot2.child("products").getChildren()) {
+                                                                            for (DataSnapshot sn : snap.getChildren()) {
+                                                                                if (Objects.equals(sn.child("status").getValue(), "check")) {
+                                                                                    snap.getRef().removeValue();
                                                                                 }
                                                                             }
 
-//                                                                            Toast.makeText(ScheduledDelivery.this, "SCHEDULE SET", Toast.LENGTH_SHORT).show();
-//                                                                            startActivity(new Intent(ScheduledDelivery.this, DeliveryScheduleActivity.class));
-//                                                                            finish();
-
-                                                                        }
-
-                                                                        @Override
-                                                                        public void onCancelled(@NonNull DatabaseError databaseError) {
-
-                                                                        }
-                                                                    });
-                                                        }
-                                                    });
-                                        }
-                                    }
-                                }
-                                else {
-                                    dataSnapshot.getRef().child(String.valueOf(id))
-                                            .setValue(schedule)
-                                            .addOnSuccessListener(new OnSuccessListener<Void>() {
-                                                @Override
-                                                public void onSuccess(Void aVoid) {
-                                                    FirebaseDatabase.getInstance().getReference().child("deliveries")
-                                                            .orderByChild("customer_id").equalTo(String.valueOf(snapshot1.child("customer_id").getValue()))
-                                                            .addListenerForSingleValueEvent(new ValueEventListener() {
-                                                                @RequiresApi(api = Build.VERSION_CODES.KITKAT)
-                                                                @Override
-                                                                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                                                                    for (DataSnapshot snapshot2 : dataSnapshot.getChildren()) {
-                                                                        if (Objects.equals(snapshot2.child("client_id").getValue(), snapshot1.child("client_id").getValue())) {
-                                                                            for (DataSnapshot snap : snapshot2.child("products").getChildren()) {
-                                                                                for (DataSnapshot sn : snap.getChildren()) {
-                                                                                    if (Objects.equals(sn.child("status").getValue(), "check")) {
-                                                                                        snap.getRef().removeValue();
-                                                                                    }
-                                                                                }
-
-                                                                            }
                                                                         }
                                                                     }
+                                                                }
 
 //                                                                    Toast.makeText(ScheduledDelivery.this, "SCHEDULE SET", Toast.LENGTH_SHORT).show();
 //                                                                    startActivity(new Intent(ScheduledDelivery.this, DeliveryScheduleActivity.class));
 //                                                                    finish();
 
-                                                                }
+                                                            }
 
-                                                                @Override
-                                                                public void onCancelled(@NonNull DatabaseError databaseError) {
+                                                            @Override
+                                                            public void onCancelled(@NonNull DatabaseError databaseError) {
 
-                                                                }
-                                                            });
-                                                }
-                                            });
+                                                            }
+                                                        });
+                                            }
+                                        });
+                            }
+                            else {
+                                for (DataSnapshot snapshot1 : dataSnapshot.getChildren()) {
+                                    if (getIntent().getStringExtra("client_id").equals(snapshot1.child("client_id").getValue())) {
+                                        if ("scheduled".equals(snapshot1.child("status").getValue())
+                                                || "pending".equals(snapshot1.child("status").getValue())) {
+                                            if (String.valueOf(setDays.getText()).equals(snapshot1.child("schedule").getValue())
+                                                    && addr.equals(snapshot1.child("delivery_address").getValue())) {
+                                                AlertDialog.Builder builder = new AlertDialog.Builder(ScheduledDelivery.this, R.style.AlertDialogTheme);
+                                                builder.setTitle("Ooops!");
+                                                builder.setMessage("You've already set this schedule. Please wait for the confirmation.");
+
+                                                builder.setPositiveButton("okay", new DialogInterface.OnClickListener() {
+                                                    @Override
+                                                    public void onClick(DialogInterface dialog, int which) {
+
+                                                    }
+                                                });
+                                                builder.create().show();
+                                            } else {
+                                                dataSnapshot.getRef().child(String.valueOf(id))
+                                                        .setValue(schedule)
+                                                        .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                                            @Override
+                                                            public void onSuccess(Void aVoid) {
+                                                                FirebaseDatabase.getInstance().getReference().child("deliveries")
+                                                                        .orderByChild("customer_id").equalTo(String.valueOf(snapshot1.child("customer_id").getValue()))
+                                                                        .addListenerForSingleValueEvent(new ValueEventListener() {
+                                                                            @RequiresApi(api = Build.VERSION_CODES.KITKAT)
+                                                                            @Override
+                                                                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                                                                for (DataSnapshot snapshot2 : dataSnapshot.getChildren()) {
+                                                                                    if (Objects.equals(snapshot2.child("client_id").getValue(), snapshot1.child("client_id").getValue())) {
+                                                                                        for (DataSnapshot snap : snapshot2.child("products").getChildren()) {
+                                                                                            for (DataSnapshot sn : snap.getChildren()) {
+                                                                                                if (Objects.equals(sn.child("status").getValue(), "check")) {
+                                                                                                    snap.getRef().removeValue();
+                                                                                                }
+                                                                                            }
+
+                                                                                        }
+                                                                                    }
+                                                                                }
+
+//                                                                            Toast.makeText(ScheduledDelivery.this, "SCHEDULE SET", Toast.LENGTH_SHORT).show();
+//                                                                            startActivity(new Intent(ScheduledDelivery.this, DeliveryScheduleActivity.class));
+//                                                                            finish();
+
+                                                                            }
+
+                                                                            @Override
+                                                                            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                                                                            }
+                                                                        });
+                                                            }
+                                                        });
+                                            }
+                                        }
+                                    } else {
+                                        dataSnapshot.getRef().child(String.valueOf(id))
+                                                .setValue(schedule)
+                                                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                                    @Override
+                                                    public void onSuccess(Void aVoid) {
+                                                        FirebaseDatabase.getInstance().getReference().child("deliveries")
+                                                                .orderByChild("customer_id").equalTo(String.valueOf(snapshot1.child("customer_id").getValue()))
+                                                                .addListenerForSingleValueEvent(new ValueEventListener() {
+                                                                    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
+                                                                    @Override
+                                                                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                                                        for (DataSnapshot snapshot2 : dataSnapshot.getChildren()) {
+                                                                            if (Objects.equals(snapshot2.child("client_id").getValue(), snapshot1.child("client_id").getValue())) {
+                                                                                for (DataSnapshot snap : snapshot2.child("products").getChildren()) {
+                                                                                    for (DataSnapshot sn : snap.getChildren()) {
+                                                                                        if (Objects.equals(sn.child("status").getValue(), "check")) {
+                                                                                            snap.getRef().removeValue();
+                                                                                        }
+                                                                                    }
+
+                                                                                }
+                                                                            }
+                                                                        }
+
+//                                                                    Toast.makeText(ScheduledDelivery.this, "SCHEDULE SET", Toast.LENGTH_SHORT).show();
+//                                                                    startActivity(new Intent(ScheduledDelivery.this, DeliveryScheduleActivity.class));
+//                                                                    finish();
+
+                                                                    }
+
+                                                                    @Override
+                                                                    public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                                                                    }
+                                                                });
+                                                    }
+                                                });
+                                    }
                                 }
                             }
 

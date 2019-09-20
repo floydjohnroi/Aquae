@@ -80,13 +80,13 @@ public class PlaceOrderActivity extends AppCompatActivity {
 
     Toolbar toolbar;
     MaterialCardView toolbarCard;
-    TextView toolbarTitle, orderTime, location, notes, client, km, distance, shipfee, total, subtotal, delivery_fee;
+    TextView toolbarTitle, orderTime, location, notes, client, km, distance, shipfee, total, subtotal, delivery_fee, expressFee;
     RadioGroup paymentMethod, deliveryOptions;
     RadioButton method, options;
     String payment, option;
     MaterialButton placeOrder;
     ConstraintLayout placeOrderLayout;
-    LinearLayout notesLayout, deliveryFeeLayout, subtotalLayout;
+    LinearLayout notesLayout, deliveryFeeLayout, subtotalLayout, expressFeeLayout;
     RecyclerView recyclerView;
     List<CheckOutProductModel> checkOutProductModelList = new ArrayList<>();
     int qtyr, qtyp;
@@ -120,6 +120,8 @@ public class PlaceOrderActivity extends AppCompatActivity {
         deliveryFeeLayout = findViewById(R.id.delivery_fee_layout);
         subtotalLayout = findViewById(R.id.subtotal_layout);
         deliveryOptions = findViewById(R.id.delivery_options);
+        expressFeeLayout = findViewById(R.id.express_fee_layout);
+        expressFee = findViewById(R.id.express_fee);
 
         setSupportActionBar(toolbar);
         (Objects.requireNonNull(getSupportActionBar())).setDisplayHomeAsUpEnabled(true);
@@ -186,10 +188,33 @@ public class PlaceOrderActivity extends AppCompatActivity {
         options = findViewById(deliveryOptions.getCheckedRadioButtonId());
         option = options.getText().toString();
 
+        expressFee.setText("0");
+
+        delivery_fee.setText("0");
+
         deliveryOptions.setOnCheckedChangeListener((group, checkedId) -> {
 
             options = findViewById(checkedId);
             option = options.getText().toString();
+
+            if ("Express".equals(option)) {
+                expressFeeLayout.setVisibility(View.VISIBLE);
+                expressFee.setText(getIntent().getStringExtra("express_fee"));
+
+
+                int newt = Integer.parseInt(String.valueOf(subtotal.getText())) + Integer.parseInt(String.valueOf(delivery_fee.getText())) + Integer.parseInt(String.valueOf(expressFee.getText()));
+                String ts = "₱<b>" + newt + "</b>";
+                total.setText(Html.fromHtml(ts));
+
+            }
+            else {
+                expressFeeLayout.setVisibility(View.GONE);
+                expressFee.setText("0");
+
+                int newt = Integer.parseInt(String.valueOf(subtotal.getText())) + Integer.parseInt(String.valueOf(delivery_fee.getText())) - Integer.parseInt(String.valueOf(expressFee.getText()));
+                String ts = "₱<b>" + newt + "</b>";
+                total.setText(Html.fromHtml(ts));
+            }
 
         });
 
@@ -211,6 +236,7 @@ public class PlaceOrderActivity extends AppCompatActivity {
             order.put("status", "pending");
             order.put("click", "1");
             order.put("delivery_fee", String.valueOf(shipfee.getText()).replace("₱", ""));
+            order.put("express_fee", String.valueOf(expressFee.getText()));
             order.put("notes", getIntent().getStringExtra("notes"));
 
             if (payment.equals("Aquae Wallet")) {
@@ -554,9 +580,17 @@ public class PlaceOrderActivity extends AppCompatActivity {
                 else {
                     distance.setText(e[0]+" km");
                     shipfee.setText(Html.fromHtml("<b>FREE</b>"));
-                    subtotalLayout.setVisibility(View.GONE);
                     deliveryFeeLayout.setVisibility(View.GONE);
-                    String ts = "₱<b>" + subtotal.getText() + "</b>";
+
+                    if ("Express".equals(option)) {
+                        subtotalLayout.setVisibility(View.VISIBLE);
+                    }
+                    else {
+                        subtotalLayout.setVisibility(View.GONE);
+                    }
+
+                    int newt = Integer.parseInt(String.valueOf(subtotal.getText()));
+                    String ts = "₱<b>" + newt + "</b>";
                     total.setText(Html.fromHtml(ts));
                 }
             }

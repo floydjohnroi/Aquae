@@ -126,6 +126,7 @@ public class ClientActivity extends AppCompatActivity {
         data.put("water_type", String.valueOf(waterTypes.getText()));
         data.put("ship_fee", getIntent().getStringExtra("ship_fee"));
         data.put("client_address", getIntent().getStringExtra("address"));
+        data.put("express_fee", getIntent().getStringExtra("express_fee"));
 
         waterTypes.setOnClickListener(v -> {
             View view = LayoutInflater.from(this).inflate(R.layout.custom_dialog_view, null);
@@ -175,48 +176,25 @@ public class ClientActivity extends AppCompatActivity {
                 .addValueEventListener(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-
                         productModelList.clear();
-
                         for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-
                             for (DataSnapshot snap : snapshot.getChildren()) {
-
                                 for (DataSnapshot s : snap.getChildren()) {
-
                                     if (Objects.equals(s.child("status").getValue(), "available")) {
-
-                                        Object refillPrice = 0;
-                                        Object salePrice = 0;
-
-                                        for (DataSnapshot d : s.child("service_types").getChildren()) {
-                                            if (Objects.equals(d.getKey(), "refill")) {
-                                                refillPrice = d.child("price").getValue();
-                                            }
-
-                                            if (Objects.equals(d.getKey(), "sale")) {
-                                                salePrice = d.child("price").getValue();
-                                            }
-                                        }
 
                                         productModelList.add(new ProductModel(
                                                 String.valueOf(s.getKey()),
                                                 String.valueOf(s.child("product_image").getValue()),
-                                                String.valueOf(refillPrice),
-                                                String.valueOf(salePrice),
                                                 String.valueOf(s.child("minimum_order").getValue()),
                                                 String.valueOf(s.child("maximum_order").getValue())
                                         ));
 
                                         dialogFragment.dismiss();
+
                                     }
-
                                 }
-
                             }
-
                         }
-
 
                         if (productModelList.size() == 0) {
                             noProductAvailable.setVisibility(View.VISIBLE);
@@ -268,6 +246,7 @@ public class ClientActivity extends AppCompatActivity {
                 intent.putExtra("client_id", getIntent().getStringExtra("client_id"));
                 intent.putExtra("client_address", getIntent().getStringExtra("address"));
                 intent.putExtra("ship_fee", getIntent().getStringExtra("ship_fee"));
+                intent.putExtra("express_fee", getIntent().getStringExtra("express_fee"));
                 intent.putExtra("isForDelivery", isForDelivery);
                 startActivity(intent);
             }

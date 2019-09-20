@@ -2,9 +2,9 @@ package com.example.aquae;
 
 public class ClientModel {
 
-    private String client_id, company, email, password, address, contact, storeImage, water_type, no_of_filter, ship_fee, kmAway;
+    private String client_id, company, email, password, address, contact, storeImage, water_type, no_of_filter, ship_fee, expressFee, kmAway, rating;
 
-    public ClientModel(String client_id, String company, String email, String password, String address, String contact, String storeImage, String water_type, String no_of_filter, String ship_fee, String kmAway) {
+    public ClientModel(String client_id, String company, String email, String password, String address, String contact, String storeImage, String water_type, String no_of_filter, String ship_fee, String expressFee, String kmAway, String rating) {
         this.client_id = client_id;
         this.company = company;
         this.email = email;
@@ -15,7 +15,9 @@ public class ClientModel {
         this.water_type = water_type;
         this.no_of_filter = no_of_filter;
         this.ship_fee = ship_fee;
+        this.expressFee = expressFee;
         this.kmAway = kmAway;
+        this.rating = rating;
     }
 
     public String getClient_id() {
@@ -98,11 +100,27 @@ public class ClientModel {
         this.ship_fee = ship_fee;
     }
 
+    public String getExpressFee() {
+        return expressFee;
+    }
+
+    public void setExpressFee(String expressFee) {
+        this.expressFee = expressFee;
+    }
+
     public String getKmAway() {
         return kmAway;
     }
 
     public void setKmAway(String kmAway) {
         this.kmAway = kmAway;
+    }
+
+    public String getRating() {
+        return rating;
+    }
+
+    public void setRating(String rating) {
+        this.rating = rating;
     }
 }

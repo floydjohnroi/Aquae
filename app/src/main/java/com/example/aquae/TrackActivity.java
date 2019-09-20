@@ -408,8 +408,48 @@ public class TrackActivity extends AppCompatActivity {
                                                                                                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                                                                                                     @Override
                                                                                                     public void onSuccess(Void aVoid) {
-                                                                                                        startActivity(new Intent(TrackActivity.this, HomeActivity.class));
-                                                                                                        finish();
+                                                                                                        FirebaseDatabase.getInstance().getReference()
+                                                                                                                .child("clients")
+                                                                                                                .orderByChild("client_id").equalTo(getIntent().getStringExtra("client_id"))
+                                                                                                                .addListenerForSingleValueEvent(new ValueEventListener() {
+                                                                                                                    @Override
+                                                                                                                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                                                                                                        for (DataSnapshot snapshot2 : dataSnapshot.getChildren()) {
+                                                                                                                            double newRate = Double.parseDouble(String.valueOf(snapshot2.child("rate").getValue()))
+                                                                                                                                    + Double.parseDouble(String.valueOf(ratingBar.getRating()));
+                                                                                                                            FirebaseDatabase.getInstance().getReference()
+                                                                                                                                    .child("ratings")
+                                                                                                                                    .orderByChild("client_id").equalTo(String.valueOf(snapshot2.child("client_id").getValue()))
+                                                                                                                                    .addListenerForSingleValueEvent(new ValueEventListener() {
+                                                                                                                                        @Override
+                                                                                                                                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                                                                                                                            double finalRate = newRate / dataSnapshot.getChildrenCount();
+
+                                                                                                                                            snapshot2.getRef().child("rate")
+                                                                                                                                                    .setValue(String.valueOf(finalRate))
+                                                                                                                                                    .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                                                                                                                                        @Override
+                                                                                                                                                        public void onSuccess(Void aVoid) {
+                                                                                                                                                            startActivity(new Intent(TrackActivity.this, HomeActivity.class));
+                                                                                                                                                            finish();
+                                                                                                                                                        }
+                                                                                                                                                    });
+                                                                                                                                        }
+
+                                                                                                                                        @Override
+                                                                                                                                        public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                                                                                                                                        }
+                                                                                                                                    });
+
+                                                                                                                        }
+                                                                                                                    }
+
+                                                                                                                    @Override
+                                                                                                                    public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                                                                                                                    }
+                                                                                                                });
                                                                                                     }
                                                                                                 });
                                                                                     }

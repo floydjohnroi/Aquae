@@ -36,7 +36,7 @@ public class SelectStationActivity extends AppCompatActivity {
         if (savedInstanceState == null) {
             Bundle b = new Bundle();
             b.putString("isForDelivery", "isForDelivery");
-            FilterFragment fragment = new FilterFragment();
+            Filter1Fragment fragment = new Filter1Fragment();
             fragment.setArguments(b);
             getSupportFragmentManager().beginTransaction().replace(R.id.drawerContent, fragment).commit();
         }

@@ -115,6 +115,7 @@ public class DeliveryPaymentsActivity extends AppCompatActivity {
             intent.putExtra("client_address", getIntent().getStringExtra("client_address"));
             intent.putExtra("ship_fee", getIntent().getStringExtra("ship_fee"));
             intent.putExtra("client", getIntent().getStringExtra("client"));
+            intent.putExtra("express_fee", getIntent().getStringExtra("express_fee"));
             startActivity(intent);
 
         });

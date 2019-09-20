@@ -179,18 +179,6 @@ public class OrderActivity extends AppCompatActivity {
 
         }
 
-        if (getIntent().getStringExtra("refillPrice").equals("0")) {
-            refillLayout.setVisibility(View.GONE);
-            divider.setVisibility(View.GONE);
-            purchaseCheckBox.setEnabled(false);
-        }
-
-        if (getIntent().getStringExtra("purchasePrice").equals("0")) {
-            purchaseLayout.setVisibility(View.GONE);
-            divider.setVisibility(View.GONE);
-            refillCheckBox.setEnabled(false);
-        }
-
         Picasso.get()
                 .load(getIntent().getStringExtra("productImage"))
                 .fit()
@@ -208,10 +196,76 @@ public class OrderActivity extends AppCompatActivity {
         String max = getIntent().getStringExtra("max_order") + " <i>(qty)</i>";
         maxOrder.setText(Html.fromHtml(max));
 
+        FirebaseDatabase.getInstance().getReference()
+                .child("products")
+                .orderByChild("client_id").equalTo(getIntent().getStringExtra("client_id"))
+                .addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                        for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                            for (DataSnapshot snapshot1 : snapshot.child("types").getChildren()) {
+                                if (getIntent().getStringExtra("product").equals(snapshot1.getKey())) {
+                                    for (DataSnapshot snapshot2 : snapshot1.child("service_types").getChildren()) {
+                                        if (getIntent().getStringExtra("water_type").equals(snapshot2.getKey())) {
 
-        refillPrice.setText(Html.fromHtml("₱<b>"+getIntent().getStringExtra("refillPrice")+"</b>"));
+                                            if ("".equals(snapshot2.child("refill").child("price").getValue())) {
+                                                refillLayout.setVisibility(View.GONE);
+                                                divider.setVisibility(View.GONE);
+                                                purchaseCheckBox.setEnabled(false);
+                                            }
+                                            else {
+                                                refillLayout.setVisibility(View.VISIBLE);
+                                                divider.setVisibility(View.VISIBLE);
+                                                purchaseCheckBox.setEnabled(true);
+                                                refillPrice.setText(Html.fromHtml("₱<b>"+snapshot2.child("refill").child("price").getValue()+"</b>"));
 
-        purchasePrice.setText(Html.fromHtml("₱<b>"+getIntent().getStringExtra("purchasePrice")+"</b>"));
+                                                if ("".equals(snapshot2.child("sale").child("price").getValue())) {
+                                                    sub = (Integer.parseInt(String.valueOf(snapshot2.child("refill").child("price").getValue())) * Integer.parseInt(getIntent().getStringExtra("min_order")));
+                                                }
+                                                else {
+                                                    sub = (Integer.parseInt(String.valueOf(snapshot2.child("refill").child("price").getValue())) * Integer.parseInt(getIntent().getStringExtra("min_order"))) +
+                                                            Integer.parseInt(String.valueOf(snapshot2.child("sale").child("price").getValue())) * Integer.parseInt(getIntent().getStringExtra("min_order"));
+                                                }
+
+                                                subtotal.setText(Html.fromHtml("\u20B1<b>" + sub + "</b>"));
+                                            }
+
+                                            if ("".equals(snapshot2.child("sale").child("price").getValue())) {
+                                                purchaseLayout.setVisibility(View.GONE);
+                                                divider.setVisibility(View.GONE);
+                                                refillCheckBox.setEnabled(false);
+                                            }
+                                            else {
+                                                purchaseLayout.setVisibility(View.VISIBLE);
+                                                divider.setVisibility(View.VISIBLE);
+                                                refillCheckBox.setEnabled(true);
+                                                purchasePrice.setText(Html.fromHtml("₱<b>"+snapshot2.child("sale").child("price").getValue()+"</b>"));
+
+                                                if ("".equals(snapshot2.child("refill").child("price").getValue())) {
+                                                    sub = Integer.parseInt(String.valueOf(snapshot2.child("sale").child("price").getValue())) * Integer.parseInt(getIntent().getStringExtra("min_order"));
+                                                }
+                                                else {
+                                                    sub = (Integer.parseInt(String.valueOf(snapshot2.child("refill").child("price").getValue())) * Integer.parseInt(getIntent().getStringExtra("min_order"))) +
+                                                            Integer.parseInt(String.valueOf(snapshot2.child("sale").child("price").getValue())) * Integer.parseInt(getIntent().getStringExtra("min_order"));
+                                                }
+
+
+                                                subtotal.setText(Html.fromHtml("\u20B1<b>" + sub + "</b>"));
+                                            }
+
+
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                    }
+                });
 
         minusRefill.setEnabled(false);
         minusPurchase.setEnabled(false);
@@ -262,11 +316,6 @@ public class OrderActivity extends AppCompatActivity {
 
         quantityRefill.setText(getIntent().getStringExtra("min_order"));
         quantityPurchase.setText(getIntent().getStringExtra("min_order"));
-
-        sub = (Integer.parseInt(getIntent().getStringExtra("refillPrice")) * Integer.parseInt(getIntent().getStringExtra("min_order"))) +
-                (Integer.parseInt(getIntent().getStringExtra("purchasePrice")) * Integer.parseInt(getIntent().getStringExtra("min_order")));
-
-        subtotal.setText(Html.fromHtml("\u20B1<b>" + sub + "</b>"));
 
         minusRefill.setOnClickListener(v -> {
 
@@ -351,11 +400,11 @@ public class OrderActivity extends AppCompatActivity {
             final String id = Objects.requireNonNull(databaseReference.push().getKey());
 
             Map<String, String> refill = new HashMap<>();
-            refill.put("price", getIntent().getStringExtra("refillPrice"));
+            refill.put("price", String.valueOf(refillPrice.getText()).replace("₱", ""));
             refill.put("quantity", String.valueOf(qtyRefill));
 
             Map<String, String> purchase = new HashMap<>();
-            purchase.put("price", getIntent().getStringExtra("purchasePrice"));
+            purchase.put("price", String.valueOf(purchasePrice.getText()).replace("₱", ""));
             purchase.put("quantity", String.valueOf(qtyPurchase));
 
             Map<String, Object> details = new HashMap<>();

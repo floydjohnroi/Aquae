@@ -79,6 +79,7 @@ public class ClientAdapter extends RecyclerView.Adapter<ClientAdapter.ClientView
             intent.putExtra("water_type", finalStr);
             intent.putExtra("no_of_filter", clientModel.getNo_of_filter());
             intent.putExtra("ship_fee", clientModel.getShip_fee());
+            intent.putExtra("express_fee", clientModel.getExpressFee());
             intent.putExtra("isForDelivery", isForDelivery);
             context.startActivity(intent);
         });
@@ -95,8 +96,17 @@ public class ClientAdapter extends RecyclerView.Adapter<ClientAdapter.ClientView
         }
         else {
             holder.kmAwayLayout.setVisibility(View.VISIBLE);
-            holder.kmAway.setText(Html.fromHtml(clientModel.getKmAway()));
+            holder.kmAway.setText(clientModel.getKmAway());
         }
+
+        if ("".equals(clientModel.getRating())) {
+            holder.ratingLayout.setVisibility(View.GONE);
+        }
+        else {
+            holder.ratingLayout.setVisibility(View.VISIBLE);
+            holder.rating.setText(clientModel.getRating());
+        }
+
     }
 
 
@@ -145,9 +155,9 @@ public class ClientAdapter extends RecyclerView.Adapter<ClientAdapter.ClientView
     class ClientViewHolder extends RecyclerView.ViewHolder {
 
         MaterialCardView station;
-        TextView company, address, waterType, kmAway;
+        TextView company, address, waterType, kmAway, rating;
         ImageView storeImage;
-        LinearLayout kmAwayLayout;
+        LinearLayout kmAwayLayout, ratingLayout;
 
         public ClientViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -159,6 +169,8 @@ public class ClientAdapter extends RecyclerView.Adapter<ClientAdapter.ClientView
             waterType = itemView.findViewById(R.id.water_type);
             kmAway = itemView.findViewById(R.id.km_away);
             kmAwayLayout = itemView.findViewById(R.id.km_away_layout);
+            ratingLayout = itemView.findViewById(R.id.rating_layout);
+            rating = itemView.findViewById(R.id.rating);
         }
     }
 }

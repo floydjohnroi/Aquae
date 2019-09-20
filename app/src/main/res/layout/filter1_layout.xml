@@ -19,6 +19,34 @@
         android:adjustViewBounds="true" />
 
     <LinearLayout
+        android:id="@+id/rating_layout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:elevation="1dp"
+        android:layout_marginEnd="24dp"
+        android:layout_marginBottom="10dp"
+        android:layout_gravity="end|bottom">
+
+        <TextView
+            android:id="@+id/rating"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:textColor="@color/colorWhite" />
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="-2dp"
+            android:src="@drawable/icon_star"/>
+
+    </LinearLayout>
+
+
+    <LinearLayout
         android:id="@+id/km_away_layout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

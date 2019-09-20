@@ -172,6 +172,7 @@ public class CartActivity extends AppCompatActivity {
             intent.putExtra("client_id", getIntent().getStringExtra("client_id"));
             intent.putExtra("client_address", getIntent().getStringExtra("client_address"));
             intent.putExtra("ship_fee", getIntent().getStringExtra("ship_fee"));
+            intent.putExtra("express_fee", getIntent().getStringExtra("express_fee"));
             startActivity(intent);
 
         });

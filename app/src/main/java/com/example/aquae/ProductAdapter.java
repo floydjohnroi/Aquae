@@ -69,8 +69,6 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
             intent.putExtra("company", datas.get("company"));
             intent.putExtra("product", productModel.getProductName());
             intent.putExtra("productImage", productModel.getProductImage());
-            intent.putExtra("refillPrice", productModel.getRefillPrice());
-            intent.putExtra("purchasePrice", productModel.getPurchasePrice());
             intent.putExtra("water_type", datas.get("water_type"));
             intent.putExtra("min_order", productModel.getMinOrder());
             intent.putExtra("max_order", productModel.getMaxOrder());

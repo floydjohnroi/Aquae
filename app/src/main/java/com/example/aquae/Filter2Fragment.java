@@ -64,7 +64,9 @@ public class Filter2Fragment extends Fragment {
                                     String.valueOf(snapshot.child("water_type").getValue()),
                                     String.valueOf(snapshot.child("no_of_filter").getValue()),
                                     String.valueOf(snapshot.child("shipping_fee").getValue()),
-                                    ""
+                                    String.valueOf(snapshot.child("express_charge").getValue()),
+                                    "",
+                                    String.valueOf(snapshot.child("rate").getValue())
                             ));
 
                         }
@@ -74,7 +76,7 @@ public class Filter2Fragment extends Fragment {
                         Collections.sort(clientModelList, new Comparator<ClientModel>() {
                             @Override
                             public int compare(ClientModel o1, ClientModel o2) {
-                                return o2.getShip_fee().compareTo(o1.getShip_fee());
+                                return o2.getRating().compareTo(o1.getRating());
                             }
                         });
 
@@ -89,33 +91,37 @@ public class Filter2Fragment extends Fragment {
                     }
                 });
 
-        ((HomeActivity) Objects.requireNonNull(getActivity())).searchView.setOnQueryTextListener(new MaterialSearchView.OnQueryTextListener() {
-            @Override
-            public boolean onQueryTextSubmit(String query) {
-                return false;
-            }
-
-            @Override
-            public boolean onQueryTextChange(String newText) {
-                clientAdapter.getFilter().filter(newText);
-                return false;
-            }
-        });
-
-        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-            @SuppressLint("RestrictedApi")
-            @Override
-            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
-
-                if (dy > 0) {
-                    ((HomeActivity) Objects.requireNonNull(getActivity())).floatingActionButton.setVisibility(View.GONE);
-                } else if (dy < 0) {
-                    ((HomeActivity) Objects.requireNonNull(getActivity())).floatingActionButton.setVisibility(View.VISIBLE);
-                } else {
-                    ((HomeActivity) Objects.requireNonNull(getActivity())).floatingActionButton.setVisibility(View.VISIBLE);
+        if (!"isForDelivery".equals(isForDelivery)) {
+            ((HomeActivity) Objects.requireNonNull(getActivity())).searchView.setOnQueryTextListener(new MaterialSearchView.OnQueryTextListener() {
+                @Override
+                public boolean onQueryTextSubmit(String query) {
+                    return false;
                 }
-            }
-        });
+
+                @Override
+                public boolean onQueryTextChange(String newText) {
+                    clientAdapter.getFilter().filter(newText);
+                    return false;
+                }
+            });
+
+            recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+                @SuppressLint("RestrictedApi")
+                @Override
+                public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+
+                    if (dy > 0) {
+                        ((HomeActivity) Objects.requireNonNull(getActivity())).floatingActionButton.setVisibility(View.GONE);
+                    } else if (dy < 0) {
+                        ((HomeActivity) Objects.requireNonNull(getActivity())).floatingActionButton.setVisibility(View.VISIBLE);
+                    } else {
+                        ((HomeActivity) Objects.requireNonNull(getActivity())).floatingActionButton.setVisibility(View.VISIBLE);
+                    }
+                }
+            });
+        }
+
+
 
 
         return view;
