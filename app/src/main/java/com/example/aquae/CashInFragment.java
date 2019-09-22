@@ -134,6 +134,8 @@ public class CashInFragment extends Fragment {
                 String amt = String.valueOf(amount.getText()).replace("PHP ", "");
                 String fee = String.valueOf(transacFee.getText()).replace("₱", "");
 
+                int totalPayment = Integer.parseInt(amt) + Integer.parseInt(fee);
+
                 if (!amt.matches("[0-9]+")) {
                     amount.setError("Invalid amount");
                 }
@@ -144,8 +146,6 @@ public class CashInFragment extends Fragment {
                     amount.setError("Maximum amount allowed is ₱5000.00");
                 }
                 else {
-
-                    int totalPayment = Integer.parseInt(amt) + Integer.parseInt(fee);
 
                     if (method.getText().toString().equals("1")) {
                         getPayment(String.valueOf(totalPayment));
@@ -211,7 +211,9 @@ public class CashInFragment extends Fragment {
 
                                         for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
 
-                                            newBal = Integer.parseInt(String.valueOf(snapshot.child("wallet").getValue())) + Integer.parseInt(String.valueOf(amount.getText()).replace("PHP ", ""));
+                                            newBal = Integer.parseInt(String.valueOf(snapshot.child("wallet").getValue()))
+                                                    + Integer.parseInt(String.valueOf(amount.getText()).replace("PHP ", ""))
+                                                    + Integer.parseInt(String.valueOf(transacFee.getText()).replace("₱", ""));
 
                                             int finalNewBal = newBal;
 
@@ -225,7 +227,7 @@ public class CashInFragment extends Fragment {
                                                             Map<String, String> data = new HashMap<>();
                                                             data.put("cash_in_id", Objects.requireNonNull(id));
                                                             data.put("customer_id", new Session(getContext()).getId());
-                                                            data.put("amount", String.valueOf(amount.getText()).replace("PHP ", ""));
+                                                            data.put("amount", String.valueOf(finalNewBal));
                                                             data.put("payment_date", new SimpleDateFormat("MMM dd, yyyy | hh:mm a", Locale.getDefault()).format(new Date()));
                                                             try {
                                                                 data.put("transaction_code", String.valueOf(jsonObject.getJSONObject("response").getString("id")));

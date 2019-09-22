@@ -172,7 +172,7 @@ public class ScheduleAdapter extends RecyclerView.Adapter<ScheduleAdapter.Schedu
                                                     Toast.makeText(context, "Schedule set 2 days from now", Toast.LENGTH_SHORT).show();
                                                 }
                                                 if ("Sat".equals(new SimpleDateFormat("EEE", Locale.ENGLISH).format(System.currentTimeMillis()))) {
-                                                    Toast.makeText(context, "Schedule set 1 days from now", Toast.LENGTH_SHORT).show();
+                                                    Toast.makeText(context, "Schedule set 1 day from now", Toast.LENGTH_SHORT).show();
                                                 }
                                             }
                                             if ("Mon".equals(String.valueOf(snapshot.child("schedule").getValue()).substring(0, 3))) {
@@ -192,7 +192,7 @@ public class ScheduleAdapter extends RecyclerView.Adapter<ScheduleAdapter.Schedu
                                                     Toast.makeText(context, "Schedule set 2 days from now", Toast.LENGTH_SHORT).show();
                                                 }
                                                 if ("Sun".equals(new SimpleDateFormat("EEE", Locale.ENGLISH).format(System.currentTimeMillis()))) {
-                                                    Toast.makeText(context, "Schedule set 1 days from now", Toast.LENGTH_SHORT).show();
+                                                    Toast.makeText(context, "Schedule set 1 day from now", Toast.LENGTH_SHORT).show();
                                                 }
                                             }
                                             if ("Tue".equals(String.valueOf(snapshot.child("schedule").getValue()).substring(0, 3))) {
@@ -212,7 +212,7 @@ public class ScheduleAdapter extends RecyclerView.Adapter<ScheduleAdapter.Schedu
                                                     Toast.makeText(context, "Schedule set 2 days from now", Toast.LENGTH_SHORT).show();
                                                 }
                                                 if ("Mon".equals(new SimpleDateFormat("EEE", Locale.ENGLISH).format(System.currentTimeMillis()))) {
-                                                    Toast.makeText(context, "Schedule set 1 days from now", Toast.LENGTH_SHORT).show();
+                                                    Toast.makeText(context, "Schedule set 1 day from now", Toast.LENGTH_SHORT).show();
                                                 }
                                             }
                                             if ("Wed".equals(String.valueOf(snapshot.child("schedule").getValue()).substring(0, 3))) {
@@ -232,7 +232,7 @@ public class ScheduleAdapter extends RecyclerView.Adapter<ScheduleAdapter.Schedu
                                                     Toast.makeText(context, "Schedule set 2 days from now", Toast.LENGTH_SHORT).show();
                                                 }
                                                 if ("Tue".equals(new SimpleDateFormat("EEE", Locale.ENGLISH).format(System.currentTimeMillis()))) {
-                                                    Toast.makeText(context, "Schedule set 1 days from now", Toast.LENGTH_SHORT).show();
+                                                    Toast.makeText(context, "Schedule set 1 day from now", Toast.LENGTH_SHORT).show();
                                                 }
                                             }
                                             if ("Thu".equals(String.valueOf(snapshot.child("schedule").getValue()).substring(0, 3))) {
@@ -252,7 +252,7 @@ public class ScheduleAdapter extends RecyclerView.Adapter<ScheduleAdapter.Schedu
                                                     Toast.makeText(context, "Schedule set 2 days from now", Toast.LENGTH_SHORT).show();
                                                 }
                                                 if ("Wed".equals(new SimpleDateFormat("EEE", Locale.ENGLISH).format(System.currentTimeMillis()))) {
-                                                    Toast.makeText(context, "Schedule set 1 days from now", Toast.LENGTH_SHORT).show();
+                                                    Toast.makeText(context, "Schedule set 1 day from now", Toast.LENGTH_SHORT).show();
                                                 }
                                             }
                                             if ("Fri".equals(String.valueOf(snapshot.child("schedule").getValue()).substring(0, 3))) {
@@ -272,7 +272,7 @@ public class ScheduleAdapter extends RecyclerView.Adapter<ScheduleAdapter.Schedu
                                                     Toast.makeText(context, "Schedule set 2 days from now", Toast.LENGTH_SHORT).show();
                                                 }
                                                 if ("Thu".equals(new SimpleDateFormat("EEE", Locale.ENGLISH).format(System.currentTimeMillis()))) {
-                                                    Toast.makeText(context, "Schedule set 1 days from now", Toast.LENGTH_SHORT).show();
+                                                    Toast.makeText(context, "Schedule set 1 day from now", Toast.LENGTH_SHORT).show();
                                                 }
                                             }
                                             if ("Sat".equals(String.valueOf(snapshot.child("schedule").getValue()).substring(0, 3))) {
@@ -292,7 +292,7 @@ public class ScheduleAdapter extends RecyclerView.Adapter<ScheduleAdapter.Schedu
                                                     Toast.makeText(context, "Schedule set 2 days from now", Toast.LENGTH_SHORT).show();
                                                 }
                                                 if ("Fri".equals(new SimpleDateFormat("EEE", Locale.ENGLISH).format(System.currentTimeMillis()))) {
-                                                    Toast.makeText(context, "Schedule set 1 days from now", Toast.LENGTH_SHORT).show();
+                                                    Toast.makeText(context, "Schedule set 1 day from now", Toast.LENGTH_SHORT).show();
                                                 }
                                             }
                                         }
