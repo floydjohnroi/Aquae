@@ -33,6 +33,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -195,7 +196,7 @@ public class RegistrationActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                List<Place.Field> fields = Arrays.asList(Place.Field.ID, Place.Field.NAME);
+                List<Place.Field> fields = Collections.singletonList(Place.Field.ADDRESS);
 
                 Intent intent = new Autocomplete.IntentBuilder(AutocompleteActivityMode.OVERLAY, fields)
                         .setCountry("PH")
@@ -209,7 +210,7 @@ public class RegistrationActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                List<Place.Field> fields = Arrays.asList(Place.Field.ID, Place.Field.NAME);
+                List<Place.Field> fields = Collections.singletonList(Place.Field.ADDRESS);
 
                 Intent intent = new Autocomplete.IntentBuilder(AutocompleteActivityMode.OVERLAY, fields)
                         .setCountry("PH")
@@ -223,7 +224,7 @@ public class RegistrationActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                List<Place.Field> fields = Arrays.asList(Place.Field.ID, Place.Field.NAME);
+                List<Place.Field> fields = Collections.singletonList(Place.Field.ADDRESS);
 
                 Intent intent = new Autocomplete.IntentBuilder(AutocompleteActivityMode.OVERLAY, fields)
                         .setCountry("PH")
@@ -351,15 +352,15 @@ public class RegistrationActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == 0 && resultCode == RESULT_OK) {
             Place place = Autocomplete.getPlaceFromIntent(data);
-            address.setText(String.valueOf(place.getName()));
+            address.setText(String.valueOf(place.getAddress()));
         }
         else if (requestCode == 1 && resultCode == RESULT_OK) {
             Place place = Autocomplete.getPlaceFromIntent(data);
-            address1.setText(String.valueOf(place.getName()));
+            address1.setText(String.valueOf(place.getAddress()));
         }
         else if (requestCode == 2 && resultCode == RESULT_OK) {
             Place place = Autocomplete.getPlaceFromIntent(data);
-            address2.setText(String.valueOf(place.getName()));
+            address2.setText(String.valueOf(place.getAddress()));
         }
     }
 

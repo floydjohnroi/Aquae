@@ -228,7 +228,7 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
                                                     @Override
                                                     public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                                                         for (DataSnapshot snapshot1 : dataSnapshot.getChildren()) {
-                                                            if (new SimpleDateFormat("h:mm a", Locale.getDefault()).format(new Date())
+                                                            if (new SimpleDateFormat("hh:mm a", Locale.getDefault()).format(new Date())
                                                                     .equals(String.valueOf(snapshot1.child("open_time").getValue()))) {
 
                                                                 sendNotif(String.valueOf(snapshot.child("schedule_id").getValue()));
