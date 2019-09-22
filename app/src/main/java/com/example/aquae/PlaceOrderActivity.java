@@ -91,6 +91,7 @@ public class PlaceOrderActivity extends AppCompatActivity {
     List<CheckOutProductModel> checkOutProductModelList = new ArrayList<>();
     int qtyr, qtyp;
     Map<String, Object> items = new HashMap<>();
+    int newBal;
 
 
 
@@ -303,6 +304,7 @@ public class PlaceOrderActivity extends AppCompatActivity {
                                     .addOnSuccessListener(new OnSuccessListener<Void>() {
                                         @Override
                                         public void onSuccess(Void aVoid) {
+
                                             FirebaseDatabase.getInstance().getReference().child("orders")
                                                     .orderByChild("order_id").equalTo(id)
                                                     .addListenerForSingleValueEvent(new ValueEventListener() {
@@ -332,20 +334,21 @@ public class PlaceOrderActivity extends AppCompatActivity {
                                                                                         .addListenerForSingleValueEvent(new ValueEventListener() {
                                                                                             @Override
                                                                                             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
                                                                                                 for (DataSnapshot snapshot1 : dataSnapshot.getChildren()) {
-                                                                                                    int newBal = Integer.parseInt(String.valueOf(snapshot1.child("wallet").getValue()))
+                                                                                                    newBal = Integer.parseInt(String.valueOf(snapshot1.child("wallet").getValue()))
                                                                                                             - Integer.parseInt(String.valueOf(snapshot.child("total_amount").getValue()));
 
                                                                                                     snapshot1.getRef().child("wallet").setValue(String.valueOf(newBal));
 
-                                                                                                    Toast.makeText(PlaceOrderActivity.this, "Payment Successful", Toast.LENGTH_SHORT).show();
-                                                                                                    Toast.makeText(PlaceOrderActivity.this, "NEW BALANCE : "+newBal, Toast.LENGTH_LONG).show();
-                                                                                                    Toast.makeText(PlaceOrderActivity.this, "ORDER PLACED", Toast.LENGTH_SHORT).show();
-
-                                                                                                    startActivity(new Intent(PlaceOrderActivity.this, HomeActivity.class));
-                                                                                                    finish();
-
                                                                                                 }
+
+                                                                                                Toast.makeText(PlaceOrderActivity.this, "Payment Successful", Toast.LENGTH_SHORT).show();
+                                                                                                Toast.makeText(PlaceOrderActivity.this, "NEW BALANCE : "+newBal, Toast.LENGTH_LONG).show();
+                                                                                                Toast.makeText(PlaceOrderActivity.this, "ORDER PLACED", Toast.LENGTH_SHORT).show();
+
+                                                                                                startActivity(new Intent(PlaceOrderActivity.this, HomeActivity.class));
+                                                                                                finish();
                                                                                             }
 
                                                                                             @Override
@@ -369,6 +372,7 @@ public class PlaceOrderActivity extends AppCompatActivity {
 
                                                         }
                                                     });
+
                                         }
                                     });
 
@@ -422,9 +426,6 @@ public class PlaceOrderActivity extends AppCompatActivity {
 
                                                 }
 
-                                                Toast.makeText(PlaceOrderActivity.this, "ORDER PLACED", Toast.LENGTH_SHORT).show();
-                                                startActivity(new Intent(PlaceOrderActivity.this, HomeActivity.class));
-                                                finish();
                                             }
 
                                             @Override
@@ -432,6 +433,11 @@ public class PlaceOrderActivity extends AppCompatActivity {
 
                                             }
                                         });
+
+                                Toast.makeText(PlaceOrderActivity.this, "ORDER PLACED", Toast.LENGTH_SHORT).show();
+                                startActivity(new Intent(PlaceOrderActivity.this, HomeActivity.class));
+                                finish();
+
                             }
                         });
 
@@ -569,7 +575,7 @@ public class PlaceOrderActivity extends AppCompatActivity {
                 String d = dist.replace(" km" ,"");
                 String[] e = d.split("\\.");
 
-                if (Integer.parseInt(String.valueOf(e[0])) > 4) {
+                if (Integer.parseInt(String.valueOf(e[0])) > 5) {
                     distance.setText(e[0]+" km");
                     int fee = Integer.parseInt(getIntent().getStringExtra("ship_fee")) * Integer.parseInt(String.valueOf(e[0]));
                     delivery_fee.setText(String.valueOf(fee));

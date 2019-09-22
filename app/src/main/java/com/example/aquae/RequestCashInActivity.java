@@ -78,6 +78,7 @@ public class RequestCashInActivity extends AppCompatActivity {
     ImageView receipt;
     RadioGroup paymentMethod;
     RadioButton method;
+    TextView transacFee;
 
     Uri resultUri;
 
@@ -113,6 +114,10 @@ public class RequestCashInActivity extends AppCompatActivity {
         receiptError = findViewById(R.id.receiptError);
         paymentMethod = findViewById(R.id.paymentMethod);
 
+        transacFee = findViewById(R.id.transac_fee);
+
+        transacFee.setText(Html.fromHtml("₱<b>0</b>"));
+
         setSupportActionBar(toolbar);
         (Objects.requireNonNull(getSupportActionBar())).setDisplayHomeAsUpEnabled(true);
         Objects.requireNonNull(getSupportActionBar()).setHomeAsUpIndicator(R.drawable.icon_back_dark);
@@ -146,11 +151,19 @@ public class RequestCashInActivity extends AppCompatActivity {
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 // TODO Auto-generated method stub
 
-                if (s.length() >= 5) {
+                if (s.length() > 4) {
                     next.setEnabled(true);
+
+                    int fee = Integer.parseInt(s.toString().replace("PHP ", ""));
+
+                    if (fee > 99) {
+                        transacFee.setText(Html.fromHtml("₱<b>"+ fee / 100 * 1 +"</b>"));
+                    }
                 }
                 else {
                     next.setEnabled(false);
+
+                    transacFee.setText(Html.fromHtml("₱<b>0</b>"));
                 }
 
             }
@@ -199,7 +212,10 @@ public class RequestCashInActivity extends AppCompatActivity {
                 if (!amt.matches("[0-9]+")) {
                     amount.setError("Invalid amount");
                 }
-                else if (Integer.parseInt(amt) > 5000 ) {
+                else if (Integer.parseInt(amt) < 100) {
+                    amount.setError("Minimum amount allowed is ₱100.00");
+                }
+                else if (Integer.parseInt(amt) > 5000) {
                     amount.setError("Maximum amount allowed is ₱5000.00");
                 }
                 else {

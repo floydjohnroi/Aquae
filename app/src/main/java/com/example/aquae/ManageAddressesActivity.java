@@ -29,6 +29,7 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -122,7 +123,7 @@ public class ManageAddressesActivity extends AppCompatActivity {
         floatingActionButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                List<Place.Field> fields = Arrays.asList(Place.Field.ID, Place.Field.NAME);
+                List<Place.Field> fields = Collections.singletonList(Place.Field.ADDRESS);
                 Intent intent = new Autocomplete.IntentBuilder(AutocompleteActivityMode.OVERLAY, fields)
                         .setCountry("PH")
                         .build(getApplicationContext());
@@ -138,6 +139,7 @@ public class ManageAddressesActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == 0 && resultCode == RESULT_OK) {
             Place place = Autocomplete.getPlaceFromIntent(data);
+
             FirebaseDatabase.getInstance().getReference().child("customers")
                     .orderByChild("customer_id").equalTo(new Session(getApplicationContext()).getId())
                     .addListenerForSingleValueEvent(new ValueEventListener() {
@@ -152,7 +154,7 @@ public class ManageAddressesActivity extends AppCompatActivity {
                                 }
                             }
 
-                            add.add(String.valueOf(place.getName()));
+                            add.add(String.valueOf(place.getAddress()));
 
                             addressModelList.clear();
 

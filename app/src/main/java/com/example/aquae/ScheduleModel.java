@@ -2,14 +2,13 @@ package com.example.aquae;
 
 public class ScheduleModel {
 
-    private String schedId, clientId, schedule, onOff, clientName;
+    private String schedId, clientId, schedule, onOff;
 
-    public ScheduleModel(String schedId, String clientId, String schedule, String onOff, String clientName) {
+    public ScheduleModel(String schedId, String clientId, String schedule, String onOff) {
         this.schedId = schedId;
         this.clientId = clientId;
         this.schedule = schedule;
         this.onOff = onOff;
-        this.clientName = clientName;
     }
 
     public String getSchedId() {
@@ -44,11 +43,4 @@ public class ScheduleModel {
         this.onOff = onOff;
     }
 
-    public String getClientName() {
-        return clientName;
-    }
-
-    public void setClientName(String clientName) {
-        this.clientName = clientName;
-    }
 }

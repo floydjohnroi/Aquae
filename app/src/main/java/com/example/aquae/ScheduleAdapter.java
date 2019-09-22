@@ -96,23 +96,23 @@ public class ScheduleAdapter extends RecyclerView.Adapter<ScheduleAdapter.Schedu
             }
         }
 
-        holder.station.setText(scheduleModel.getClientName());
+//        holder.station.setText(scheduleModel.getClientName());
 
-//        FirebaseDatabase.getInstance().getReference().child("clients")
-//                .orderByChild("client_id").equalTo(scheduleModel.getClientId())
-//                .addListenerForSingleValueEvent(new ValueEventListener() {
-//                    @Override
-//                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-//                        for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-//                            holder.station.setText(String.valueOf(snapshot.child("company").getValue()));
-//                        }
-//                    }
-//
-//                    @Override
-//                    public void onCancelled(@NonNull DatabaseError databaseError) {
-//
-//                    }
-//                });
+        FirebaseDatabase.getInstance().getReference().child("clients")
+                .orderByChild("client_id").equalTo(scheduleModel.getClientId())
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                        for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                            holder.station.setText(String.valueOf(snapshot.child("company").getValue()));
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                    }
+                });
 
         holder.materialCardView.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -125,7 +125,7 @@ public class ScheduleAdapter extends RecyclerView.Adapter<ScheduleAdapter.Schedu
                     intent.putExtra("switch", "on");
                 }
                 intent.putExtra("schedule_id", scheduleModel.getSchedId());
-                intent.putExtra("station", scheduleModel.getClientName());
+                intent.putExtra("station", String.valueOf(holder.station.getText()));
                 intent.putExtra("client_id", scheduleModel.getClientId());
                 intent.putExtra("activity", "schedule");
                 context.startActivity(intent);

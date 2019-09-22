@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.Editable;
+import android.text.Html;
 import android.text.Selection;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -15,6 +16,7 @@ import android.view.WindowManager;
 import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
+import android.widget.TextView;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -50,6 +52,7 @@ public class CashInFragment extends Fragment {
     MaterialButton next;
     RadioGroup paymentMethod;
     RadioButton method;
+    TextView transacFee;
 
     private static final int REQUEST_CODE_PAYMENT = 1;
     private static final String CONFIG_ENVIRONMENT = PayPalConfiguration.ENVIRONMENT_SANDBOX;
@@ -65,6 +68,9 @@ public class CashInFragment extends Fragment {
         amount = view.findViewById(R.id.amount);
         next = view.findViewById(R.id.next);
         paymentMethod = view.findViewById(R.id.paymentMethod);
+        transacFee = view.findViewById(R.id.transac_fee);
+
+        transacFee.setText(Html.fromHtml("₱<b>0</b>"));
 
         method = (RadioButton) paymentMethod.getChildAt(0);
         method.setChecked(true);
@@ -87,11 +93,19 @@ public class CashInFragment extends Fragment {
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 // TODO Auto-generated method stub
 
-                if (s.length() >= 5) {
+                if (s.length() > 4) {
                     next.setEnabled(true);
+
+                    int fee = Integer.parseInt(s.toString().replace("PHP ", ""));
+
+                    if (fee > 99) {
+                        transacFee.setText(Html.fromHtml("₱<b>"+ fee / 100 * 1 +"</b>"));
+                    }
                 }
                 else {
                     next.setEnabled(false);
+
+                    transacFee.setText(Html.fromHtml("₱<b>0</b>"));
                 }
 
             }
@@ -118,21 +132,27 @@ public class CashInFragment extends Fragment {
             public void onClick(View v) {
 
                 String amt = String.valueOf(amount.getText()).replace("PHP ", "");
+                String fee = String.valueOf(transacFee.getText()).replace("₱", "");
 
                 if (!amt.matches("[0-9]+")) {
                     amount.setError("Invalid amount");
                 }
-                else if (Integer.parseInt(amt) > 5000 ) {
+                else if (Integer.parseInt(amt) < 100) {
+                    amount.setError("Minimum amount allowed is ₱100.00");
+                }
+                else if (Integer.parseInt(amt) > 5000) {
                     amount.setError("Maximum amount allowed is ₱5000.00");
                 }
                 else {
 
+                    int totalPayment = Integer.parseInt(amt) + Integer.parseInt(fee);
+
                     if (method.getText().toString().equals("1")) {
-                        getPayment(amt);
+                        getPayment(String.valueOf(totalPayment));
                     }
                     else {
                         Intent intent = new Intent(getContext(), RequestCashInActivity.class);
-                        intent.putExtra("amount", amt);
+                        intent.putExtra("amount", String.valueOf(totalPayment));
                         startActivity(intent);
                         amount.setText(null);
                     }

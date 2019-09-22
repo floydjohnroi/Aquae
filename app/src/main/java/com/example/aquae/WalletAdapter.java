@@ -79,6 +79,13 @@ public class WalletAdapter extends RecyclerView.Adapter<WalletAdapter.WalletView
             }
         }
 
+        if (walletModel.getStatus().equals("cancelled")) {
+            holder.status.setTextColor(context.getResources().getColor(R.color.colorError));
+        }
+        else {
+            holder.status.setTextColor(context.getResources().getColor(R.color.colorStatus));
+        }
+
         holder.amount.setText(walletModel.amount);
         holder.cashInId.setText(walletModel.getId());
         holder.status.setText(walletModel.getStatus());

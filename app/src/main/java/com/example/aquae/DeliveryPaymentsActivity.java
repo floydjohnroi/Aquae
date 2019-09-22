@@ -37,6 +37,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -126,7 +127,7 @@ public class DeliveryPaymentsActivity extends AppCompatActivity {
 
         addNew.setOnClickListener(v -> {
 
-            List<Place.Field> fields = Arrays.asList(Place.Field.ID, Place.Field.NAME);
+            List<Place.Field> fields = Collections.singletonList(Place.Field.ADDRESS);
             Intent intent = new Autocomplete.IntentBuilder(AutocompleteActivityMode.OVERLAY, fields)
                     .setCountry("PH")
                     .build(getApplicationContext());
@@ -223,7 +224,6 @@ public class DeliveryPaymentsActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == 0 && resultCode == RESULT_OK) {
             Place place = Autocomplete.getPlaceFromIntent(data);
-//            addr.setText(String.valueOf(place.getName()));
 
             FirebaseDatabase.getInstance().getReference().child("customers")
                     .orderByChild("customer_id").equalTo(new Session(getApplicationContext()).getId())
@@ -239,7 +239,7 @@ public class DeliveryPaymentsActivity extends AppCompatActivity {
                                 }
                             }
 
-                            add.add(String.valueOf(place.getName()));
+                            add.add(String.valueOf(place.getAddress()));
 
                             addressModelList.clear();
 

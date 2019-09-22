@@ -60,17 +60,17 @@ public class TrackActivity extends AppCompatActivity {
     Toolbar toolbar;
     MaterialCardView toolbarCard;
     TextView toolbarTitle, orderId, orderTime, estTime, acceptedTime, acceptedDate, outforpickupTime, outforpickupDate,
-    preparingTime, preparingDate, outfordeliveryTime, outfordeliveryDate, deliveredTime, deliveredDate;
+    preparingTime, preparingDate, outfordeliveryTime, outfordeliveryDate, deliveredTime, deliveredDate, expressFee;
     ImageView acceptedCheck, outforpickupCheck, preparingCheck, outfordeliveryCheck, deliveredCheck, personnel_profile;
     LinearLayout dashed, dashed1, dashed2, dashed3, estLayout, notesLayout, historyLayout, declinedLayout,
     acceptedLayout, outforpickupLayout, preparingLayout, outfordeliveryLayout, deliveredLayout;
     View solid, solid1, solid2, solid3;
     List<ScheduleProductModel> scheduleProductModelList = new ArrayList<>();
     RecyclerView recyclerView;
-    TextView station, deliveryAddress, subtotal, deliveryFee, orderTotal, paymentMethod, notes, historyTime, personnel_name;
+    TextView station, deliveryAddress, subtotal, deliveryFee, orderTotal, paymentMethod, notes, historyTime, personnel_name, deliveryOption;
     MaterialButton contactStation, viewStation, cancelOrder;
     String contactNumber, activity, personImage, perContact;
-    LinearLayout personnelLayout, trackorderLayout, cancelOrderLayout;
+    LinearLayout personnelLayout, trackorderLayout, cancelOrderLayout, expressFeeLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -134,6 +134,9 @@ public class TrackActivity extends AppCompatActivity {
         trackorderLayout = findViewById(R.id.trackorder_layout);
         cancelOrder = findViewById(R.id.cancel_order);
         cancelOrderLayout = findViewById(R.id.cancel_order_layout);
+        deliveryOption = findViewById(R.id.delivery_option);
+        expressFeeLayout = findViewById(R.id.express_fee_layout);
+        expressFee = findViewById(R.id.express_fee);
 
         setSupportActionBar(toolbar);
         (Objects.requireNonNull(getSupportActionBar())).setDisplayHomeAsUpEnabled(true);
@@ -228,6 +231,7 @@ public class TrackActivity extends AppCompatActivity {
                                         solid.setVisibility(View.VISIBLE);
 
                                         String[] accept = String.valueOf(snapshot.child("accepted_time").getValue()).split(" ");
+
                                         acceptedTime.setText(accept[4]+" "+accept[5]);
                                         acceptedDate.setText(accept[0]+" "+accept[1].replace(",", ""));
                                     }
@@ -507,6 +511,20 @@ public class TrackActivity extends AppCompatActivity {
                             deliveryFee.setText(String.valueOf(snapshot.child("delivery_fee").getValue()));
                             orderTotal.setText(String.valueOf(snapshot.child("total_amount").getValue()));
 
+                            deliveryOption.setText(snapshot.child("delivery_option").getValue() + " Delivery");
+
+                            if ("Express".equals(String.valueOf(snapshot.child("delivery_option").getValue()))) {
+                                expressFeeLayout.setVisibility(View.VISIBLE);
+                                expressFee.setText(String.valueOf(snapshot.child("express_fee").getValue()));
+
+                                int sub = Integer.parseInt(String.valueOf(snapshot.child("total_amount").getValue()))
+                                        - Integer.parseInt(String.valueOf(snapshot.child("express_fee").getValue()));
+                                subtotal.setText(String.valueOf(sub));
+                            }
+                            else {
+                                expressFeeLayout.setVisibility(View.GONE);
+                            }
+
 
                             FirebaseDatabase.getInstance().getReference().child("personnels")
                                     .orderByChild("per_id").equalTo(String.valueOf(snapshot.child("per_id").getValue()))
@@ -692,6 +710,8 @@ public class TrackActivity extends AppCompatActivity {
                 ImageView profile = view.findViewById(R.id.profile);
                 TextView name = view.findViewById(R.id.name);
                 TextView contact = view.findViewById(R.id.contact);
+                ImageView call = view.findViewById(R.id.call);
+                ImageView chat = view.findViewById(R.id.chat);
 
                 Picasso.get()
                         .load(personImage)
@@ -702,6 +722,24 @@ public class TrackActivity extends AppCompatActivity {
 
                 name.setText(personnel_name.getText());
                 contact.setText(perContact);
+
+                call.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Uri call = Uri.parse("tel:" + perContact);
+                        Intent surf = new Intent(Intent.ACTION_DIAL, call);
+                        startActivity(surf);
+                    }
+                });
+
+                chat.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Intent send = new Intent(Intent.ACTION_SENDTO);
+                        send.setData(Uri.parse("smsto:" + Uri.encode(perContact)));
+                        startActivity(send);
+                    }
+                });
 
                 AlertDialog.Builder builder = new AlertDialog.Builder(TrackActivity.this, R.style.AlertDialogTheme);
                 builder.setView(view);

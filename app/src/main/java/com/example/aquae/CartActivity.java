@@ -51,7 +51,6 @@ public class CartActivity extends AppCompatActivity {
     String isForDelivery, ref, title;
     ImageView emptyIcon;
 
-
     @TargetApi(Build.VERSION_CODES.KITKAT)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -106,16 +105,64 @@ public class CartActivity extends AppCompatActivity {
         linearLayoutManager.setStackFromEnd(true);
         recyclerView.setLayoutManager(linearLayoutManager);
 
-        checkBoxAll.setOnCheckedChangeListener((buttonView, isChecked) -> {
+        checkBoxAll.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (checkBoxAll.isChecked()) {
+                    FirebaseDatabase.getInstance().getReference()
+                            .child("carts")
+                            .orderByChild("customer_id").equalTo(new Session(getApplicationContext()).getId())
+                            .addListenerForSingleValueEvent(new ValueEventListener() {
+                                @Override
+                                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                    for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                                        if (getIntent().getStringExtra("client_id").equals(snapshot.child("client_id").getValue())) {
+                                            for (DataSnapshot snapshot1 : snapshot.child("products").getChildren()) {
+                                                for (DataSnapshot snapshot2 : snapshot1.getChildren()) {
+                                                    if ("uncheck".equals(snapshot2.child("status").getValue())) {
+                                                        snapshot2.getRef().child("status").setValue("check");
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
 
-            if (isChecked) {
-                removeAll.setEnabled(true);
-                cartAdapter.selectAll();
-            } else {
-                removeAll.setEnabled(false);
-                cartAdapter.unselectAll();
+                                @Override
+                                public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                                }
+                            });
+                }
+                else {
+                    FirebaseDatabase.getInstance().getReference()
+                            .child("carts")
+                            .orderByChild("customer_id").equalTo(new Session(getApplicationContext()).getId())
+                            .addListenerForSingleValueEvent(new ValueEventListener() {
+                                @Override
+                                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                    for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                                        if (getIntent().getStringExtra("client_id").equals(snapshot.child("client_id").getValue())) {
+                                            for (DataSnapshot snapshot1 : snapshot.child("products").getChildren()) {
+                                                for (DataSnapshot snapshot2 : snapshot1.getChildren()) {
+                                                    if ("check".equals(snapshot2.child("status").getValue())) {
+                                                        snapshot2.getRef().child("status").setValue("uncheck");
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+
+                                @Override
+                                public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                                }
+                            });
+                }
             }
         });
+
 
         removeAll.setOnClickListener(v -> {
             AlertDialog.Builder builder = new AlertDialog.Builder(this, R.style.AlertDialogTheme);
@@ -128,13 +175,18 @@ public class CartActivity extends AppCompatActivity {
                             @Override
                             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                                 for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                                    if (snapshot.child("client_id").getValue().equals(getIntent().getStringExtra("client_id"))) {
-                                        snapshot.getRef().removeValue();
+                                    if (getIntent().getStringExtra("client_id").equals(snapshot.child("client_id").getValue())) {
+                                        for (DataSnapshot snapshot1 : snapshot.child("products").getChildren()) {
+                                            for (DataSnapshot snapshot2 : snapshot1.getChildren()) {
+                                                if ("check".equals(snapshot2.child("status").getValue())) {
+                                                    snapshot1.getRef().removeValue();
+                                                }
+                                            }
+                                        }
                                     }
                                 }
 
                                 Toast.makeText(getApplicationContext(), "All item has been removed", Toast.LENGTH_SHORT).show();
-                                cartAdapter.notifyDataSetChanged();
 
                             }
 
@@ -283,6 +335,13 @@ public class CartActivity extends AppCompatActivity {
 
                                                     dialogFragment.dismiss();
 
+                                                    if ("uncheck".equals(d.child("status").getValue())) {
+                                                        checkBoxAll.setChecked(false);
+                                                    }
+                                                    else {
+                                                        checkBoxAll.setChecked(true);
+                                                    }
+
                                                 }
                                             }
 
@@ -302,6 +361,15 @@ public class CartActivity extends AppCompatActivity {
 
                         total.setText(Html.fromHtml("₱<b>"+t+ "</b>"));
 
+                        if (t == 0) {
+                            removeAll.setEnabled(false);
+                        }
+                        else {
+                            removeAll.setEnabled(true);
+                        }
+
+                        recyclerView.setAdapter(new CartAdapter(CartActivity.this, cartProductModelList, isForDelivery));
+
                     }
 
                     @Override
@@ -313,32 +381,30 @@ public class CartActivity extends AppCompatActivity {
                 });
 
 
-        cartAdapter = new CartAdapter(CartActivity.this, cartProductModelList, isForDelivery, new CartAdapter.OnDataChangeListener() {
-            @Override
-            public void onChanged(double totalAmount) {
-//                String s = "₱<b>" + String.format(Locale.getDefault(), "%.2f", totalAmount) + "</b>";
-//                String s = "₱<b>" + totalAmount + "</b>";
-//                total.setText(Html.fromHtml(s));
-            }
+//        cartAdapter = new CartAdapter(CartActivity.this, cartProductModelList, isForDelivery, new CartAdapter.OnDataChangeListener() {
+//            @Override
+//            public void onChanged(int totalAmount) {
+////                total.setText(Html.fromHtml("₱<b>" + totalAmount + "</b>"));
+//            }
+//
+//            @Override
+//            public void isSelectedAll(boolean isChecked) {
+//                for (int i = 0; i < cartProductModelList.size(); i++) {
+//                    CartAdapter.CartViewHolder viewHolder = (CartAdapter.CartViewHolder) recyclerView.findViewHolderForAdapterPosition(i);
+//                    if (viewHolder != null) {
+//                        if (isChecked) {
+//                            viewHolder.checkBoxes.setChecked(true);
+//                        }
+//                        else {
+//                            viewHolder.checkBoxes.setChecked(false);
+//                        }
+//                    }
+//                }
+//
+//            }
+//        });
 
-            @Override
-            public void isSelectedAll(boolean isChecked) {
-                for (int i = 0; i < cartProductModelList.size(); i++) {
-                    CartAdapter.CartViewHolder viewHolder = (CartAdapter.CartViewHolder) recyclerView.findViewHolderForAdapterPosition(i);
-                    if (viewHolder != null) {
-                        if (isChecked) {
-                            viewHolder.checkBoxes.setChecked(true);
-                        }
-                        else {
-                            viewHolder.checkBoxes.setChecked(false);
-                        }
-                    }
-                }
-
-            }
-        });
-
-        recyclerView.setAdapter(cartAdapter);
+//        recyclerView.setAdapter(cartAdapter);
 
         checkBoxAll.setChecked(true);
 

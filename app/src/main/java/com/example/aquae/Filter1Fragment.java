@@ -45,6 +45,8 @@ import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.LocationSettingsRequest;
+import com.google.android.gms.location.SettingsClient;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -75,9 +77,6 @@ import java.util.concurrent.TimeUnit;
 public class Filter1Fragment extends Fragment {
 
     RecyclerView recyclerView;
-    //    Query databaseReference;
-//    FirebaseRecyclerOptions<ClientModel> options;
-//    FirebaseRecyclerAdapter<ClientModel, ClientAdapter> adapter;
     List<ClientModel> clientModelList = new ArrayList<>();
     String isForDelivery;
     ClientAdapter clientAdapter;
@@ -93,100 +92,31 @@ public class Filter1Fragment extends Fragment {
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getContext());
         recyclerView.setLayoutManager(linearLayoutManager);
 
+        startLocationUpdates();
+
+        return view;
+    }
+
+    private void startLocationUpdates() {
         LocationRequest mLocationRequest = new LocationRequest();
         mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
         mLocationRequest.setInterval(10 * 1000);
         mLocationRequest.setFastestInterval(2000);
 
+        LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder();
+        builder.addLocationRequest(mLocationRequest);
+        LocationSettingsRequest locationSettingsRequest = builder.build();
+
+        SettingsClient settingsClient = LocationServices.getSettingsClient(Objects.requireNonNull(getContext()));
+        settingsClient.checkLocationSettings(locationSettingsRequest);
+
+        if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                && ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
 
         LocationServices.getFusedLocationProviderClient(Objects.requireNonNull(getActivity())).requestLocationUpdates(mLocationRequest, locationCallback,
                 Looper.myLooper());
-
-
-//        FirebaseDatabase.getInstance().getReference().child("clients").orderByChild("status").equalTo("activate")
-//                .addValueEventListener(new ValueEventListener() {
-//                    @Override
-//                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-//                        clientModelList.clear();
-//                        for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-//                            for (DataSnapshot data : snapshot.getChildren()) {
-//                                if (data.child("store").getValue() != null) {
-//                                    clientModelList.add(new ClientModel(
-//                                            String.valueOf(snapshot.child("client_id").getValue()),
-//                                            String.valueOf(snapshot.child("company").getValue()),
-//                                            String.valueOf(snapshot.child("email").getValue()),
-//                                            String.valueOf(snapshot.child("password").getValue()),
-//                                            String.valueOf(snapshot.child("address").getValue()),
-//                                            String.valueOf(snapshot.child("contact").getValue()),
-//                                            String.valueOf(data.child("store").getValue()),
-//                                            String.valueOf(snapshot.child("water_type").getValue()),
-//                                            String.valueOf(snapshot.child("no_of_filter").getValue()),
-//                                            String.valueOf(snapshot.child("shipping_fee").getValue())
-//                                    ));
-//                                }
-//                            }
-//                        }
-//                        recyclerView.setAdapter(new ClientAdapter(getContext(), clientModelList, isForDelivery));
-//                    }
-//
-//                    @Override
-//                    public void onCancelled(@NonNull DatabaseError databaseError) {
-//
-//                    }
-//                });
-
-        if (!"isForDelivery".equals(isForDelivery)) {
-            ((HomeActivity) Objects.requireNonNull(getActivity())).searchView.setOnQueryTextListener(new MaterialSearchView.OnQueryTextListener() {
-                @Override
-                public boolean onQueryTextSubmit(String query) {
-                    return false;
-                }
-
-                @Override
-                public boolean onQueryTextChange(String newText) {
-                    clientAdapter.getFilter().filter(newText);
-                    return false;
-                }
-            });
-
-            recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-                @SuppressLint("RestrictedApi")
-                @Override
-                public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
-
-                    if (dy > 0) {
-                        ((HomeActivity) Objects.requireNonNull(getActivity())).floatingActionButton.setVisibility(View.GONE);
-                    } else if (dy < 0) {
-                        ((HomeActivity) Objects.requireNonNull(getActivity())).floatingActionButton.setVisibility(View.VISIBLE);
-                    } else {
-                        ((HomeActivity) Objects.requireNonNull(getActivity())).floatingActionButton.setVisibility(View.VISIBLE);
-                    }
-                }
-            });
-        }
-//        else {
-//
-//            ((HomeActivity) Objects.requireNonNull(getActivity())).searchView.setOnQueryTextListener(new MaterialSearchView.OnQueryTextListener() {
-//                @Override
-//                public boolean onQueryTextSubmit(String query) {
-//                    return false;
-//                }
-//
-//                @Override
-//                public boolean onQueryTextChange(String newText) {
-//                    clientAdapter.getFilter().filter(newText);
-//                    return false;
-//                }
-//            });
-//
-//        }
-
-
-
-
-
-
-        return view;
     }
 
     private LocationCallback locationCallback = new LocationCallback() {
@@ -244,7 +174,7 @@ public class Filter1Fragment extends Fragment {
                                 if (!"".equals(l)) {
                                     String[] m = l.split("\\.");
 
-                                    if (Integer.parseInt(m[0]) < 5) {
+                                    if (Integer.parseInt(m[0]) < 6) {
 
                                         clientModelList.add(new ClientModel(
                                                 String.valueOf(snapshot.child("client_id").getValue()),
@@ -290,9 +220,61 @@ public class Filter1Fragment extends Fragment {
                     }
                 });
 
-
+        searchFilter();
 
         LocationServices.getFusedLocationProviderClient(Objects.requireNonNull(getActivity())).removeLocationUpdates(locationCallback);
+
+    }
+
+    private void searchFilter() {
+
+        if (!"isForDelivery".equals(isForDelivery)) {
+            ((HomeActivity) Objects.requireNonNull(getActivity())).searchView.setOnQueryTextListener(new MaterialSearchView.OnQueryTextListener() {
+                @Override
+                public boolean onQueryTextSubmit(String query) {
+                    return false;
+                }
+
+                @Override
+                public boolean onQueryTextChange(String newText) {
+                    if (clientAdapter != null) {
+                        clientAdapter.getFilter().filter(newText);
+                    }
+                    return false;
+                }
+            });
+
+            recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+                @SuppressLint("RestrictedApi")
+                @Override
+                public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+
+                    if (dy > 0) {
+                        ((HomeActivity) Objects.requireNonNull(getActivity())).floatingActionButton.setVisibility(View.GONE);
+                    } else if (dy < 0) {
+                        ((HomeActivity) Objects.requireNonNull(getActivity())).floatingActionButton.setVisibility(View.VISIBLE);
+                    } else {
+                        ((HomeActivity) Objects.requireNonNull(getActivity())).floatingActionButton.setVisibility(View.VISIBLE);
+                    }
+                }
+            });
+        }
+        else {
+
+            ((SelectStationActivity) Objects.requireNonNull(getActivity())).searchView.setOnQueryTextListener(new MaterialSearchView.OnQueryTextListener() {
+                @Override
+                public boolean onQueryTextSubmit(String query) {
+                    return false;
+                }
+
+                @Override
+                public boolean onQueryTextChange(String newText) {
+                    clientAdapter.getFilter().filter(newText);
+                    return false;
+                }
+            });
+
+        }
 
     }
 

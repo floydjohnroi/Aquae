@@ -65,7 +65,6 @@ public class ReminderFragment extends Fragment {
                                             .addListenerForSingleValueEvent(new ValueEventListener() {
                                                 @Override
                                                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                                                    reminderModelList.clear();
                                                     for (DataSnapshot snapshot1 : dataSnapshot.getChildren()) {
                                                         reminderModelList.add(new ReminderModel(
                                                                 String.valueOf(snapshot.child("schedule_id").getValue()),

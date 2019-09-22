@@ -49,7 +49,7 @@ public class PusherService extends Service {
         HashMap<String, String> headers = new HashMap<>();
         headers.put("Content-Type", "application/x-www-form-urlencoded");
         headers.put("Accept", "application/json");
-        HttpAuthorizer authorizer = new HttpAuthorizer("http://192.168.43.30/pusher/auth.php");
+        HttpAuthorizer authorizer = new HttpAuthorizer("http://192.168.1.16/pusher/auth.php");
         authorizer.setHeaders(headers);
         options = new PusherOptions();
         options.setCluster("ap1");

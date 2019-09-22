@@ -281,11 +281,11 @@ public class OrderActivity extends AppCompatActivity {
             } else if (isChecked) {
                 addToCart.setEnabled(true);
 
-                sub = sub + (Integer.parseInt(getIntent().getStringExtra("refillPrice")) * Integer.parseInt(getIntent().getStringExtra("min_order")));
+                sub = sub + (Integer.parseInt(String.valueOf(refillPrice.getText()).replace("₱", "")) * Integer.parseInt(getIntent().getStringExtra("min_order")));
 
                 subtotal.setText(Html.fromHtml("\u20B1<b>" + sub + "</b>"));
             } else {
-                sub = sub - (Integer.parseInt(getIntent().getStringExtra("refillPrice")) * Integer.parseInt(getIntent().getStringExtra("min_order")));
+                sub = sub - (Integer.parseInt(String.valueOf(refillPrice.getText()).replace("₱", "")) * Integer.parseInt(getIntent().getStringExtra("min_order")));
 
                 subtotal.setText(Html.fromHtml("\u20B1<b>" + sub + "</b>"));
             }
@@ -300,11 +300,11 @@ public class OrderActivity extends AppCompatActivity {
             } else if (isChecked) {
                 addToCart.setEnabled(true);
 
-                sub = sub + (Integer.parseInt(getIntent().getStringExtra("purchasePrice")) * Integer.parseInt(getIntent().getStringExtra("min_order")));
+                sub = sub + (Integer.parseInt(String.valueOf(purchasePrice.getText()).replace("₱", "")) * Integer.parseInt(getIntent().getStringExtra("min_order")));
 
-                subtotal.setText(Html.fromHtml("\u20B1<b>" + sub + ".00</b>"));
+                subtotal.setText(Html.fromHtml("\u20B1<b>" + sub + "</b>"));
             } else {
-                sub = sub - (Integer.parseInt(getIntent().getStringExtra("purchasePrice")) * Integer.parseInt(getIntent().getStringExtra("min_order")));
+                sub = sub - (Integer.parseInt(String.valueOf(purchasePrice.getText()).replace("₱", "")) * Integer.parseInt(getIntent().getStringExtra("min_order")));
 
                 subtotal.setText(Html.fromHtml("\u20B1<b>" + sub + "</b>"));
             }
@@ -450,15 +450,11 @@ public class OrderActivity extends AppCompatActivity {
 
                                                 if (!dataSnapshot.exists()) {
                                                     dataSnapshot.getRef().child(id).setValue(data);
-                                                    Toast.makeText(OrderActivity.this, toast, Toast.LENGTH_SHORT).show();
-                                                    finish();
                                                 } else {
 
                                                     for (DataSnapshot snap : dataSnapshot.getChildren()) {
 
                                                         dataSnapshot.getRef().child(snap.child("cart_id").getValue() + "/products/").push().setValue(products);
-                                                        Toast.makeText(OrderActivity.this, toast, Toast.LENGTH_SHORT).show();
-                                                        finish();
 
                                                     }
 
@@ -472,6 +468,8 @@ public class OrderActivity extends AppCompatActivity {
                                             }
                                         });
 
+                                Toast.makeText(OrderActivity.this, toast, Toast.LENGTH_SHORT).show();
+                                finish();
 
                             }
                         }

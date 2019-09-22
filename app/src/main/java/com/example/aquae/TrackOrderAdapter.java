@@ -71,7 +71,13 @@ public class TrackOrderAdapter extends RecyclerView.Adapter<TrackOrderAdapter.Tr
         holder.clientName.setText(trackOrderModel.clientName);
         holder.orderId.setText(trackOrderModel.getOrderId());
         holder.orderTime.setText(trackOrderModel.getOrderTime());
-        holder.status.setText(trackOrderModel.getStatus());
+
+        if ("confirmed".equals(trackOrderModel.getStatus())) {
+            holder.status.setText("completed");
+        }
+        else {
+            holder.status.setText(trackOrderModel.getStatus());
+        }
 
         holder.materialCardView.setOnClickListener(new View.OnClickListener() {
             @Override

@@ -32,6 +32,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.daimajia.swipe.SwipeLayout;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -46,18 +47,18 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
     String isForDelivery, ref;
     int t;
 
-    private OnDataChangeListener mOnDataChangeListener;
+//    private OnDataChangeListener mOnDataChangeListener;
+//
+//    public interface OnDataChangeListener {
+//        void onChanged(int totalAmount);
+//        void isSelectedAll(boolean isChecked);
+//    }
 
-    public interface OnDataChangeListener {
-        void onChanged(double totalAmount);
-        void isSelectedAll(boolean isChecked);
-    }
-
-    CartAdapter(Context context, List<CartProductModel> cartProductModelList, String isForDelivery, OnDataChangeListener onDataChangeListener) {
+    CartAdapter(Context context, List<CartProductModel> cartProductModelList, String isForDelivery) {
         this.context = context;
         this.cartProductModelList = cartProductModelList;
         this.isForDelivery = isForDelivery;
-        mOnDataChangeListener = onDataChangeListener;
+//        mOnDataChangeListener = onDataChangeListener;
     }
 
     @NonNull
@@ -80,7 +81,7 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
             ref = "carts";
         }
 
-        t += Integer.parseInt(cartProductModel.getSubtotal());
+//        t += Integer.parseInt(cartProductModel.getSubtotal());
 
         holder.product.setText(capitalize(cartProductModel.getProduct()));
 
@@ -130,9 +131,6 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
 
             holder.quantityRefill.setText(String.valueOf(i));
 
-            t -= Integer.parseInt(String.valueOf(holder.refillPrice.getText()).replace("₱", ""));
-            mOnDataChangeListener.onChanged(t);
-
             if (i == Integer.parseInt(String.valueOf(cartProductModel.getMinOrder()))) {
                 holder.minusRefill.setEnabled(false);
             }
@@ -140,7 +138,7 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
                 holder.addRefill.setEnabled(true);
             }
 
-            int ti = Integer.parseInt(String.valueOf(holder.refillPrice.getText()).replace("₱", "")) * i;
+            int ti = Integer.parseInt(cartProductModel.getSubtotal()) - Integer.parseInt(String.valueOf(holder.refillPrice.getText()).replace("₱", ""));
 
             FirebaseDatabase.getInstance().getReference().child(ref)
                     .orderByChild("customer_id").equalTo(new Session(context).getId())
@@ -161,6 +159,7 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
                                     }
                                 }
                             }
+
                         }
 
                         @Override
@@ -181,19 +180,13 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
 
             holder.quantityRefill.setText(String.valueOf(i));
 
-
-            t += Integer.parseInt(String.valueOf(holder.refillPrice.getText()).replace("₱", ""));
-            mOnDataChangeListener.onChanged(t);
-
-
             holder.minusRefill.setEnabled(true);
-            holder.checkBoxes.setChecked(true);
 
             if (i == Integer.parseInt(String.valueOf(cartProductModel.getMaxOrder()))) {
                 holder.addRefill.setEnabled(false);
             }
 
-            int ti = Integer.parseInt(String.valueOf(holder.refillPrice.getText()).replace("₱", "")) * i;
+            int ti = Integer.parseInt(cartProductModel.getSubtotal()) + Integer.parseInt(String.valueOf(holder.refillPrice.getText()).replace("₱", ""));
 
             FirebaseDatabase.getInstance().getReference().child(ref)
                     .orderByChild("customer_id").equalTo(new Session(context).getId())
@@ -224,7 +217,6 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
                     });
 
 
-
         });
 
 
@@ -236,9 +228,6 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
 
             holder.quantityPurchase.setText(String.valueOf(i));
 
-            t -= Integer.parseInt(String.valueOf(holder.purchasePrice.getText()).replace("₱", ""));
-            mOnDataChangeListener.onChanged(t);
-
             if (i == Integer.parseInt(String.valueOf(cartProductModel.getMinOrder()))) {
                 holder.minusPurchase.setEnabled(false);
             }
@@ -246,7 +235,7 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
                 holder.addPurchase.setEnabled(true);
             }
 
-            int ti = Integer.parseInt(String.valueOf(holder.purchasePrice.getText()).replace("₱", "")) * i;
+            int ti = Integer.parseInt(cartProductModel.getSubtotal()) - Integer.parseInt(String.valueOf(holder.purchasePrice.getText()).replace("₱", ""));
 
             FirebaseDatabase.getInstance().getReference().child(ref)
                     .orderByChild("customer_id").equalTo(new Session(context).getId())
@@ -267,6 +256,7 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
                                     }
                                 }
                             }
+
                         }
 
                         @Override
@@ -287,16 +277,13 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
 
             holder.quantityPurchase.setText(String.valueOf(i));
 
-            t += Integer.parseInt(String.valueOf(holder.purchasePrice.getText()).replace("₱", ""));
-            mOnDataChangeListener.onChanged(t);
-
             holder.minusPurchase.setEnabled(true);
 
             if (i == Integer.parseInt(String.valueOf(cartProductModel.getMaxOrder()))) {
                 holder.addPurchase.setEnabled(false);
             }
 
-            int ti = Integer.parseInt(String.valueOf(holder.purchasePrice.getText()).replace("₱", "")) * i;
+            int ti = Integer.parseInt(cartProductModel.getSubtotal()) + Integer.parseInt(String.valueOf(holder.purchasePrice.getText()).replace("₱", ""));
 
             FirebaseDatabase.getInstance().getReference().child(ref)
                     .orderByChild("customer_id").equalTo(new Session(context).getId())
@@ -317,6 +304,7 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
                                     }
                                 }
                             }
+
                         }
 
                         @Override
@@ -350,15 +338,9 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
                                                     public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                                                         for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                                                             for (DataSnapshot snap : snapshot.child("products").getChildren()) {
-
-                                                                if (snapshot.child("products").getChildrenCount() == 1) {
-                                                                    snapshot.getRef().removeValue();
-                                                                } else {
-                                                                    if (Objects.equals(snap.getKey(), cartProductModel.getProduct_id())) {
-                                                                        snap.getRef().removeValue();
-                                                                    }
+                                                                if (Objects.equals(snap.getKey(), cartProductModel.getProduct_id())) {
+                                                                    snap.getRef().removeValue();
                                                                 }
-
                                                             }
                                                         }
 
@@ -409,8 +391,8 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (!isChecked) {
 
-                    t -= Integer.parseInt(cartProductModel.getSubtotal());
-                    mOnDataChangeListener.onChanged(t);
+//                    t -= Integer.parseInt(cartProductModel.getSubtotal());
+//                    mOnDataChangeListener.onChanged(t);
 
                     FirebaseDatabase.getInstance().getReference().child(ref)
                         .orderByChild("customer_id").equalTo(new Session(context).getId())
@@ -425,7 +407,7 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
                                             for (DataSnapshot s : snap.getChildren()) {
                                                 if (Objects.equals(s.getKey(), cartProductModel.getProduct())) {
                                                     s.getRef().child("status").setValue("uncheck");
-                                                    t = Integer.parseInt(cartProductModel.getSubtotal());
+//                                                    t = Integer.parseInt(cartProductModel.getSubtotal());
                                                 }
                                             }
                                         }
@@ -444,8 +426,8 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
                 else {
 
 
-                    t += Integer.parseInt(cartProductModel.getSubtotal());
-                    mOnDataChangeListener.onChanged(t);
+//                    t += Integer.parseInt(cartProductModel.getSubtotal());
+//                    mOnDataChangeListener.onChanged(t);
 
                     FirebaseDatabase.getInstance().getReference().child(ref)
                             .orderByChild("customer_id").equalTo(new Session(context).getId())
@@ -460,7 +442,7 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
                                                 for (DataSnapshot s : snap.getChildren()) {
                                                     if (Objects.equals(s.getKey(), cartProductModel.getProduct())) {
                                                         s.getRef().child("status").setValue("check");
-                                                        t = Integer.parseInt(cartProductModel.getSubtotal());
+//                                                        t = Integer.parseInt(cartProductModel.getSubtotal());
                                                     }
                                                 }
                                             }
@@ -500,13 +482,13 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
         return position;
     }
 
-    public void selectAll(){
-        mOnDataChangeListener.isSelectedAll(true);
-    }
-
-    public void unselectAll(){
-        mOnDataChangeListener.isSelectedAll(false);
-    }
+//    public void selectAll(){
+//        mOnDataChangeListener.isSelectedAll(true);
+//    }
+//
+//    public void unselectAll(){
+//        mOnDataChangeListener.isSelectedAll(false);
+//    }
 
     class CartViewHolder extends RecyclerView.ViewHolder{
 

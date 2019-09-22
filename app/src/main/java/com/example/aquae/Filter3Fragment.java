@@ -69,7 +69,6 @@ public class Filter3Fragment extends Fragment {
                         }
 
                         clientAdapter = new ClientAdapter(getContext(), clientModelList, isForDelivery);
-
                         recyclerView.setAdapter(clientAdapter);
                     }
 
@@ -78,6 +77,13 @@ public class Filter3Fragment extends Fragment {
 
                     }
                 });
+
+        searchFilter();
+
+        return  view;
+    }
+
+    private void searchFilter() {
 
         if (!"isForDelivery".equals(isForDelivery)) {
             ((HomeActivity) Objects.requireNonNull(getActivity())).searchView.setOnQueryTextListener(new MaterialSearchView.OnQueryTextListener() {
@@ -88,7 +94,9 @@ public class Filter3Fragment extends Fragment {
 
                 @Override
                 public boolean onQueryTextChange(String newText) {
-                    clientAdapter.getFilter().filter(newText);
+                    if (clientAdapter != null) {
+                        clientAdapter.getFilter().filter(newText);
+                    }
                     return false;
                 }
             });
@@ -108,9 +116,22 @@ public class Filter3Fragment extends Fragment {
                 }
             });
         }
+        else {
 
+            ((SelectStationActivity) Objects.requireNonNull(getActivity())).searchView.setOnQueryTextListener(new MaterialSearchView.OnQueryTextListener() {
+                @Override
+                public boolean onQueryTextSubmit(String query) {
+                    return false;
+                }
 
+                @Override
+                public boolean onQueryTextChange(String newText) {
+                    clientAdapter.getFilter().filter(newText);
+                    return false;
+                }
+            });
 
-        return  view;
+        }
+
     }
 }

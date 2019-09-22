@@ -49,6 +49,7 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -165,7 +166,7 @@ public class ScheduledDelivery extends AppCompatActivity {
                                         String d = dist.replace(" km" ,"");
                                         String[] e = d.split("\\.");
 
-                                        if (Integer.parseInt(String.valueOf(e[0])) > 4) {
+                                        if (Integer.parseInt(String.valueOf(e[0])) > 5) {
                                             distance.setText(e[0]+" km");
                                             int fee = Integer.parseInt(getIntent().getStringExtra("ship_fee")) * Integer.parseInt(String.valueOf(e[0]));
                                             delivery_fee.setText(String.valueOf(fee));
@@ -202,6 +203,10 @@ public class ScheduledDelivery extends AppCompatActivity {
 
 
         setDays.setText(new SimpleDateFormat("EEE", Locale.ENGLISH).format(System.currentTimeMillis()));
+
+        if (new SimpleDateFormat("EEE", Locale.ENGLISH).format(System.currentTimeMillis()).equals(String.valueOf(setDays.getText()))) {
+            setSchedule.setEnabled(false);
+        }
 
         setDays.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -305,8 +310,10 @@ public class ScheduledDelivery extends AppCompatActivity {
                         if (!days.isEmpty()) {
                             String finalDay = days.substring(0, days.length() - 3);
                             setDays.setText(finalDay);
+                            setSchedule.setEnabled(true);
                         } else {
                             setDays.setText(new SimpleDateFormat("EEE", Locale.ENGLISH).format(System.currentTimeMillis()));
+                            setSchedule.setEnabled(false);
                         }
 
                     }
@@ -324,7 +331,7 @@ public class ScheduledDelivery extends AppCompatActivity {
 
         addNew.setOnClickListener(v -> {
 
-            List<Place.Field> fields = Arrays.asList(Place.Field.ID, Place.Field.NAME);
+            List<Place.Field> fields = Collections.singletonList(Place.Field.ADDRESS);
             Intent intent = new Autocomplete.IntentBuilder(AutocompleteActivityMode.OVERLAY, fields)
                     .setCountry("PH")
                     .build(getApplicationContext());
@@ -439,6 +446,11 @@ public class ScheduledDelivery extends AppCompatActivity {
 
                                                             }
                                                         });
+
+                                                Toast.makeText(ScheduledDelivery.this, "SCHEDULE SET", Toast.LENGTH_SHORT).show();
+                                                startActivity(new Intent(ScheduledDelivery.this, DeliveryScheduleActivity.class));
+                                                finish();
+
                                             }
                                         });
                             }
@@ -456,11 +468,12 @@ public class ScheduledDelivery extends AppCompatActivity {
                                                 builder.setPositiveButton("okay", new DialogInterface.OnClickListener() {
                                                     @Override
                                                     public void onClick(DialogInterface dialog, int which) {
-
+                                                        dialog.cancel();
                                                     }
                                                 });
                                                 builder.create().show();
                                             } else {
+
                                                 dataSnapshot.getRef().child(String.valueOf(id))
                                                         .setValue(schedule)
                                                         .addOnSuccessListener(new OnSuccessListener<Void>() {
@@ -496,8 +509,14 @@ public class ScheduledDelivery extends AppCompatActivity {
 
                                                                             }
                                                                         });
+
+                                                                Toast.makeText(ScheduledDelivery.this, "SCHEDULE SET", Toast.LENGTH_SHORT).show();
+                                                                startActivity(new Intent(ScheduledDelivery.this, DeliveryScheduleActivity.class));
+                                                                finish();
+
                                                             }
                                                         });
+
                                             }
                                         }
                                     } else {
@@ -536,15 +555,19 @@ public class ScheduledDelivery extends AppCompatActivity {
 
                                                                     }
                                                                 });
+
+                                                        Toast.makeText(ScheduledDelivery.this, "SCHEDULE SET", Toast.LENGTH_SHORT).show();
+                                                        startActivity(new Intent(ScheduledDelivery.this, DeliveryScheduleActivity.class));
+                                                        finish();
+
                                                     }
                                                 });
+
                                     }
                                 }
+
                             }
 
-                            Toast.makeText(ScheduledDelivery.this, "SCHEDULE SET", Toast.LENGTH_SHORT).show();
-                            startActivity(new Intent(ScheduledDelivery.this, DeliveryScheduleActivity.class));
-                            finish();
                         }
 
                         @Override
@@ -737,7 +760,7 @@ public class ScheduledDelivery extends AppCompatActivity {
                                 }
                             }
 
-                            add.add(String.valueOf(place.getName()));
+                            add.add(String.valueOf(place.getAddress()));
 
                             addressModelList.clear();
 

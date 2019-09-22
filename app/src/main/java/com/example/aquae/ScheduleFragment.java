@@ -28,7 +28,7 @@ public class ScheduleFragment extends Fragment {
 
     private RecyclerView recyclerView;
     private FloatingActionButton floatingActionButton;
-    private List<ScheduleModel> scheduleModelList;
+    private List<ScheduleModel> scheduleModelList = new ArrayList<>();
     private LinearLayout noSchedule;
 
     @Nullable
@@ -38,7 +38,6 @@ public class ScheduleFragment extends Fragment {
 
         recyclerView = view.findViewById(R.id.recyclerView);
         floatingActionButton = view.findViewById(R.id.floatingActionButton);
-        scheduleModelList = new ArrayList<>();
         noSchedule = view.findViewById(R.id.no_schedule);
 
         recyclerView.setHasFixedSize(true);
@@ -63,46 +62,47 @@ public class ScheduleFragment extends Fragment {
                     if (!dataSnapshot.exists()) {
                         noSchedule.setVisibility(View.VISIBLE);
                         dialogFragment.dismiss();
-                        recyclerView.setAdapter(new ScheduleAdapter(getContext(), scheduleModelList));
                     }
                     else {
+
                         for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                             if ("scheduled".equals(snapshot.child("status").getValue())
                                 || "remind".equals(snapshot.child("status").getValue())) {
-                                FirebaseDatabase.getInstance().getReference().child("clients")
-                                        .orderByChild("client_id").equalTo(String.valueOf(snapshot.child("client_id").getValue()))
-                                        .addListenerForSingleValueEvent(new ValueEventListener() {
-                                            @Override
-                                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                                                scheduleModelList.clear();
-                                                for (DataSnapshot snapshot1 : dataSnapshot.getChildren()) {
+
+//                                FirebaseDatabase.getInstance().getReference().child("clients")
+//                                        .orderByChild("client_id").equalTo(String.valueOf(snapshot.child("client_id").getValue()))
+//                                        .addListenerForSingleValueEvent(new ValueEventListener() {
+//                                            @Override
+//                                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+//                                                for (DataSnapshot snapshot1 : dataSnapshot.getChildren()) {
                                                     scheduleModelList.add(new ScheduleModel(
                                                             String.valueOf(snapshot.child("schedule_id").getValue()),
                                                             String.valueOf(snapshot.child("client_id").getValue()),
                                                             String.valueOf(snapshot.child("schedule").getValue()),
-                                                            String.valueOf(snapshot.child("switch").getValue()),
-                                                            String.valueOf(snapshot1.child("company").getValue())
+                                                            String.valueOf(snapshot.child("switch").getValue())
                                                     ));
+//                                                }
 
-                                                    recyclerView.setAdapter(new ScheduleAdapter(getContext(), scheduleModelList));
-                                                    noSchedule.setVisibility(View.GONE);
-                                                    dialogFragment.dismiss();
-                                                }
-                                            }
-
-                                            @Override
-                                            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-                                            }
-                                        });
+//                                            }
+//
+//                                            @Override
+//                                            public void onCancelled(@NonNull DatabaseError databaseError) {
+//
+//                                            }
+//                                        });
 
                             }
                             else {
                                 noSchedule.setVisibility(View.VISIBLE);
                                 dialogFragment.dismiss();
                             }
-
                         }
+
+                        recyclerView.setAdapter(new ScheduleAdapter(getContext(), scheduleModelList));
+                        noSchedule.setVisibility(View.GONE);
+                        dialogFragment.dismiss();
+
                     }
 
                 }

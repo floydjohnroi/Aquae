@@ -9,6 +9,7 @@ import android.widget.Toast;
 
 import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.miguelcatalan.materialsearchview.MaterialSearchView;
 
 import java.util.Objects;
 
@@ -17,6 +18,7 @@ public class SelectStationActivity extends AppCompatActivity {
     Toolbar toolbar;
     MaterialCardView toolbarCard;
     TextView toolbarTitle;
+    MaterialSearchView searchView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,15 +35,49 @@ public class SelectStationActivity extends AppCompatActivity {
         toolbarCard.setCardBackgroundColor(getResources().getColor(R.color.colorWhite));
         toolbarTitle.setText("Select Station");
 
+        toolbarTitle.setOnClickListener(v -> searchView.showSearch());
+
+        searchViewCode();
+
         if (savedInstanceState == null) {
             Bundle b = new Bundle();
             b.putString("isForDelivery", "isForDelivery");
-            Filter1Fragment fragment = new Filter1Fragment();
+            FilterFragment fragment = new FilterFragment();
             fragment.setArguments(b);
             getSupportFragmentManager().beginTransaction().replace(R.id.drawerContent, fragment).commit();
         }
 
     }
+
+    private void searchViewCode() {
+        searchView = findViewById(R.id.search_view);
+        searchView.setEllipsize(true);
+        searchView.setOnQueryTextListener(new MaterialSearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                return false;
+            }
+        });
+
+        searchView.setOnSearchViewListener(new MaterialSearchView.SearchViewListener() {
+            @Override
+            public void onSearchViewShown() {
+
+            }
+
+            @Override
+            public void onSearchViewClosed() {
+
+            }
+        });
+
+    }
+
 
     @Override
     public boolean onSupportNavigateUp() {

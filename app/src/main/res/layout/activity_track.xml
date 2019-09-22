@@ -41,6 +41,18 @@
             android:paddingTop="32dp"
             android:paddingBottom="16dp">
 
+            <TextView
+                android:id="@+id/delivery_option"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/colorText"
+                android:layout_marginStart="32dp"
+                android:layout_marginEnd="32dp"
+                android:layout_marginBottom="16dp"
+                android:textStyle="bold|italic"
+                android:textAllCaps="true"
+                android:textSize="24sp" />
+
             <LinearLayout
                 android:id="@+id/history_layout"
                 android:layout_width="match_parent"
@@ -781,6 +793,29 @@
 
                     <TextView
                         android:id="@+id/delivery_fee"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/colorText"
+                        android:textSize="16sp" />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/express_fee_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:textColor="@color/colorText"
+                        android:text="EXPRESS FEE" />
+
+                    <TextView
+                        android:id="@+id/express_fee"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:textColor="@color/colorText"
