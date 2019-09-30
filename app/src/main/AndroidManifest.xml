@@ -4,6 +4,7 @@
     package="com.example.aquae">
 
     <application
+        android:name=".AquaeHandler"
         android:allowBackup="true"
         android:fullBackupContent="true"
         android:icon="@drawable/icon_aquae_dark"

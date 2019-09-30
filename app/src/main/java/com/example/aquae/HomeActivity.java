@@ -94,6 +94,8 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
         getWindow().setStatusBarColor(Color.TRANSPARENT);
         setContentView(R.layout.activity_home);
 
+
+
         databaseReference = FirebaseDatabase.getInstance().getReference();
         session = new Session(getApplicationContext());
 
